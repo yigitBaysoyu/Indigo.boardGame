@@ -1,12 +1,9 @@
 package entity
 
 /**
- * Represents a tile with paths on it. This is the type of tile that players can place.
- *
- * @property gemPositions List with 6 entries. Each represents which type of gem (can also be NONE) is
- * on which side of the tile.
+ * At the start of the game there are six treasure tiles on the outer edges of the board. They each hold a gem.
  */
-class PathTile(
+class TreasureTile (
     connections: Map<Int, Int>,
     rotationOffset: Int,
     xCoordinate: Int,
