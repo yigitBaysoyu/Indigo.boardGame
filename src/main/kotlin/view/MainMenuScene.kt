@@ -7,11 +7,8 @@ import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
-import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 
 /**
  * Displays the Main Menu of the Indigo Game
@@ -20,7 +17,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
 
     private val sceneWidth = 1920
     private val halfWidth = sceneWidth / 2
-    private val offsetY = -50;
+    private val offsetY = -50
 
     private val localLabel = Label(
         width = 350, height = 75,
