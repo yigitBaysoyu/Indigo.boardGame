@@ -81,4 +81,17 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
     }
+
+    /**
+     * Function to set the simulation Speed of the game
+     * @param simulationSpeed Tells you what simulation Speed is wanted
+     */
+    fun setSimulationSpeed(simulationSpeed: Double){
+
+        val game = rootService.currentGame
+        checkNotNull(game)
+        check(simulationSpeed>0){"Invalid simulation Speed"}
+
+        game.simulationSpeed=simulationSpeed
+    }
 }
