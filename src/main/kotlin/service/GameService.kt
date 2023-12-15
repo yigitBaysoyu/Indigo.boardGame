@@ -110,7 +110,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             val splitLine = line.split(";")
             val map: MutableMap<Int, Int> = mutableMapOf()
 
-            for(i in 2 until splitLine.size step 2){    //Create connections map going both ways
+            //Create connections map going both ways
+            for(i in 2 until splitLine.size step 2){
                 map[splitLine[i].toInt()] = splitLine[i+1].toInt()
                 map[splitLine[i+1].toInt()] = splitLine[i].toInt()
             }
@@ -119,7 +120,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>()))
             }
         }
-
         return playingTiles
     }
 }
