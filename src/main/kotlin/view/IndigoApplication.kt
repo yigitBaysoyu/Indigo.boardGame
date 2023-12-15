@@ -11,12 +11,12 @@ class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.F
     private val rootService = RootService()
 
      private val mainMenuScene = MainMenuScene(rootService)
-    // private val gameScene = GameScene(rootService)
-    // private val startGameScene = StartGameScene(rootService)
-    // private val loadGameScene = LoadGameScene(rootService)
-    // private val hostGameScene = HostGameScene(rootService)
-    // private val joinGameScene = JoinGameScene(rootService)
-    // private val gameEndedScene = GameEndedScene(rootService)
+     private val gameScene = GameScene(rootService)
+     private val startGameScene = StartGameScene(rootService)
+     private val loadGameScene = LoadGameScene(rootService)
+     private val hostGameScene = HostGameScene(rootService)
+     private val joinGameScene = JoinGameScene(rootService)
+     private val gameEndedScene = GameEndedScene(rootService)
 
     init {
         // all scenes and the application itself need to
@@ -24,22 +24,29 @@ class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.F
         rootService.addRefreshables(
             this,
             mainMenuScene,
-            // gameScene,
-            // startGameScene,
-            // loadGameScene
-            // hostGameScene,
-            // joinGameScene,
-            // gameEndedScene,
+            gameScene,
+            startGameScene,
+            loadGameScene,
+            hostGameScene,
+            joinGameScene,
+            gameEndedScene
         )
 
         mainMenuScene.quitButton.onMouseClicked = { exit() }
-        // mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
-        // mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
-        // mainMenuScene.hostGameButton.onMouseClicked = { showMenuScene(hostGameScene) }
-        // mainMenuScene.joinGameButton.onMouseClicked = { showMenuScene(joinGameScene) }
+        mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
+        mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
+        mainMenuScene.hostGameButton.onMouseClicked = {
+            // host game logic
+            showMenuScene(hostGameScene)
+        }
+        mainMenuScene.joinGameButton.onMouseClicked = {
+            // join game logic
+            showMenuScene(joinGameScene)
+        }
 
 
-        // this.showGameScene(gameScene)
+
+        showGameScene(gameScene)
         showMenuScene(mainMenuScene, 0)
     }
 
@@ -48,7 +55,7 @@ class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.F
     }
 
     override fun refreshAfterEndGame() {
-        //this.showMenuScene(gameEndedScene)
+        this.showMenuScene(gameEndedScene)
     }
 }
 
