@@ -17,7 +17,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
 
     private val sceneWidth = 1920
     private val halfWidth = sceneWidth / 2
-    private val offsetY = -50
+    private val offsetY = -50 // Used to Position all Elements vertically
 
     private val localLabel = Label(
         width = 350, height = 75,
@@ -56,9 +56,9 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     private val sessionIDInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 640,
+        /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
         prompt = "Session ID ...",
-        text = "Session ID ...",
-        font = Font(size = 35, color = Color(0, 0, 0, 100)),
+        font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY
     ).apply {
         onKeyTyped = {
@@ -81,13 +81,14 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         posX = halfWidth - 350 / 2 + 5, posY = offsetY + 725,
         text = "Host",
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
-        visual = Visual.EMPTY
+        visual = Visual.EMPTY,
     ).apply {
         componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
         isDisabled = true
     }
 
-    val hostGameButtonBackground = Button(
+    // Is rendered behind hostGameButton to give it more opacity when it is disabled
+    private val hostGameButtonBackground = Button(
         width = 350 / 2 - 10, height = 50,
         posX = halfWidth - 350 / 2 + 5, posY = offsetY + 725,
         text = "Host",
@@ -108,7 +109,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         isDisabled = true
     }
 
-    val joinGameButtonBackground = Button(
+    // Is rendered behind joinGameButton to give it more opacity when it is disabled
+    private val joinGameButtonBackground = Button(
         width = 350 / 2 - 10, height = 50,
         posX = halfWidth + 5, posY = offsetY + 725,
         text = "Join",

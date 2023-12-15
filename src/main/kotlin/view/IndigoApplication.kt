@@ -4,7 +4,10 @@ import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.core.WindowMode
 
-class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.FULLSCREEN), Refreshable {
+/**
+ * Implementation of the Indigo game using BoardGameWork.
+ */
+class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode = WindowMode.FULLSCREEN), Refreshable {
 
     // Central service from which all others are created/accessed
     // also holds the currently active game
@@ -32,6 +35,7 @@ class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.F
             gameEndedScene
         )
 
+        // Bind buttons from MainMenuScene
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
         mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
@@ -43,8 +47,6 @@ class IndigoApplication: BoardGameApplication("Indigo", 1920, 1080, WindowMode.F
             // join game logic
             showMenuScene(joinGameScene)
         }
-
-
 
         showGameScene(gameScene)
         showMenuScene(mainMenuScene, 0)
