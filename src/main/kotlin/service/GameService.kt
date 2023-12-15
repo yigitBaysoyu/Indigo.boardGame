@@ -136,7 +136,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      *
      * @return [MutableList]<[PathTile]> containing all created Tiles
      */
-    fun loadTiles(): MutableList<PathTile> {
+    private fun loadTiles(): MutableList<PathTile> {
         val file = GameService::class.java.getResource("/tiles.csv")
         checkNotNull(file) { "No file in defined position" }
 
