@@ -1,0 +1,6 @@
+TypeId;Count;Path1Start;Path1End;Path2Start;Path2End;Path3Start;Path3End
+0;14;0;2;1;4;3;5
+1;6;2;5;1;4;0;3
+2;14;0;5;1;4;2;3
+3;14;0;5;1;3;2;4
+4;6;0;5;1;2;3;4
