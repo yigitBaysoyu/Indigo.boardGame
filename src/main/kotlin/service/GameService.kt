@@ -183,7 +183,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * then saving that String in the .ser file
      */
     fun saveGame(){
-
         val file = File("saveGame.ser")
         file.writeText(Json.encodeToString(rootService.currentGame))
     }
