@@ -1,7 +1,12 @@
 package service
 import entity.*
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
 
 
 /**
@@ -163,5 +168,23 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
         return playingTiles
     }
+    /**
+     * loads the current Game from the saveGame.ser file, this is achieved through the kotlinx serializable interface,
+     * where the text in the file will be decoded into a Game Object
+     */
+    fun loadGame(){
+        val file = File("saveGame.ser")
+        rootService.currentGame = Json.decodeFromString<entity.IndigoGame>(file.readText())
+        onAllRefreshables { refreshAfterStartNewGame() }
+    }
+    /**
+     * saves the current Game in the file saveGame.ser, this is achieved with the kotlinx serializable,
+     * by serializing the current Game Object, and every Object attached to it, and converting it to a String,
+     * then saving that String in the .ser file
+     */
+    fun saveGame(){
 
+        val file = File("saveGame.ser")
+        file.writeText(Json.encodeToString(rootService.currentGame))
+    }
 }
