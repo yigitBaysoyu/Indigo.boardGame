@@ -35,15 +35,82 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
     }
 
-    fun placeRotatedTile(tile: Tile, xCoordinate: Int, yCoordinate: Int) {
+    /**
+     * * This function checks whether the specified position is blocked or if placing
+     * the tile would result in an illegal connection with an adjacent GateTile.
+     *
+     * @param xCoordinate The X coordinate where the tile is to be placed.
+     * @param yCoordinate The Y coordinate where the tile is to be placed.
+     * @param tile The PathTile object to be placed.
+     *
+     * @return true if the tile can be placed, false otherwise.
+     *
+     */
+    fun isPlaceAble(xCoordinate: Int, yCoordinate: Int, tile: PathTile) : Boolean {
 
-    }
-
-    private fun placeTile(tile: Tile) {
         val game = rootService.currentGame
         checkNotNull(game)
 
+        // a list of positions that are blocked
+        val blockedPlaces = setOf(
+            Pair(0, 0),
+            Pair(0, 4),
+            Pair(4, 0),
+            Pair(-4, 0),
+            Pair(0, -4),
+            Pair(4, -4),
+            Pair(-4, 4)
+        )
+
+        val position = Pair(xCoordinate,yCoordinate)
+
+        // if a player tried to place a tile on the blocked places should not accept
+        if (blockedPlaces.contains(position))
+        {
+            return false
+        }
+
+        val adjacentTile = findAdjacentTiles(xCoordinate,yCoordinate, game)
+
+        for ( i in adjacentTile.indices) {
+            if (adjacentTile.contains(game.gateList[i]))
+                tile.connections.forEach { (pathExit, pathEntry) ->
+                    val connectingExit = game.gateList[i].connections[pathEntry]
+                    if (connectingExit != null && game.gateList[i].connections.containsValue(pathExit)) {
+
+                        return false
+                    }
+                }
+        }
+        return true
     }
+
+    /**
+     * Private funktion that can help to * Finds all tiles adjacent to a given position
+     *
+     * @param x The X coordinate where the tile is to be placed.
+     * @param y The Y coordinate where the tile is to be placed.
+     *
+     */
+    private fun findAdjacentTiles(x: Int, y: Int, game: IndigoGame): List<Tile> {
+
+        val adjacentTile = mutableListOf<Tile>()
+
+        val positions = setOf(
+            Pair(x,y-1),
+            Pair(x,y+1),
+            Pair(x-1,y+1),
+            Pair(x-1,y),
+            Pair(x+1,y),
+            Pair(x+1,y-1)
+        )
+        //TODO
+        return listOf()
+
+
+    }
+
+
 
     private fun createGateTiles(): MutableList<GateTile> {
         val gateTiles = mutableListOf<GateTile>()
@@ -77,7 +144,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 val playerIndex = i % 2
                 game.playerList[playerIndex].gateList.add(game.gateList[i])
             }
-        } else {
+        }
+        else {
             for (i in 0 until gateSize) {
 
                 if (i % 2 == 0) {
@@ -102,7 +170,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         }
                     }
                 }
-
             }
         }
     }
