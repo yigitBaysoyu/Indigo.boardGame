@@ -21,7 +21,7 @@ class AxialCoordinatesTest {
     }
 
     /**
-     * Tests [GameService.checkIfValidAxialCoordinates] for valid Coordinates
+     * Tests [GameService.checkIfValidAxialCoordinates] for valid Coordinates.
      */
     @Test
     fun testCheckIfValidAxialCoordinates1() {
