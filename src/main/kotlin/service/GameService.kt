@@ -25,11 +25,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val drawpile: MutableList<PathTile> = mutableListOf()
         val gamelayout: MutableList<MutableList<Tile>> = mutableListOf()
 
-        for(i in 0 ..10) {
-            gamelayout.add(mutableListOf())
-            for(j in 0..10) gamelayout[i].add(InvisibleTile())
-        }
-
         val game = IndigoGame(
             1, 1.0, false, undostack,
             redostack, players, gatelist, drawpile, gameLayout = gamelayout
@@ -48,11 +43,20 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null. No Game is currently running." }
 
+        // Set everything to invisible Tile
+        for(i in 0 ..10) {
+            game.gameLayout.add(mutableListOf())
+            for(j in 0..10) game.gameLayout[i].add(InvisibleTile())
+        }
+
         for(x in -5 .. 5) {
             for(y in -5 .. 5) {
+                // continue if coordinate is not in hexagonal play area
                 if(!checkIfValidAxialCoordinates(x, y)) continue
 
                 val distanceToCenter = (kotlin.math.abs(x) + kotlin.math.abs(x + y) + kotlin.math.abs(y)) / 2
+
+                // Outer ring of tiles should be gateTiles. They all have distance 5 to center
                 if(distanceToCenter == 5) {
                     setTileFromAxialCoordinates(x, y, GateTile(
                         connections = mutableMapOf(Pair(0, 3), Pair(1, 4), Pair(2, 5), Pair(3, 0), Pair(4, 1), Pair(5, 2)),
