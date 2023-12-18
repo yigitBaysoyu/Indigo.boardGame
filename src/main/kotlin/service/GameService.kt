@@ -1,6 +1,5 @@
 package service
 import entity.*
-import view.GameScene
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.lang.IndexOutOfBoundsException
@@ -292,5 +291,45 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
         return playingTiles
+    }
+
+    /**
+     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
+     * and if they are not inside the hexagonal play area.
+     */
+    fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {
+        if (x < -5 || x > 5 || y < -5 || y > 5) return false
+        if ((x < 0 && y < -5 - x) || (x > 0 && y > 5 - x)) return false
+        return true
+    }
+
+    /**
+     * Returns the Tile at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun getTileFromAxialCoordinates(x: Int, y: Int): Tile {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        return game.gameLayout[x + 5][y + 5]
+    }
+
+    /**
+     * Sets the Tile passed as argument at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun setTileFromAxialCoordinates(x: Int, y: Int, tile: Tile) {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        game.gameLayout[x + 5][y + 5] = tile
     }
 }
