@@ -13,7 +13,6 @@ import java.lang.IndexOutOfBoundsException
  */
 class GameService (private  val rootService: RootService) : AbstractRefreshingService() {
 
-
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
@@ -59,15 +58,15 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         connections = mutableMapOf(Pair(0, 3), Pair(1, 4), Pair(2, 5), Pair(3, 0), Pair(4, 1), Pair(5, 2)),
                         rotationOffset = 0,
                         gemsCollected = mutableListOf(),
-                        xCoordinate = 0,
-                        yCoordinate = 0
+                        xCoordinate = x,
+                        yCoordinate = y
                     ))
                 } else {
                     setTileFromAxialCoordinates(x, y, EmptyTile(
                         connections = mutableMapOf(),
                         rotationOffset = 0,
-                        xCoordinate = 0,
-                        yCoordinate = 0
+                        xCoordinate = x,
+                        yCoordinate = y
                     ))
                 }
             }
@@ -89,7 +88,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val treasureTile1 = TreasureTile(
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 0,
-            xCoordinate = 0,
+            xCoordinate = 4,
             yCoordinate = 0,
             gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE)
         )
@@ -99,7 +98,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 0,
             xCoordinate = 0,
-            yCoordinate = 0,
+            yCoordinate = 4,
             gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER)
         )
         rotateConnections(treasureTile2)
@@ -108,8 +107,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val treasureTile3 = TreasureTile(
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 2,
-            xCoordinate = 0,
-            yCoordinate = 0,
+            xCoordinate = -4,
+            yCoordinate = 4,
             gemPositions = mutableListOf(GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
         )
         rotateConnections(treasureTile3)
@@ -118,7 +117,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val treasureTile4 = TreasureTile(
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 3,
-            xCoordinate = 0,
+            xCoordinate = -4,
             yCoordinate = 0,
             gemPositions = mutableListOf(GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
         )
@@ -129,7 +128,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 4,
             xCoordinate = 0,
-            yCoordinate = 0,
+            yCoordinate = -4,
             gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE)
         )
         rotateConnections(treasureTile5)
@@ -138,8 +137,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val treasureTile6 = TreasureTile(
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
             rotationOffset = 5,
-            xCoordinate = 0,
-            yCoordinate = 0,
+            xCoordinate = 4,
+            yCoordinate = -4,
             gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE)
         )
         rotateConnections(treasureTile6)
