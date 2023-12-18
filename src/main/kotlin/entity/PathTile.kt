@@ -7,11 +7,11 @@ package entity
  * on which side of the tile.
  */
 class PathTile(
-    connections: Map<Int, Int>,
-    rotationOffset: Int,
-    xCoordinate: Int,
-    yCoordinate: Int,
-    val gemPositions: MutableList<GemType>
+    connections: Map<Int, Int> = mutableMapOf(),
+    rotationOffset: Int = 0,
+    xCoordinate: Int = 0,
+    yCoordinate: Int = 0,
+    val gemPositions: MutableList<GemType> = mutableListOf()
 ): Tile(
     connections,
     rotationOffset,
