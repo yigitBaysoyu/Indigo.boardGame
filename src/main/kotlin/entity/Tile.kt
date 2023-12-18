@@ -7,8 +7,8 @@ package entity
  * @property connections holds the paths on a tile. Maps two ends of a Tile to one another.
  */
 abstract class Tile (
-    val connections: Map<Int, Int>,
-    val rotationOffset: Int,
+    var connections: Map<Int, Int>,
+    var rotationOffset: Int,
     val xCoordinate: Int,
     val yCoordinate: Int
 )
