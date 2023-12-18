@@ -127,4 +127,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
         }
+
+    /**
+     * Placeholder for isPlaceable
+     */
+    fun isPlaceable(xCoordinate: Int, yCoordinate: Int, tile: PathTile): Boolean{
+        return true
     }
+}
