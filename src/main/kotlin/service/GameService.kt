@@ -1,5 +1,7 @@
 package service
 import entity.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 
 /**
@@ -60,7 +62,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * This method assigns gates to each player
+     * This method assigns gates to each player.
      */
     fun setGates(threePlayerVariant: Boolean) {
 
@@ -74,18 +76,15 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
                 val playerIndex = i % 2
                 game.playerList[playerIndex].gateList.add(game.gateList[i])
-
             }
-        }
-        else {
+        } else {
             for (i in 0 until gateSize) {
 
-                if (i%2 == 0) {
+                if (i % 2 == 0) {
                     val playerIndex = i % 3
                     game.playerList[playerIndex].gateList.add(game.gateList[i])
-                }
-                else {
-                    when(i){
+                } else {
+                    when (i) {
                         1 -> {
                             game.playerList[0].gateList.add(game.gateList[i])
                             game.playerList[2].gateList.add(game.gateList[i])
@@ -109,24 +108,103 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
 
-        fun endGame() {
+    fun endGame() {
 
-            val game = rootService.currentGame
-            checkNotNull(game)
+        val game = rootService.currentGame
+        checkNotNull(game)
 
-            var allGemsInGate = 0
+        var allGemsInGate = 0
 
-            for (i in 0 until game.gateList.size)
-            {
-               allGemsInGate += game.gateList[i].gemsCollected.size
-            }
-
-            if (allGemsInGate == 12)
-            {
-                //endGame
-            }
-
+        for (i in 0 until game.gateList.size) {
+            allGemsInGate += game.gateList[i].gemsCollected.size
         }
+
+        if (allGemsInGate == 12) {
+            //endGame
+        }
+
+    }
+
+    /**
+     * Function to read the given csv File, which defines the different
+     * types of tiles (connections and amount), and create the defined
+     * amount of tiles of each type.
+     * The csv File is expected in the resources Folder of the project and
+     * follow following scheme for the header row:
+     *
+     * TypeID, Count, Path1Start, Path1End, Path2Start, Path2End, Path3Start, Path3End
+     *
+     * @return [MutableList]<[PathTile]> containing all created Tiles
+     */
+    private fun loadTiles(): MutableList<PathTile> {
+        val file = GameService::class.java.getResource("/tiles.csv")
+        checkNotNull(file) { "No file in defined position" }
+
+        val bufferedReader = BufferedReader(InputStreamReader(file.openStream()))
+        val lines = bufferedReader.readLines().toMutableList()
+
+        lines.removeAt(0)   //Remove header line
+
+        val playingTiles: MutableList<PathTile> = mutableListOf()
+
+        for (line in lines) {
+            val splitLine = line.split(";")
+            val map: MutableMap<Int, Int> = mutableMapOf()
+
+            //Create connections map going both ways
+            for (i in 2 until splitLine.size step 2) {
+                map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
+                map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
+            }
+
+            for (i in 0 until splitLine[1].toInt()) {
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>()))
+            }
+        }
+        return playingTiles
+    }
+
+    /**
+     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
+     * and if they are not inside the hexagonal play area.
+     */
+    fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {
+        if (x < -5 || x > 5 || y < -5 || y > 5) return false
+        if ((x < 0 && y < -5 - x) || (x > 0 && y > 5 - x)) return false
+        return true
+    }
+
+    /**
+     * Returns the Tile at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun getTileFromAxialCoordinates(x: Int, y: Int): Tile {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        return game.gameLayout[x + 5][y + 5]
+    }
+
+    /**
+     * Sets the Tile passed as argument at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun setTileFromAxialCoordinates(x: Int, y: Int, tile: Tile) {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        game.gameLayout[x + 5][y + 5] = tile
+    }
+
+
 
     /**
      * Placeholder for isPlaceable

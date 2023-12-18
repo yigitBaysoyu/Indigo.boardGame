@@ -18,5 +18,4 @@ class GameServiceTest {
         game.gameService.startNewGame( player1 , true,1.0,false)
         //game.gameService.setGates(true)
     }
-
 }
