@@ -183,61 +183,104 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game)
 
-        // a list of positions that are blocked
-        val blockedPlaces = setOf(
-            Pair(0, 0),
-            Pair(0, 4),
-            Pair(4, 0),
-            Pair(-4, 0),
-            Pair(0, -4),
-            Pair(4, -4),
-            Pair(-4, 4)
-        )
-
-        val position = Pair(xCoordinate,yCoordinate)
-
-        // if a player tried to place a tile on the blocked places should not accept
-        if (blockedPlaces.contains(position))
-        {
-            return false
+        val adjacentTiles = findAdjacentTiles(xCoordinate,yCoordinate)
+        val targetTile = getTileFromAxialCoordinates(xCoordinate,yCoordinate)
+        // Check if the targeted placement position is an EmptyTile, which means placement is allowed.
+        if (targetTile is EmptyTile) {
+            // If it's an EmptyTile, check for adjacent GateTiles.
+            return if (adjacentTiles.none { it is GateTile }) {
+                // If there are no adjacent GateTiles, placement is allowed.
+                true
+            } else {
+                // If there is at least one adjacent GateTile, check for illegal connections.
+                adjacentGate(xCoordinate, yCoordinate, tile)
+            }
         }
+        return false
 
-        val adjacentTile = findAdjacentTiles(xCoordinate,yCoordinate, game)
-
-        for ( i in adjacentTile.indices) {
-            if (adjacentTile.contains(game.gateList[i]))
-                tile.connections.forEach { (pathExit, pathEntry) ->
-                    val connectingExit = game.gateList[i].connections[pathEntry]
-                    if (connectingExit != null && game.gateList[i].connections.containsValue(pathExit)) {
-
-                        return false
-                    }
-                }
-        }
-        return true
     }
 
     /**
-     * Private funktion that can help to * Finds all tiles adjacent to a given position
+     * Private funktion that can help to Find all tiles adjacent to a given position
      *
      * @param x The X coordinate where the tile is to be placed.
      * @param y The Y coordinate where the tile is to be placed.
      *
      */
-    private fun findAdjacentTiles(x: Int, y: Int, game: IndigoGame): List<Tile> {
+    private fun findAdjacentTiles(x: Int, y: Int): List<Tile> {
 
         val adjacentTile = mutableListOf<Tile>()
 
+        // Define the relative positions that would be adjacent in a hexagonal grid
         val positions = setOf(
-            Pair(x,y-1),
-            Pair(x,y+1),
-            Pair(x-1,y+1),
-            Pair(x-1,y),
-            Pair(x+1,y),
-            Pair(x+1,y-1)
+            Pair(x,y-1), Pair(x,y+1),
+            Pair(x-1,y+1), Pair(x-1,y),
+            Pair(x+1,y), Pair(x+1,y-1)
         )
-        //TODO
-        return listOf()
+        //add each adjacent tile to a list
+        positions.forEach{ (first , second) ->
+            adjacentTile.add(getTileFromAxialCoordinates(first,second))
+        }
+        return adjacentTile
+
+    }
+
+    /**
+     * Private funktion that can help to Find all tiles adjacent to a given position
+     *
+     * @param x The X coordinate where the tile is to be placed.
+     * @param y The Y coordinate where the tile is to be placed.
+     * @param tile The
+     *
+     */
+    private fun adjacentGate(x :Int ,y: Int, tile: PathTile) : Boolean{
+
+        val containsPair = tile.connections.any { (key, value) ->
+            key == 0 && value == 1
+        }
+        if (y == 4 && containsPair){
+            return false
+        }
+
+        val containsPair1 = tile.connections.any { (key, value) ->
+            key == 1 && value == 2
+        }
+
+        val positions = listOf(Pair(1,3),Pair(2,2),Pair(3,1))
+        for (pos in positions) {
+            if (x == pos.first && y == pos.second && containsPair1) {
+                return false
+            }
+        }
+        val containsPair2 = tile.connections.any { (key, value) ->
+            key == 4 && value == 5
+        }
+
+        val positions1 = listOf(Pair(-1,-3),Pair(-2,-2),Pair(-3,-1))
+        for (pos in positions1) {
+            if (x == pos.first && y == pos.second && containsPair2) {
+                return false
+            }
+        }
+        val containsPair3 = tile.connections.any { (key, value) ->
+            key == 2 && value == 3
+        }
+        if (x == 4 && containsPair3){
+            return false
+        }
+        val containsPair4 = tile.connections.any { (key, value) ->
+            key == 3 && value == 4
+        }
+        if (y == -4 && containsPair4){
+            return false
+        }
+        val containsPair5 = tile.connections.any { (key, value) ->
+            key == 5 && value == 0
+        }
+        if (x == -4 && containsPair5){
+            return false
+        }
+        return true
 
 
     }
@@ -319,7 +362,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         if (allGemsInGate == 12) {
-            //endGame
+            onAllRefreshables { refreshAfterEndGame() }
         }
 
     }
