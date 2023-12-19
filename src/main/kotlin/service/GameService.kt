@@ -2,6 +2,7 @@ package service
 import entity.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.IndexOutOfBoundsException
 
 
 /**
@@ -12,14 +13,12 @@ import java.io.InputStreamReader
  */
 class GameService (private  val rootService: RootService) : AbstractRefreshingService() {
 
-
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
         simulationSpeed: Double,
         isNetworkGame: Boolean
     ) {
-
         val undostack = ArrayDeque<Turn>()
         val redostack = ArrayDeque<Turn>()
         val gatelist: MutableList<GateTile> = createGateTiles()
@@ -28,11 +27,144 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         val game = IndigoGame(
             1, 1.0, false, undostack,
-            redostack, players, gatelist, drawpile, gamelayout
+            redostack, players, gatelist, drawpile, gameLayout = gamelayout
         )
         rootService.currentGame = game
         setGates(threePlayerVariant)
 
+        setDefaultGameLayout()
+        onAllRefreshables { refreshAfterStartNewGame() }
+    }
+
+    /**
+     * Only used as helper function in startNewGame. Fills the GameLayout with the correct tiles to start a new Game.
+     */
+    private fun setDefaultGameLayout() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        // Set everything to invisible Tile
+        for(i in 0 ..10) {
+            game.gameLayout.add(mutableListOf())
+            for(j in 0..10) game.gameLayout[i].add(InvisibleTile())
+        }
+
+        for(x in -5 .. 5) {
+            for(y in -5 .. 5) {
+                // continue if coordinate is not in hexagonal play area
+                if(!checkIfValidAxialCoordinates(x, y)) continue
+
+                val distanceToCenter = (kotlin.math.abs(x) + kotlin.math.abs(x + y) + kotlin.math.abs(y)) / 2
+
+                // Outer ring of tiles should be gateTiles. They all have distance 5 to center
+                if(distanceToCenter == 5) {
+                    setTileFromAxialCoordinates(x, y, GateTile(
+                        connections = mutableMapOf(Pair(0, 3), Pair(1, 4), Pair(2, 5), Pair(3, 0), Pair(4, 1), Pair(5, 2)),
+                        rotationOffset = 0,
+                        gemsCollected = mutableListOf(),
+                        xCoordinate = x,
+                        yCoordinate = y
+                    ))
+                } else {
+                    setTileFromAxialCoordinates(x, y, EmptyTile(
+                        connections = mutableMapOf(),
+                        rotationOffset = 0,
+                        xCoordinate = x,
+                        yCoordinate = y
+                    ))
+                }
+            }
+        }
+
+        val centerTileGems = ArrayDeque<GemType>()
+        centerTileGems.add(GemType.SAPPHIRE)
+        for(i in 0 .. 4) centerTileGems.add(GemType.EMERALD)
+
+        val centerTile = CenterTile(
+            connections = mutableMapOf(),
+            rotationOffset = 0,
+            xCoordinate = 0,
+            yCoordinate = 0,
+            availableGems = centerTileGems
+        )
+        setTileFromAxialCoordinates(0, 0, centerTile)
+
+        val treasureTile1 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 0,
+            xCoordinate = 4,
+            yCoordinate = 0,
+            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE)
+        )
+        setTileFromAxialCoordinates(4, 0, treasureTile1)
+
+        val treasureTile2 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 0,
+            xCoordinate = 0,
+            yCoordinate = 4,
+            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER)
+        )
+        rotateConnections(treasureTile2)
+        setTileFromAxialCoordinates(0, 4, treasureTile2)
+
+        val treasureTile3 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 2,
+            xCoordinate = -4,
+            yCoordinate = 4,
+            gemPositions = mutableListOf(GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
+        )
+        rotateConnections(treasureTile3)
+        setTileFromAxialCoordinates(-4, 4, treasureTile3)
+
+        val treasureTile4 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 3,
+            xCoordinate = -4,
+            yCoordinate = 0,
+            gemPositions = mutableListOf(GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
+        )
+        rotateConnections(treasureTile4)
+        setTileFromAxialCoordinates(-4, 0, treasureTile4)
+
+        val treasureTile5 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 4,
+            xCoordinate = 0,
+            yCoordinate = -4,
+            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE)
+        )
+        rotateConnections(treasureTile5)
+        setTileFromAxialCoordinates(0, -4, treasureTile5)
+
+        val treasureTile6 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 5,
+            xCoordinate = 4,
+            yCoordinate = -4,
+            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE)
+        )
+        rotateConnections(treasureTile6)
+        setTileFromAxialCoordinates(4, -4, treasureTile6)
+    }
+
+    /**
+     * Rotates the connections of a treasure tile based on its rotation offset.
+     * Only used as helper function for setDefaultGameLayout
+     */
+    private fun rotateConnections(tile: TreasureTile) {
+        for(i in 0 until tile.rotationOffset) {
+            val newConnections = mutableMapOf<Int, Int>()
+            tile.connections.forEach { (key , value) ->
+                val newKey = (key + 1) % 6
+                val newValue = (value + 1) % 6
+
+                newConnections[newKey] = newValue
+            }
+
+            tile.connections = newConnections
+        }
     }
 
     fun placeRotatedTile(tile: Tile, xCoordinate: Int, yCoordinate: Int) {
@@ -164,4 +296,43 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         return playingTiles
     }
 
+    /**
+     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
+     * and if they are not inside the hexagonal play area.
+     */
+    fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {
+        if (x < -5 || x > 5 || y < -5 || y > 5) return false
+        if ((x < 0 && y < -5 - x) || (x > 0 && y > 5 - x)) return false
+        return true
+    }
+
+    /**
+     * Returns the Tile at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun getTileFromAxialCoordinates(x: Int, y: Int): Tile {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        return game.gameLayout[x + 5][y + 5]
+    }
+
+    /**
+     * Sets the Tile passed as argument at the specified Axial Coordinates.
+     * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
+     */
+    fun setTileFromAxialCoordinates(x: Int, y: Int, tile: Tile) {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null. No Game is currently running." }
+
+        if(!checkIfValidAxialCoordinates(x, y)) {
+            throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
+        }
+
+        game.gameLayout[x + 5][y + 5] = tile
+    }
 }

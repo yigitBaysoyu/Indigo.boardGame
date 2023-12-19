@@ -7,10 +7,10 @@ package entity
  * @property gateList stores the gates that belong to the player. If a gem enters one of these the player gets points.
  */
 data class Player(
-    val name: String,
-    val color: Int,
-    val playerType: PlayerType,
+    val name: String = "",
+    val color: Int = 0,
+    val playerType: PlayerType = PlayerType.LOCALPLAYER,
     var score: Int = 0,
-    val playHand: MutableList<PathTile>,
-    val gateList: MutableList<GateTile>
+    val playHand: MutableList<PathTile> = mutableListOf(),
+    val gateList: MutableList<GateTile> = mutableListOf()
 )
