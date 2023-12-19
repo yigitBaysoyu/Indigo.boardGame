@@ -184,6 +184,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         checkNotNull(game)
 
         val adjacentTiles = findAdjacentTiles(xCoordinate,yCoordinate)
+
         val targetTile = getTileFromAxialCoordinates(xCoordinate,yCoordinate)
         // Check if the targeted placement position is an EmptyTile, which means placement is allowed.
         if (targetTile is EmptyTile) {
@@ -201,10 +202,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Private funktion that can help to Find all tiles adjacent to a given position
+     * Private funktion that can help to Find all tiles adjacent to a given position.
      *
      * @param x The X coordinate where the tile is to be placed.
      * @param y The Y coordinate where the tile is to be placed.
+     *
+     * return a list that contains all adjacent Tiles.
      *
      */
     private fun findAdjacentTiles(x: Int, y: Int): List<Tile> {
@@ -226,63 +229,53 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Private funktion that can help to Find all tiles adjacent to a given position
+     * Private Function that checks if placing a PathTile next to a GateTile would result in an illegal connection.
      *
-     * @param x The X coordinate where the tile is to be placed.
-     * @param y The Y coordinate where the tile is to be placed.
-     * @param tile The
+     * if any of these connections would illegally connect to a GateTile.
      *
+     * @param x The X coordinate of the placement position.
+     * @param y The Y coordinate of the placement position.
+     * @param tile The PathTile being placed.
+     *
+     * @return false if placing the tile would result in an illegal connection, true otherwise.
      */
-    private fun adjacentGate(x :Int ,y: Int, tile: PathTile) : Boolean{
-
-        val containsPair = tile.connections.any { (key, value) ->
-            key == 0 && value == 1
-        }
-        if (y == 4 && containsPair){
+    private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
+        // Check for a specific connection (0 to 1) when the y-coordinate is 4.
+        if (y == 4 && (tile.connections[0] == 1 || tile.connections[1] == 0)) {
             return false
         }
 
-        val containsPair1 = tile.connections.any { (key, value) ->
-            key == 1 && value == 2
+        // Check for a connection (1 to 2) at specific positions.
+        val positionsForConnection1to2 = listOf(Pair(1,3), Pair(2,2), Pair(3,1))
+        if (positionsForConnection1to2.any { it.first == x && it.second == y } && (tile.connections[1] == 2
+                    || tile.connections[2] == 1 ) ) {
+            return false
         }
 
-        val positions = listOf(Pair(1,3),Pair(2,2),Pair(3,1))
-        for (pos in positions) {
-            if (x == pos.first && y == pos.second && containsPair1) {
-                return false
-            }
-        }
-        val containsPair2 = tile.connections.any { (key, value) ->
-            key == 4 && value == 5
+        // Check for a connection (4 to 5) at specific positions.
+        val positionsForConnection4to5 = listOf(Pair(-1,-3), Pair(-2,-2), Pair(-3,-1))
+        if (positionsForConnection4to5.any { it.first == x && it.second == y } && (tile.connections[4] == 5
+                    || tile.connections[5] == 4)) {
+            return false
         }
 
-        val positions1 = listOf(Pair(-1,-3),Pair(-2,-2),Pair(-3,-1))
-        for (pos in positions1) {
-            if (x == pos.first && y == pos.second && containsPair2) {
-                return false
-            }
-        }
-        val containsPair3 = tile.connections.any { (key, value) ->
-            key == 2 && value == 3
-        }
-        if (x == 4 && containsPair3){
+        // Check for a specific connection (2 to 3) when the x-coordinate is 4.
+        if (x == 4 && (tile.connections[2] == 3 || tile.connections[3] == 2)) {
             return false
         }
-        val containsPair4 = tile.connections.any { (key, value) ->
-            key == 3 && value == 4
-        }
-        if (y == -4 && containsPair4){
+
+        // Check for a specific connection (3 to 4) when the y-coordinate is -4.
+        if (y == -4 && (tile.connections[3] == 4 ||tile.connections[4] == 3 )) {
             return false
         }
-        val containsPair5 = tile.connections.any { (key, value) ->
-            key == 5 && value == 0
-        }
-        if (x == -4 && containsPair5){
+
+        // Check for a specific connection (5 to 0) when the x-coordinate is -4.
+        if (x == -4 && (tile.connections[5] == 0 || tile.connections[0] == 5)) {
             return false
         }
+
+        // If none of the above conditions are met, then the placement is legal.
         return true
-
-
     }
 
 
