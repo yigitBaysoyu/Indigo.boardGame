@@ -63,6 +63,7 @@ class AIService(private val rootService: RootService) {
         //TODO: Turn object is still missing, also no method which moves gems after move
         //TODO: Cant call gameService.placeTile() since private
         //TODO: Documentation and testing
+        //
     }
 
     private fun initializePlaceableTiles(){
