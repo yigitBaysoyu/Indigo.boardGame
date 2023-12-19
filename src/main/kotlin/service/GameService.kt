@@ -100,7 +100,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         val treasureTile2 = TreasureTile(
             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 0,
+            rotationOffset = 1,
             xCoordinate = 0,
             yCoordinate = 4,
             gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER)
