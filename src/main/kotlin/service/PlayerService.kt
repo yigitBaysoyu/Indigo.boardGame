@@ -38,45 +38,4 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         tile.connections = newConnections
 
     }
-    /**
-     * Reverts the last move made in the game.
-     *
-     * This function checks if there are any moves to undo in the game's undo stack. If so, it retrieves the last move,
-     * reverses the score changes recorded for each player, and resets gem movements to their original state.
-     * In the case of a collision, it clears all gems from the end tile. Otherwise, it restores the gem to its start tile.
-     * The function updates the active player ID and adds the reverted move to the redo stack.
-     * If there are no moves left to undo, it prints a message indicating so.
-     */
-    fun undo()
-    {
-        val game=rootService.currentGame
-        checkNotNull(game)
-        if(game.undoStack.isNotEmpty())
-        {
-           val lastTurn=game.undoStack.removeLast()
-          //punktänderung
-            lastTurn.scoreChanges.forEachIndexed {index,score ->
-                game.playerList[index].score -= score
-            }
-            //Edelstein bewegung zurück auf ursprünglichen Zustand
-         lastTurn.gemMovements.forEach { movement ->
-             val endTile = game.gameLayout[movement.endTile.xCoordinate][movement.endTile.yCoordinate] as PathTile
-             val startTile = game.gameLayout[movement.startTile.xCoordinate][movement.startTile.yCoordinate] as PathTile
-
-             // Entfernt alle Edelsteine wegen Kollision
-             if (movement.didCollide) {
-                 endTile.gemPositions.clear()
-             } else {
-                 // Wenn kein kollision stattfand, füge die Steine zurück
-                 startTile.gemPositions.add(movement.gemType)
-             }
-         }
-         game.activePlayerID=lastTurn.playerID
-            game.redoStack.addFirst(lastTurn)
-        }
-        else
-        {
-            println("No moves to undo.")
-        }
-    }
 }
