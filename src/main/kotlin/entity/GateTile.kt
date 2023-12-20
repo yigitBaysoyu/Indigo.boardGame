@@ -11,8 +11,8 @@ import kotlinx.serialization.Serializer
  */
 @Serializable
 class GateTile(
-     override val connections: Map<Int, Int>,
-   override val rotationOffset: Int,
+     override var connections: Map<Int, Int>,
+   override var rotationOffset: Int,
     override val xCoordinate: Int,
     override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>

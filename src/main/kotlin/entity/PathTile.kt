@@ -10,8 +10,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 class PathTile(
-    override val connections: Map<Int, Int>,
-  override  val rotationOffset: Int,
+    override var connections: Map<Int, Int>,
+  override  var rotationOffset: Int,
     override val xCoordinate: Int,
      override  val yCoordinate: Int,
    val gemPositions: MutableList<GemType>

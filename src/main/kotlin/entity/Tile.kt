@@ -10,8 +10,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 abstract class Tile {
-    abstract val connections: Map<Int, Int>
-    abstract val rotationOffset: Int
+    abstract var connections: Map<Int, Int>
+    abstract var rotationOffset: Int
     abstract val xCoordinate: Int
     abstract val yCoordinate: Int
 }
