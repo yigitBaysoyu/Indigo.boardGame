@@ -14,5 +14,4 @@ data class Player(
     var amountOfGems: Int = 0,
     val playHand: MutableList<PathTile>,
     val gateList: MutableList<GateTile>
-
 )
