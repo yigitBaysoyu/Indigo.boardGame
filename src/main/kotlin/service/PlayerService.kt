@@ -54,25 +54,26 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         if(game.undoStack.isNotEmpty())
         {
             val lastTurn=game.undoStack.removeLast()
-            //punktänderung
+            //change the score
             lastTurn.scoreChanges.forEachIndexed {index,score ->
                 game.playerList[index].score -= score
             }
-            //Edelstein bewegung zurück auf ursprünglichen Zustand
+            //When the stones are moved back to their original position
             lastTurn.gemMovements.forEach { movement ->
                 val endTile = game.gameLayout[movement.endTile.xCoordinate][movement.endTile.yCoordinate] as PathTile
                 val startTile = game.gameLayout[movement.startTile.xCoordinate][movement.startTile.yCoordinate] as PathTile
 
-                // Entfernt alle Edelsteine wegen Kollision
+                // Removes all gems due to collision
                 if (movement.didCollide) {
                     endTile.gemPositions.clear()
                 } else {
-                    // Wenn kein kollision stattfand, füge die Steine zurück
+                    // If no collision occurred, return the stones
                     startTile.gemPositions.add(movement.gemType)
                 }
             }
             game.activePlayerID=lastTurn.playerID
             game.redoStack.addFirst(lastTurn)
+            onAllRefreshables { refreshAfterUndo(lastTurn)}
         }
         else
         {
