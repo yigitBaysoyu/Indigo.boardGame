@@ -268,7 +268,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      *
      * @return [MutableList]<[PathTile]> containing all created Tiles
      */
-    private fun loadTiles(): MutableList<PathTile> {
+    fun loadTiles(): MutableList<PathTile> {
         val file = GameService::class.java.getResource("/tiles.csv")
         checkNotNull(file) { "No file in defined position" }
 
@@ -335,4 +335,95 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         game.gameLayout[x + 5][y + 5] = tile
     }
+
+    /**
+     * Function to move Gems from surrounding Tiles, after
+     * a new tile is placed, to the end of available paths
+     */
+
+    fun moveGems(turn: Turn, tile: PathTile){
+        val currentGame = rootService.currentGame
+        //checkNotNull(currentGame){"No active Game"}
+
+        //Getting neighbours according to connection
+        val neighbours = mutableMapOf<Int, Tile>()
+        for (i in 0 until 6) {
+            val neighbourTile = getAdjacentTileByConnection(tile, i)
+            if(neighbourTile != null){
+                neighbours[i] = neighbourTile
+            }
+        }
+
+        //Map entries are connections of paths in the tile
+        val mapEntries = tile.connections.entries.toList()
+        //Start tile end tile are the two tiles connected by a connection
+        //Trying to get both tiles neighbouring ends of a path to check for collisions and move
+        //gems if needed
+        var startTile: Tile ?= null
+        var endTile: Tile ?= null
+        println(mapEntries)
+        //Connections for path-tile are saved in pairs going both ways
+        for(i in mapEntries.indices step 2){
+            startTile = neighbours[mapEntries[i].key]
+            endTile = neighbours[mapEntries[i].value]
+            var gemAtStart: GemType = GemType.NONE
+            var gemAtEnd : GemType = GemType.NONE
+
+            when(startTile){
+                is PathTile -> {
+                    gemAtStart = startTile.gemPositions[(mapEntries[i].key + 3) % 6]
+                }
+                is CenterTile -> {
+                    gemAtStart = startTile.availableGems.removeLast()
+                }
+                is TreasureTile -> {
+                    gemAtStart = startTile.gemPositions[(mapEntries[i].key + 3) % 6]
+                }
+            }
+
+            when(endTile){
+                is PathTile -> {
+                    gemAtEnd = endTile.gemPositions[(mapEntries[i].key + 3) % 6]
+                }
+                is CenterTile -> {
+                    gemAtEnd = endTile.availableGems.removeLast()
+                }
+                is TreasureTile -> {
+                    gemAtEnd = endTile.gemPositions[(mapEntries[i].key + 3) % 6]
+                }
+            }
+
+            if(gemAtEnd != GemType.NONE && gemAtStart != GemType.NONE){
+                //collision happened TODO: COllision handling
+                println("Collision")
+            }
+        }
+
+    }
+
+    /**
+     * Helper function to calculate the neighbour of a given connection
+     */
+    private fun getAdjacentTileByConnection(tile: PathTile, connection: Int): Tile? {
+        val neighbourCoordinate: Pair<Int, Int> = when(connection){
+            0 -> Pair(tile.xCoordinate+1, tile.yCoordinate-1)
+            1 -> Pair(tile.xCoordinate+1, tile.yCoordinate)
+            2 -> Pair(tile.xCoordinate, tile.yCoordinate+1)
+            3 -> Pair(tile.xCoordinate-1, tile.yCoordinate+1)
+            4 -> Pair(tile.xCoordinate-1, tile.yCoordinate)
+            5 -> Pair(tile.xCoordinate, tile.yCoordinate-1)
+            else -> Pair(5,5)
+        }
+
+        if(!checkIfValidAxialCoordinates(neighbourCoordinate.first, neighbourCoordinate.second)){
+            return null
+        }
+
+        val neighbourTile = getTileFromAxialCoordinates(neighbourCoordinate.first, neighbourCoordinate.second)
+        if(neighbourTile is EmptyTile || neighbourTile is InvisibleTile){
+            return null
+        }
+        return neighbourTile
+    }
+
 }
