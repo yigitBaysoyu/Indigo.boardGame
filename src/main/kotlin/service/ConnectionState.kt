@@ -22,34 +22,34 @@ enum class ConnectionState {
     CONNECTED,
 
     /**
-     *  hostGame request sent to server. waiting for confirmation (i.e. [CreateGameResponse])
+     * hostGame request sent to server. waiting for confirmation (i.e. [CreateGameResponse])
      */
-    WAITING_FOR_HOST_CONFIRMATION,
+    HOST_WAITING_FOR_CONFIRMATION,
 
     /**
      * host game started. waiting for guest player to join
      */
-    WAITING_FOR_GUEST,
+    WAITING_FOR_GUESTS,
 
     /**
      * joinGame request sent to server. waiting for confirmation (i.e. [JoinGameResponse])
      */
-    WAITING_FOR_JOIN_CONFIRMATION,
+    GUEST_WAITING_FOR_CONFIRMATION,
 
     /**
-     * joined game as a guest and waiting for host to send init message (i.e. [IndigGameInitMessage])
+     * joined game as a guest and waiting for host to send init message (i.e. [IndigoGameInitMessage])
      */
     WAITING_FOR_INIT,
 
     /**
      * Game is running. It is my turn. (and potentially the opponent's as well,
-     * as in War both players are active at once)
+     * as in games like War both players are active at once)
      */
     PLAYING_MY_TURN,
 
     /**
      * Game is running. I did my turn. Waiting for opponent to send their turn.
      */
-    PLAYING_WAITING_FOR_OPPONENT,
+    WAITING_FOR_OPPONENTS_TURN,
 
 }
