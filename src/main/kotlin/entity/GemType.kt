@@ -9,4 +9,15 @@ enum class GemType {
     EMERALD,
     AMBER,
     NONE
+    ;
+
+    /**
+     * provide an int to represent value of gem
+     */
+    fun toInt() = when(this) {
+        SAPPHIRE -> 3
+        EMERALD -> 2
+        AMBER -> 1
+        NONE -> 0
+    }
 }
