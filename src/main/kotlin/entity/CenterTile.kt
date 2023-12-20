@@ -1,19 +1,18 @@
 package entity
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents the Tile in the center of the board.
  *
  * @property availableGems holds the up to 6 Gems that are on the Tile at the start of the game.
  */
+@Serializable
 class CenterTile (
-    connections: Map<Int, Int>,
-    rotationOffset: Int,
-    xCoordinate: Int,
-    yCoordinate: Int,
+    override val connections: Map<Int, Int>,
+     override val rotationOffset: Int,
+    override val xCoordinate: Int,
+    override val  yCoordinate: Int,
+    @Serializable(with = ArrayDequeGemTypeSerializer::class)
     val availableGems: ArrayDeque<GemType>
-): Tile(
-    connections,
-    rotationOffset,
-    xCoordinate,
-    yCoordinate
-)
+): Tile()

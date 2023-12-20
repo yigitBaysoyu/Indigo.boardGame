@@ -1,11 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version "1.8.21"
     application
     jacoco
     id("io.gitlab.arturbosch.detekt") version "1.18.0-RC3"
     id("org.jetbrains.dokka") version "1.4.32"
+    kotlin("plugin.serialization") version "1.8.21"
 }
 
 group = "edu.udo.cs.sopra"
@@ -24,6 +25,7 @@ dependencies {
     implementation(group = "tools.aqua", name = "bgw-gui", version = "0.9")
     implementation(group = "tools.aqua", name = "bgw-net-common", version = "0.9")
     implementation(group = "tools.aqua", name = "bgw-net-client", version = "0.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
 
 tasks.distZip {
