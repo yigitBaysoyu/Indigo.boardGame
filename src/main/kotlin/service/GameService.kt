@@ -241,7 +241,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
         // Check for a specific connection (0 to 1) when the y-coordinate is 4.
-        if (y == 4 && (tile.connections[0] == 1 || tile.connections[1] == 0)) {
+        if (x == 4 && (tile.connections[0] == 1 || tile.connections[1] == 0)) {
             return false
         }
 
@@ -260,7 +260,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         // Check for a specific connection (2 to 3) when the x-coordinate is 4.
-        if (x == 4 && (tile.connections[2] == 3 || tile.connections[3] == 2)) {
+        if (y == 4 && (tile.connections[2] == 3 || tile.connections[3] == 2)) {
             return false
         }
 
