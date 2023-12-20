@@ -1,5 +1,6 @@
 package view
 
+import entity.IndigoGame
 import entity.Player
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
@@ -139,10 +140,15 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
         val players = game.playerList
 
-        val hierarchyList = mutableListOf<Player>()
-
-        //compare scores form players
+        //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.score })
 
+        val labels = mutableListOf<Label>(firstPlaceNameLabel, secondPlaceNameLabel,
+            thirdPlaceNumberLabel, fourthPlaceNumberLabel)
+        var i = 0
+        players.forEach { player ->
+            labels[i].text = player.name
+            i++
+        }
     }
 }
