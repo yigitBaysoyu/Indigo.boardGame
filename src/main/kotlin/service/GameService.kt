@@ -64,7 +64,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         gemsCollected = mutableListOf(),
                         xCoordinate = x,
                         yCoordinate = y
+
                     ))
+                    println(x)
+                    println(y)
                 } else {
                     setTileFromAxialCoordinates(x, y, EmptyTile(
                         connections = mutableMapOf(),
@@ -298,8 +301,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
     /**
      * This method assigns gates to each player.
+     *
+     *
      */
-    fun setGates(threePlayerVariant: Boolean) {
+   fun setGates(threePlayerVariant: Boolean) {
 
         val game = rootService.currentGame
         checkNotNull(game)
@@ -337,6 +342,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                             game.playerList[1].gateList.add(game.gateList[i])
                         }
                     }
+                //TODO
                 }
             }
         }
