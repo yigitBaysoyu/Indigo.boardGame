@@ -10,6 +10,7 @@ import tools.aqua.bgw.util.BidirectionalMap
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
+import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -21,15 +22,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(1920, 108
 
     private val sceneWidth = 1920
     private val halfWidth = sceneWidth / 2
-    private val offsetY = -50
 
-    private val hexagonWidth = 360 / 4
-    private val hexagonHeight = 416 / 4
+    private val hexagonWidth = 360 / 3
+    private val hexagonHeight = 416 / 3
 
     private val tileMap: BidirectionalMap<Tile, HexagonView> = BidirectionalMap()
 
     private val hexagonGrid: HexagonGrid<HexagonView> = HexagonGrid(
-        posX = halfWidth - 60, posY = 1080 / 2,
+        posX = halfWidth - 60 + 375, posY = 1080 / 2 - 50,
         width = 800, height = 800,
         coordinateSystem = HexagonGrid.CoordinateSystem.AXIAL
     )
@@ -40,7 +40,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(1920, 108
         addComponents(
             Label(
                 width = 750, height = 75,
-                posX = halfWidth - 750 / 2, posY = offsetY + 100,
+                posX = halfWidth - 750 / 2 - 550, posY =  50,
                 text = "GameScene",
                 font = Font(size = 65, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
             ),
@@ -59,8 +59,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(1920, 108
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        for(x in -4 .. 4 ) {
-            for(y in -4 .. 4) {
+        for(x in -5 .. 5 ) {
+            for(y in -5 .. 5) {
                 if(!rootService.gameService.checkIfValidAxialCoordinates(x, y)) continue
                 val tile = rootService.gameService.getTileFromAxialCoordinates(x, y)
 
@@ -68,7 +68,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(1920, 108
                 val className = tile.javaClass.name
 
                 if (className == "entity.CenterTile") image = centerTileImage
-                if (className == "entity.EmptyTile" && tile.xCoordinate > -1) image = emptyTileImage
+                if (className == "entity.EmptyTile") image = emptyTileImage
                 if (className == "entity.TreasureTile") image = treasureTileImage
                 if (className == "entity.PathTile") {
                     image = if (tile.connections[0] == 5) {
@@ -79,10 +79,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(1920, 108
                             else pathTileImageList[1]
                 }
 
-                val hexagonView = HexagonView(size = hexagonHeight / 2, visual = ImageVisual(image))
+                var visual: Visual = ImageVisual(image)
+                //if(className == "entity.GateTile") visual = ColorVisual(Color.RED)
+                val hexagonView = HexagonView(size = hexagonHeight / 2, visual = visual)
+
                 hexagonView.rotate(60 * tile.rotationOffset)
                 hexagonView.onMouseClicked = {
                     println("TODO: IMPLEMENT PLACE TILE")
+                    val clickedTile = tileMap.backward(hexagonView)
+                    println("${clickedTile.xCoordinate}, ${clickedTile.yCoordinate}")
                 }
 
                 tileMap.add(tile, hexagonView)
