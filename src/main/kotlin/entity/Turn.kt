@@ -5,7 +5,7 @@ package entity
  */
 data class Turn (
     val playerID: Int,
-    val scoreChanges: MutableList<Int>,
+    val scoreChanges: MutableList<Int> = mutableListOf(),
     val placedTile: PathTile,
-    val gemMovements: MutableList<GemMovement>
+    val gemMovements: MutableList<GemMovement> = mutableListOf()
 )
