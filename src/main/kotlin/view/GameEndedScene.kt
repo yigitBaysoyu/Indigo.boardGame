@@ -140,8 +140,10 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
         val players = game.playerList
 
+        players.forEach { assignGemsToPlayer(it) }
+
         //sort players with score / amount of gems
-        players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.score })
+        players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
         val labels = mutableListOf<Label>(firstPlaceNameLabel, secondPlaceNameLabel,
             thirdPlaceNumberLabel, fourthPlaceNumberLabel)
@@ -149,6 +151,15 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
         players.forEach { player ->
             labels[i].text = player.name
             i++
+        }
+    }
+
+    private fun assignGemsToPlayer(player: Player) {
+        for(gate in player.gateList) {
+            for(gem in gate.gemsCollected) {
+                player.score += gem.toInt()
+                player.amountOfGems ++
+            }
         }
     }
 }
