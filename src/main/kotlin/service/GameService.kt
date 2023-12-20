@@ -167,15 +167,118 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
-    fun placeRotatedTile(tile: Tile, xCoordinate: Int, yCoordinate: Int) {
+    /**
+     * * This function checks whether the specified position is blocked or if placing
+     * the tile would result in an illegal connection with an adjacent GateTile.
+     *
+     * @param xCoordinate The X coordinate where the tile is to be placed.
+     * @param yCoordinate The Y coordinate where the tile is to be placed.
+     * @param tile The PathTile object to be placed.
+     *
+     * @return true if the tile can be placed, false otherwise.
+     *
+     */
+    fun isPlaceAble(xCoordinate: Int, yCoordinate: Int, tile: PathTile) : Boolean {
 
-    }
-
-    private fun placeTile(tile: Tile) {
         val game = rootService.currentGame
         checkNotNull(game)
 
+        val adjacentTiles = findAdjacentTiles(xCoordinate,yCoordinate)
+
+        val targetTile = getTileFromAxialCoordinates(xCoordinate,yCoordinate)
+        // Check if the targeted placement position is an EmptyTile, which means placement is allowed.
+        if (targetTile is EmptyTile) {
+            // If it's an EmptyTile, check for adjacent GateTiles.
+            return if (adjacentTiles.none { it is GateTile }) {
+                // If there are no adjacent GateTiles, placement is allowed.
+                true
+            } else {
+                // If there is at least one adjacent GateTile, check for illegal connections.
+                adjacentGate(xCoordinate, yCoordinate, tile)
+            }
+        }
+        return false
+
     }
+
+    /**
+     * Private funktion that can help to Find all tiles adjacent to a given position.
+     *
+     * @param x The X coordinate where the tile is to be placed.
+     * @param y The Y coordinate where the tile is to be placed.
+     *
+     * return a list that contains all adjacent Tiles.
+     *
+     */
+    private fun findAdjacentTiles(x: Int, y: Int): List<Tile> {
+
+        val adjacentTile = mutableListOf<Tile>()
+
+        // Define the relative positions that would be adjacent in a hexagonal grid
+        val positions = setOf(
+            Pair(x,y-1), Pair(x,y+1),
+            Pair(x-1,y+1), Pair(x-1,y),
+            Pair(x+1,y), Pair(x+1,y-1)
+        )
+        //add each adjacent tile to a list
+        positions.forEach{ (first , second) ->
+            adjacentTile.add(getTileFromAxialCoordinates(first,second))
+        }
+        return adjacentTile
+
+    }
+
+    /**
+     * Private Function that checks if placing a PathTile next to a GateTile would result in an illegal connection.
+     *
+     * if any of these connections would illegally connect to a GateTile.
+     *
+     * @param x The X coordinate of the placement position.
+     * @param y The Y coordinate of the placement position.
+     * @param tile The PathTile being placed.
+     *
+     * @return false if placing the tile would result in an illegal connection, true otherwise.
+     */
+    private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
+        // Check for a specific connection (0 to 1) when the y-coordinate is 4.
+        if (x == 4 && (tile.connections[0] == 1 || tile.connections[1] == 0)) {
+            return false
+        }
+
+        // Check for a connection (1 to 2) at specific positions.
+        val positionsForConnection1to2 = listOf(Pair(1,3), Pair(2,2), Pair(3,1))
+        if (positionsForConnection1to2.any { it.first == x && it.second == y } && (tile.connections[1] == 2
+                    || tile.connections[2] == 1 ) ) {
+            return false
+        }
+
+        // Check for a connection (4 to 5) at specific positions.
+        val positionsForConnection4to5 = listOf(Pair(-1,-3), Pair(-2,-2), Pair(-3,-1))
+        if (positionsForConnection4to5.any { it.first == x && it.second == y } && (tile.connections[4] == 5
+                    || tile.connections[5] == 4)) {
+            return false
+        }
+
+        // Check for a specific connection (2 to 3) when the x-coordinate is 4.
+        if (y == 4 && (tile.connections[2] == 3 || tile.connections[3] == 2)) {
+            return false
+        }
+
+        // Check for a specific connection (3 to 4) when the y-coordinate is -4.
+        if (y == -4 && (tile.connections[3] == 4 ||tile.connections[4] == 3 )) {
+            return false
+        }
+
+        // Check for a specific connection (5 to 0) when the x-coordinate is -4.
+        if (x == -4 && (tile.connections[5] == 0 || tile.connections[0] == 5)) {
+            return false
+        }
+
+        // If none of the above conditions are met, then the placement is legal.
+        return true
+    }
+
+
 
     private fun createGateTiles(): MutableList<GateTile> {
         val gateTiles = mutableListOf<GateTile>()
@@ -209,7 +312,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 val playerIndex = i % 2
                 game.playerList[playerIndex].gateList.add(game.gateList[i])
             }
-        } else {
+        }
+        else {
             for (i in 0 until gateSize) {
 
                 if (i % 2 == 0) {
@@ -234,7 +338,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         }
                     }
                 }
-
             }
         }
     }
@@ -252,7 +355,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         if (allGemsInGate == 12) {
-            //endGame
+            onAllRefreshables { refreshAfterEndGame() }
         }
 
     }
