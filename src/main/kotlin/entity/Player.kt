@@ -11,6 +11,8 @@ data class Player(
     val color: Int,
     val playerType: PlayerType,
     var score: Int = 0,
+    var amountOfGems: Int = 0,
     val playHand: MutableList<PathTile>,
     val gateList: MutableList<GateTile>
+
 )
