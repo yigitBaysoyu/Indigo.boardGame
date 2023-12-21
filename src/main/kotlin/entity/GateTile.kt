@@ -1,7 +1,6 @@
 package entity
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 
 /**
  * Gate Tiles are placed on an extra outer layer around the board.
@@ -11,8 +10,8 @@ import kotlinx.serialization.Serializer
  */
 @Serializable
 class GateTile(
-     override var connections: Map<Int, Int>,
-   override var rotationOffset: Int,
+    override var connections: Map<Int, Int>,
+    override var rotationOffset: Int,
     override val xCoordinate: Int,
     override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>
