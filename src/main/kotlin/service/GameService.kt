@@ -464,7 +464,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * saves the current Game in the file saveGame.ser, this is achieved with the kotlinx serializable,
+     * saves the current Game in the file "saveGame.ser", this is achieved with the kotlinx serializable,
      * by serializing the current Game Object, and every Object attached to it, and converting it to a String,
      * then saving that String in the .ser file
      */
