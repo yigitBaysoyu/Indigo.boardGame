@@ -1,7 +1,10 @@
 package service
 import entity.*
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 
 
@@ -44,41 +47,52 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         checkNotNull(game) { "Game is null. No Game is currently running." }
 
         // Set everything to invisible Tile
-        for(i in 0 ..10) {
+        for (i in 0..10) {
             game.gameLayout.add(mutableListOf())
-            for(j in 0..10) game.gameLayout[i].add(InvisibleTile())
+            for (j in 0..10) game.gameLayout[i].add(InvisibleTile())
         }
 
-        for(x in -5 .. 5) {
-            for(y in -5 .. 5) {
+        for (x in -5..5) {
+            for (y in -5..5) {
                 // continue if coordinate is not in hexagonal play area
-                if(!checkIfValidAxialCoordinates(x, y)) continue
+                if (!checkIfValidAxialCoordinates(x, y)) continue
 
                 val distanceToCenter = (kotlin.math.abs(x) + kotlin.math.abs(x + y) + kotlin.math.abs(y)) / 2
 
                 // Outer ring of tiles should be gateTiles. They all have distance 5 to center
-                if(distanceToCenter == 5) {
-                    setTileFromAxialCoordinates(x, y, GateTile(
-                        connections = mutableMapOf(Pair(0, 3), Pair(1, 4), Pair(2, 5), Pair(3, 0), Pair(4, 1), Pair(5, 2)),
-                        rotationOffset = 0,
-                        gemsCollected = mutableListOf(),
-                        xCoordinate = x,
-                        yCoordinate = y
-                    ))
+                if (distanceToCenter == 5) {
+                    setTileFromAxialCoordinates(
+                        x, y, GateTile(
+                            connections = mutableMapOf(
+                                Pair(0, 3),
+                                Pair(1, 4),
+                                Pair(2, 5),
+                                Pair(3, 0),
+                                Pair(4, 1),
+                                Pair(5, 2)
+                            ),
+                            rotationOffset = 0,
+                            gemsCollected = mutableListOf(),
+                            xCoordinate = x,
+                            yCoordinate = y
+                        )
+                    )
                 } else {
-                    setTileFromAxialCoordinates(x, y, EmptyTile(
-                        connections = mutableMapOf(),
-                        rotationOffset = 0,
-                        xCoordinate = x,
-                        yCoordinate = y
-                    ))
+                    setTileFromAxialCoordinates(
+                        x, y, EmptyTile(
+                            connections = mutableMapOf(),
+                            rotationOffset = 0,
+                            xCoordinate = x,
+                            yCoordinate = y
+                        )
+                    )
                 }
             }
         }
 
         val centerTileGems = ArrayDeque<GemType>()
         centerTileGems.add(GemType.SAPPHIRE)
-        for(i in 0 .. 4) centerTileGems.add(GemType.EMERALD)
+        for (i in 0..4) centerTileGems.add(GemType.EMERALD)
 
         val centerTile = CenterTile(
             connections = mutableMapOf(),
@@ -94,7 +108,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 0,
             xCoordinate = 4,
             yCoordinate = 0,
-            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE)
+            gemPositions = mutableListOf(
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.AMBER,
+                GemType.NONE
+            )
         )
         setTileFromAxialCoordinates(4, 0, treasureTile1)
 
@@ -103,7 +124,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 0,
             xCoordinate = 0,
             yCoordinate = 4,
-            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER)
+            gemPositions = mutableListOf(
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.AMBER
+            )
         )
         rotateConnections(treasureTile2)
         setTileFromAxialCoordinates(0, 4, treasureTile2)
@@ -113,7 +141,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 2,
             xCoordinate = -4,
             yCoordinate = 4,
-            gemPositions = mutableListOf(GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
+            gemPositions = mutableListOf(
+                GemType.AMBER,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE
+            )
         )
         rotateConnections(treasureTile3)
         setTileFromAxialCoordinates(-4, 4, treasureTile3)
@@ -123,7 +158,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 3,
             xCoordinate = -4,
             yCoordinate = 0,
-            gemPositions = mutableListOf(GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE, GemType.NONE)
+            gemPositions = mutableListOf(
+                GemType.NONE,
+                GemType.AMBER,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE
+            )
         )
         rotateConnections(treasureTile4)
         setTileFromAxialCoordinates(-4, 0, treasureTile4)
@@ -133,7 +175,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 4,
             xCoordinate = 0,
             yCoordinate = -4,
-            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE, GemType.NONE)
+            gemPositions = mutableListOf(
+                GemType.NONE,
+                GemType.NONE,
+                GemType.AMBER,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE
+            )
         )
         rotateConnections(treasureTile5)
         setTileFromAxialCoordinates(0, -4, treasureTile5)
@@ -143,7 +192,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             rotationOffset = 5,
             xCoordinate = 4,
             yCoordinate = -4,
-            gemPositions = mutableListOf(GemType.NONE, GemType.NONE, GemType.NONE, GemType.AMBER, GemType.NONE, GemType.NONE)
+            gemPositions = mutableListOf(
+                GemType.NONE,
+                GemType.NONE,
+                GemType.NONE,
+                GemType.AMBER,
+                GemType.NONE,
+                GemType.NONE
+            )
         )
         rotateConnections(treasureTile6)
         setTileFromAxialCoordinates(4, -4, treasureTile6)
@@ -154,9 +210,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Only used as helper function for setDefaultGameLayout
      */
     private fun rotateConnections(tile: TreasureTile) {
-        for(i in 0 until tile.rotationOffset) {
+        for (i in 0 until tile.rotationOffset) {
             val newConnections = mutableMapOf<Int, Int>()
-            tile.connections.forEach { (key , value) ->
+            tile.connections.forEach { (key, value) ->
                 val newKey = (key + 1) % 6
                 val newValue = (value + 1) % 6
 
@@ -178,14 +234,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @return true if the tile can be placed, false otherwise.
      *
      */
-    fun isPlaceAble(xCoordinate: Int, yCoordinate: Int, tile: PathTile) : Boolean {
+    fun isPlaceAble(xCoordinate: Int, yCoordinate: Int, tile: PathTile): Boolean {
 
         val game = rootService.currentGame
         checkNotNull(game)
 
-        val adjacentTiles = findAdjacentTiles(xCoordinate,yCoordinate)
+        val adjacentTiles = findAdjacentTiles(xCoordinate, yCoordinate)
 
-        val targetTile = getTileFromAxialCoordinates(xCoordinate,yCoordinate)
+        val targetTile = getTileFromAxialCoordinates(xCoordinate, yCoordinate)
         // Check if the targeted placement position is an EmptyTile, which means placement is allowed.
         if (targetTile is EmptyTile) {
             // If it's an EmptyTile, check for adjacent GateTiles.
@@ -216,13 +272,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         // Define the relative positions that would be adjacent in a hexagonal grid
         val positions = setOf(
-            Pair(x,y-1), Pair(x,y+1),
-            Pair(x-1,y+1), Pair(x-1,y),
-            Pair(x+1,y), Pair(x+1,y-1)
+            Pair(x, y - 1), Pair(x, y + 1),
+            Pair(x - 1, y + 1), Pair(x - 1, y),
+            Pair(x + 1, y), Pair(x + 1, y - 1)
         )
         //add each adjacent tile to a list
-        positions.forEach{ (first , second) ->
-            adjacentTile.add(getTileFromAxialCoordinates(first,second))
+        positions.forEach { (first, second) ->
+            adjacentTile.add(getTileFromAxialCoordinates(first, second))
         }
         return adjacentTile
 
@@ -246,14 +302,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         // Check for a connection (1 to 2) at specific positions.
-        val positionsForConnection1to2 = listOf(Pair(1,3), Pair(2,2), Pair(3,1))
+        val positionsForConnection1to2 = listOf(Pair(1, 3), Pair(2, 2), Pair(3, 1))
         if (positionsForConnection1to2.any { it.first == x && it.second == y } && (tile.connections[1] == 2
-                    || tile.connections[2] == 1 ) ) {
+                    || tile.connections[2] == 1)) {
             return false
         }
 
         // Check for a connection (4 to 5) at specific positions.
-        val positionsForConnection4to5 = listOf(Pair(-1,-3), Pair(-2,-2), Pair(-3,-1))
+        val positionsForConnection4to5 = listOf(Pair(-1, -3), Pair(-2, -2), Pair(-3, -1))
         if (positionsForConnection4to5.any { it.first == x && it.second == y } && (tile.connections[4] == 5
                     || tile.connections[5] == 4)) {
             return false
@@ -265,7 +321,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         // Check for a specific connection (3 to 4) when the y-coordinate is -4.
-        if (y == -4 && (tile.connections[3] == 4 ||tile.connections[4] == 3 )) {
+        if (y == -4 && (tile.connections[3] == 4 || tile.connections[4] == 3)) {
             return false
         }
 
@@ -277,7 +333,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         // If none of the above conditions are met, then the placement is legal.
         return true
     }
-
 
 
     private fun createGateTiles(): MutableList<GateTile> {
@@ -312,8 +367,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 val playerIndex = i % 2
                 game.playerList[playerIndex].gateList.add(game.gateList[i])
             }
-        }
-        else {
+        } else {
             for (i in 0 until gateSize) {
 
                 if (i % 2 == 0) {
@@ -400,6 +454,26 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
+     * loads the current Game from the saveGame.ser file, this is achieved through the kotlinx serializable interface,
+     * where the text in the file will be decoded into a Game Object
+     */
+    fun loadGame() {
+        val file = File("saveGame.ser")
+        rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
+        onAllRefreshables { refreshAfterStartNewGame() }
+    }
+
+    /**
+     * saves the current Game in the file "saveGame.ser", this is achieved with the kotlinx serializable,
+     * by serializing the current Game Object, and every Object attached to it, and converting it to a String,
+     * then saving that String in the .ser file
+     */
+    fun saveGame() {
+        val file = File("saveGame.ser")
+        file.writeText(Json.encodeToString(rootService.currentGame))
+    }
+
+    /**
      * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
      * and if they are not inside the hexagonal play area.
      */
@@ -417,7 +491,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null. No Game is currently running." }
 
-        if(!checkIfValidAxialCoordinates(x, y)) {
+        if (!checkIfValidAxialCoordinates(x, y)) {
             throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
         }
 
@@ -432,7 +506,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null. No Game is currently running." }
 
-        if(!checkIfValidAxialCoordinates(x, y)) {
+        if (!checkIfValidAxialCoordinates(x, y)) {
             throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
         }
 

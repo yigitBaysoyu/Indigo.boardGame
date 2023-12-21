@@ -1,21 +1,19 @@
 package entity
 
+import kotlinx.serialization.Serializable
+
 /**
  * Gate Tiles are placed on an extra outer layer around the board.
  * When a Gem enters a gate Tile its score is awarded two the Player who owns the Gate.
  *
  * @property gemsCollected holds the gems that have been sent to this Gate.
  */
-
+@Serializable
 class GateTile(
-    connections: Map<Int, Int>,
-    rotationOffset: Int,
-    xCoordinate: Int,
-    yCoordinate: Int,
+    override var connections: Map<Int, Int>,
+    override var rotationOffset: Int,
+    override val xCoordinate: Int,
+    override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>
 ): Tile(
-    connections,
-    rotationOffset,
-    xCoordinate,
-    yCoordinate
 )
