@@ -366,9 +366,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         for(i in 0 until 6){
             val currentNeighbour = neighbours[i]
             val currentConnection = (i+3)%6
-            if(currentGame == null){
+            if(currentNeighbour == null){
                 continue
             }
+            //Still need to consider collision handling, mb giving each movegemTo method the
+            //stone movement entity and letting them add collision handling
+            //For each
             when(currentNeighbour){
                 is PathTile ->  moveGemTo(tile, i, currentNeighbour, currentConnection)
                 is CenterTile -> moveGemTo(currentNeighbour, currentConnection, tile, i)
@@ -376,9 +379,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is TreasureTile -> moveGemTo(currentNeighbour, currentConnection, tile, i)
             }
         }
-        //When I moved all gems around my placed Tile I can assume that no collision will happen
-        //till the end of the path of the gem since no new tiles are placed
-        //TODO: DepthFirstSearch to find end each gems path (traversing neighbour to neighbour, Recursive?)
+
+        for(i in 0 until tile.gemPositions.size){
+            if(tile.gemPositions[i] != GemType.NONE){
+                val endPosition = findNextPosition(tile, i)
+                //Create turn or stoneMovement entity with endPosition
+            }
+        }
+
         return turn
     }
 
@@ -389,7 +397,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      *
      *
      */
-    private fun findNextPosition(startTile: Tile, startConnection: Int, currentGame : IndigoGame){
+    private fun findNextPosition(startTile: Tile, startConnection: Int): Tile{
         val nextTile = getAdjacentTileByConnection(startTile, startConnection)
 
         //Both large blocks do basically the same but cant access gemPositions if I just check for both
@@ -403,7 +411,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     checkNotNull(nextConnection)
                     nextTile.gemPositions[nextConnection] = gem
 
-                    findNextPosition(nextTile, nextConnection, currentGame)
+                    return findNextPosition(nextTile, nextConnection)
                 }
                 is TreasureTile -> {
                     val gem = startTile.gemPositions.removeAt(startConnection)
@@ -411,8 +419,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     checkNotNull(nextConnection)
                     nextTile.gemPositions[nextConnection] = gem
 
-                    findNextPosition(nextTile, nextConnection, currentGame)
+                    return findNextPosition(nextTile, nextConnection)
                 }
+                else -> return startTile
             }
         }
 
@@ -426,7 +435,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     checkNotNull(nextConnection)
                     nextTile.gemPositions[nextConnection] = gem
 
-                    findNextPosition(nextTile, nextConnection, currentGame)
+                    return findNextPosition(nextTile, nextConnection)
                 }
                 is TreasureTile -> {
                     val gem = startTile.gemPositions.removeAt(startConnection)
@@ -434,11 +443,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     checkNotNull(nextConnection)
                     nextTile.gemPositions[nextConnection] = gem
 
-                    findNextPosition(nextTile, nextConnection, currentGame)
+                    return findNextPosition(nextTile, nextConnection)
                 }
-                else -> return
+                else -> return startTile
             }
         }
+        return startTile
     }
 
     /**
@@ -538,7 +548,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             3 -> Pair(tile.xCoordinate-1, tile.yCoordinate+1)
             4 -> Pair(tile.xCoordinate-1, tile.yCoordinate)
             5 -> Pair(tile.xCoordinate, tile.yCoordinate-1)
-            else -> Pair(5,5)
+            else -> Pair(5,5) //Doesnt pass valid Coordinates check
         }
 
         if(!checkIfValidAxialCoordinates(neighbourCoordinate.first, neighbourCoordinate.second)){
