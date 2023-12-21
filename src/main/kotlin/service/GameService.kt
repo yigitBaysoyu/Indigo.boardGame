@@ -302,29 +302,29 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         val pair= Pair(x,y)
 
-        //The first gate was created here, gate 1
+        //The first gate, gate 1
         if (x == 5 && y<= -1 && y >= -4) {
             game.gateList[0].add(tile)
         }
-        //The second gate was created here, gate 2
+        //The second gate , gate 2
         val positions = listOf(Pair(1,4), Pair(2,3),Pair(3,2),Pair(4,1))
         if (positions.contains(pair)) {
             game.gateList[1].add(tile)
         }
-        //The third gate was created here, gate 3
+        //The third gate, gate 3
         if(y == 5 && x <= -1 && x>= -4) {
             game.gateList[2].add(tile)
         }
-        //The fourth gate was created here, gate 4
+        //The fourth gate, gate 4
         if (x == -5 && y>= 1 && y <= 4) {
             game.gateList[3].add(tile)
         }
-        //The fifth gate was created here, gate 5
+        //The fifth gate, gate 5
         val positions1 = listOf(Pair(-1,-4), Pair(-2,-3),Pair(-3,-2),Pair(-4,-1))
         if (positions1.contains(pair)) {
             game.gateList[4].add(tile)
         }
-        //The sixth gate was created here, gate 6
+        //The sixth gate, gate 6
         if (y == -5 && x>= 1 && x <= 4) {
             game.gateList[5].add(tile)
         }
@@ -342,13 +342,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         checkNotNull(game)
 
         if (!threePlayerVariant) {
-            // For two players, gates are alternated between players
+            // for two players, gates are alternated between players
             game.gateList.forEachIndexed { index, gateList ->
                 val playerIndex = index % 2
                 game.playerList[playerIndex].gateList.addAll(gateList)
             }
         } else {
-            // In three-player games, each player has one exclusive gate and shares two with others
+            // for three player each player has one exclusive gate and shares two with others
             game.gateList.forEachIndexed { index, gateList ->
                 when (index) {
                     0, 2, 4 -> {
