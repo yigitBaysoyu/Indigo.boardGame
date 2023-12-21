@@ -9,8 +9,8 @@ class IsPlaceAbleTest {
     fun isPlaceAbleInvalidTest(){
         val game = RootService()
         val player = mutableListOf(
-            Player("q",0, PlayerType.LOCALPLAYER,0, mutableListOf(), mutableListOf())
-            , Player("q1",0, PlayerType.LOCALPLAYER,0, mutableListOf(), mutableListOf())
+            Player("q",0, PlayerType.LOCALPLAYER,0, 0, mutableListOf(), mutableListOf())
+            , Player("q1",0, PlayerType.LOCALPLAYER,0, 0, mutableListOf(), mutableListOf())
         )
         game.gameService.startNewGame( player , false,1.0,false)
         val tile = PathTile(mutableMapOf(0 to 1 , 2 to 3 , 4 to 5 ),0,0,
@@ -60,8 +60,8 @@ class IsPlaceAbleTest {
     fun isPlaceAbleValidTest(){
         val game = RootService()
         val player = mutableListOf(
-            Player("q",0, PlayerType.LOCALPLAYER,0, mutableListOf(), mutableListOf())
-            , Player("q1",0, PlayerType.LOCALPLAYER,0, mutableListOf(), mutableListOf())
+            Player("q",0, PlayerType.LOCALPLAYER,0, 0, mutableListOf(), mutableListOf())
+            , Player("q1",0, PlayerType.LOCALPLAYER,0, 0, mutableListOf(), mutableListOf())
         )
         game.gameService.startNewGame( player , false,1.0,false)
         val tile = PathTile(mutableMapOf(0 to 1 , 2 to 3 , 4 to 5 ),0,0,
