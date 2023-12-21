@@ -7,9 +7,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 class TreasureTile (
-    override var connections: Map<Int, Int>,
-    override  var rotationOffset: Int,
-    override val xCoordinate: Int,
-    override  val yCoordinate: Int,
-    val gemPositions: MutableList<GemType>
+    override var connections: Map<Int, Int> = mutableMapOf(),
+    override  var rotationOffset: Int = 0,
+    override val xCoordinate: Int = 0,
+    override  val yCoordinate: Int = 0,
+    val gemPositions: MutableList<GemType> = mutableListOf()
 ): Tile()

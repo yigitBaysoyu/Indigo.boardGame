@@ -11,17 +11,17 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class IndigoGame (
-    var activePlayerID: Int,
-    var simulationSpeed: Double,
-    val isNetworkGame: Boolean,
+    var activePlayerID: Int = 0,
+    var simulationSpeed: Double = 1.0,
+    val isNetworkGame: Boolean = false,
     @Serializable(with = ArrayDequeSerializer::class)
-    val undoStack: ArrayDeque<Turn>,
+    val undoStack: ArrayDeque<Turn> = ArrayDeque(),
     @Serializable(with = ArrayDequeSerializer::class)
-    val redoStack: ArrayDeque<Turn>,
-    val playerList: MutableList<Player>,
-    val gateList: MutableList<GateTile>,
-    val drawPile: MutableList<PathTile>,
-    val gameLayout: MutableList<MutableList<Tile>>
+    val redoStack: ArrayDeque<Turn> = ArrayDeque(),
+    val playerList: MutableList<Player> = mutableListOf(),
+    val gateList: MutableList<GateTile> = mutableListOf(),
+    val drawPile: MutableList<PathTile> = mutableListOf(),
+    val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 ) {
     /**
      * returns the player object whose turn it currently is.
