@@ -354,52 +354,107 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        //Map entries are connections of paths in the tile
-        val mapEntries = tile.connections.entries.toList()
-        //Start tile end tile are the two tiles connected by a connection
-        //Trying to get both tiles neighbouring ends of a path to check for collisions and move
-        //gems if needed
-        var startTile: Tile ?= null
-        var endTile: Tile ?= null
-        println(mapEntries)
-        //Connections for path-tile are saved in pairs going both ways
-        for(i in mapEntries.indices step 2){
-            startTile = neighbours[mapEntries[i].key]
-            endTile = neighbours[mapEntries[i].value]
-            var gemAtStart: GemType = GemType.NONE
-            var gemAtEnd : GemType = GemType.NONE
-
-            when(startTile){
-                is PathTile -> {
-                    gemAtStart = startTile.gemPositions[(mapEntries[i].key + 3) % 6]
-                }
-                is CenterTile -> {
-                    gemAtStart = startTile.availableGems.removeLast()
-                }
-                is TreasureTile -> {
-                    gemAtStart = startTile.gemPositions[(mapEntries[i].key + 3) % 6]
-                }
+        //Moving gems of neighbours and checking for collisions
+        for(i in 0 until 6){
+            val currentNeighbour = neighbours[i]
+            val currentConnection = (i+3)%6
+            if(currentGame == null){
+                continue
             }
-
-            when(endTile){
-                is PathTile -> {
-                    gemAtEnd = endTile.gemPositions[(mapEntries[i].key + 3) % 6]
-                }
-                is CenterTile -> {
-                    gemAtEnd = endTile.availableGems.removeLast()
-                }
-                is TreasureTile -> {
-                    gemAtEnd = endTile.gemPositions[(mapEntries[i].key + 3) % 6]
-                }
-            }
-
-            if(gemAtEnd != GemType.NONE && gemAtStart != GemType.NONE){
-                //collision happened TODO: COllision handling
-                println("Collision")
+            when(currentNeighbour){
+                is PathTile ->  moveGemTo(tile, i, currentNeighbour, currentConnection)
+                is CenterTile -> moveGemTo(currentNeighbour, currentConnection, tile, i)
+                is GateTile -> moveGemTo(currentNeighbour, currentConnection, tile, i)
+                is TreasureTile -> moveGemTo(currentNeighbour, currentConnection, tile, i)
             }
         }
-
+        //When I moved all gems around my placed Tile I can assume that no collision will happen
+        //till the end of the path of the gem since no new tiles are placed
+        //TODO: DepthFirstSearch to find end each gems path (traversing neighbour to neighbour, Recursive?)
     }
+
+
+    private fun moveGemTo(start: PathTile, startConnection: Int, end: PathTile, endConnection: Int ){
+        val gemAtStart = start.gemPositions[startConnection]
+        val gemAtEnd = end.gemPositions[endConnection]
+
+
+        if(gemAtStart != GemType.NONE && gemAtEnd != GemType.NONE){
+            //Collision
+            println("collision")
+        }
+        else if(gemAtStart != GemType.NONE){
+            start.gemPositions[startConnection] = GemType.NONE
+
+            val destination = end.connections[endConnection]
+            checkNotNull(destination)
+            end.gemPositions[destination] = gemAtStart
+        }
+        else if(gemAtEnd != GemType.NONE){
+            end.gemPositions[endConnection] = GemType.NONE
+
+            val destination = start.connections[startConnection]
+            checkNotNull(destination)
+            start.gemPositions[destination] = gemAtEnd
+        }
+    }
+
+    /**
+     * In the case of center tile and pathtile either there is a stone on the pathtile
+     * which means a collision will happen or the stone needs to be moved to the pathtile destination
+     */
+    private fun moveGemTo(start: CenterTile, startConnection: Int, end: PathTile, endConnection: Int ){
+        val gemAtEnd = end.gemPositions[endConnection]
+
+        if(gemAtEnd != GemType.NONE){
+            //Collision
+            println("collision")
+        }
+        else{
+            val destination = end.connections[endConnection]
+            checkNotNull(destination)
+            end.gemPositions[destination] = start.availableGems.removeLast()
+        }
+    }
+
+    private fun moveGemTo(start: TreasureTile, startConnection: Int, end: PathTile, endConnection: Int ){
+        val gemAtStart = start.gemPositions[startConnection]
+        val gemAtEnd = end.gemPositions[endConnection]
+
+        if(gemAtStart != GemType.NONE && gemAtEnd != GemType.NONE){
+            //Collision
+            println("collision")
+        }
+        else if(gemAtStart != GemType.NONE){
+            start.gemPositions[startConnection] = GemType.NONE
+
+            val destination = end.connections[endConnection]
+            checkNotNull(destination)
+            end.gemPositions[destination] = gemAtStart
+        }
+        else if(gemAtEnd != GemType.NONE){
+            end.gemPositions[endConnection] = GemType.NONE
+
+            val destination = start.connections[startConnection]
+            checkNotNull(destination)
+            start.gemPositions[destination] = gemAtEnd
+        }
+    }
+
+    private fun moveGemTo(start: GateTile, startConnection: Int, end: PathTile, endConnection: Int ){
+        val gemAtEnd = end.gemPositions[endConnection]
+
+        if(gemAtEnd != GemType.NONE){
+            //Scoring action
+            val currentGame = rootService.currentGame
+            checkNotNull(currentGame)
+
+            end.gemPositions[endConnection] = GemType.NONE
+            start.gemsCollected.add(gemAtEnd)
+            //Add points to both players TODO
+        }
+    }
+
 
     /**
      * Helper function to calculate the neighbour of a given connection
