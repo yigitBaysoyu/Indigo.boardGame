@@ -65,7 +65,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         xCoordinate = x,
                         yCoordinate = y
                     ))
-                    createGateTiles(x,y, GateTile(
+                    createGates(x,y, GateTile(
                         connections = mutableMapOf(Pair(0, 3), Pair(1, 4), Pair(2, 5), Pair(3, 0), Pair(4, 1), Pair(5, 2)),
                         rotationOffset = 0,
                         gemsCollected = mutableListOf(),
@@ -295,7 +295,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @param y The Y coordinate of the placement position.
      * @param tile The GateTile being added.
      */
-    private fun createGateTiles(x : Int, y : Int ,tile : GateTile){
+    private fun createGates(x : Int, y : Int ,tile : GateTile){
 
         val game = rootService.currentGame
         checkNotNull(game)
