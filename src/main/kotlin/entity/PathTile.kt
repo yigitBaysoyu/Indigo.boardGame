@@ -11,7 +11,8 @@ class PathTile(
     rotationOffset: Int = 0,
     xCoordinate: Int = 0,
     yCoordinate: Int = 0,
-    val gemPositions: MutableList<GemType> = mutableListOf()
+    val gemPositions: MutableList<GemType> = mutableListOf(),
+    val type: Int
 ): Tile(
     connections,
     rotationOffset,

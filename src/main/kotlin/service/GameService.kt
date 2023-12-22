@@ -290,7 +290,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>(), splitLine[0].toInt()))
             }
         }
         return playingTiles
