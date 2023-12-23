@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * @property gameLayout 2d List which holds all the tiles on the board.
  */
 @Serializable
-data class IndigoGame (
+data class IndigoGame(
     var activePlayerID: Int = 0,
     var simulationSpeed: Double = 1.0,
     val isNetworkGame: Boolean = false,
