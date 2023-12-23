@@ -351,7 +351,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
     fun moveGems(turn: Turn, tile: PathTile): Turn{
         val currentGame = rootService.currentGame
-        //checkNotNull(currentGame){"No active Game"}
+        checkNotNull(currentGame){"No active Game"}
 
         //Getting neighbours according to connection
         val neighbours = mutableMapOf<Int, Tile>()
@@ -380,6 +380,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
+        //Move all stones that are on my tile to the end of the respective path
         for(i in 0 until tile.gemPositions.size){
             if(tile.gemPositions[i] != GemType.NONE){
                 val endPosition = findNextPosition(tile, i)
@@ -389,6 +390,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         return turn
     }
+
+    //TODO: INTERFACES BENUTZEN
+
 
     /**
      * Function to find the next position, of a gem,
@@ -470,6 +474,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             val destination = end.connections[endConnection]
             checkNotNull(destination)
             end.gemPositions[destination] = gemAtStart
+            findNextPosition(end, destination)
         }
         else if(gemAtEnd != GemType.NONE){
             end.gemPositions[endConnection] = GemType.NONE
@@ -519,6 +524,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             val destination = start.connections[startConnection]
             checkNotNull(destination)
             start.gemPositions[destination] = gemAtEnd
+            findNextPosition(start, destination)
         }
     }
 
