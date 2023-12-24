@@ -481,7 +481,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf()))
             }
         }
         return playingTiles
@@ -512,8 +512,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * and if they are not inside the hexagonal play area.
      */
     fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {
-        if (x < -5 || x > 5 || y < -5 || y > 5) return false
-        if ((x < 0 && y < -5 - x) || (x > 0 && y > 5 - x)) return false
+        if (x < -5 || x > 5) return false
+        if (y < -5 || y > 5) return false
+        if (x < 0 && y < -5 - x) return false
+        if (x > 0 && y > 5 - x) return false
         return true
     }
 
