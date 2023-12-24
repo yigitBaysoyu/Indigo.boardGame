@@ -3,14 +3,18 @@ package view
 import entity.*
 import service.Constants
 import service.RootService
+import tools.aqua.bgw.animation.MovementAnimation
+import tools.aqua.bgw.components.ComponentView
 import tools.aqua.bgw.components.container.Area
 import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
+import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.BoardGameScene
 import tools.aqua.bgw.util.BidirectionalMap
 import tools.aqua.bgw.util.Font
+import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
@@ -29,9 +33,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private val hexagonHeight = (416 / 3 / 1.05).toInt()
     private val hexagonSize = hexagonHeight / 2
     private val gemSize = 25
+
     private val playerColorSize = 45
     private val playerListOffsetX = 125
     private val playerListOffsetY = 65
+
+    private val menuAreaMargin = 50
+    private var simulationSpeedBinary = ""
+
 
 	private val tileMap: BidirectionalMap<Tile, Area<TokenView>> = BidirectionalMap()
 
@@ -106,6 +115,30 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.redGate)
     )
 
+    private val playerOneAIIcon = TokenView(
+        width = 28 * 1.5, height = 25 * 1.5,
+        posX = 230 + playerListOffsetX, posY = 5 + playerListOffsetY,
+        visual = ImageVisual(Constants.aiIcon)
+    )
+
+    private val playerTwoAIIcon = TokenView(
+        width = 28 * 1.5, height = 25 * 1.5,
+        posX = 230 + playerListOffsetX, posY = 255 + playerListOffsetY,
+        visual = ImageVisual(Constants.aiIcon)
+    )
+
+    private val playerThreeAIIcon = TokenView(
+        width = 28 * 1.5, height = 25 * 1.5,
+        posX = 230 + playerListOffsetX, posY = 505 + playerListOffsetY,
+        visual = ImageVisual(Constants.aiIcon)
+    )
+
+    private val playerFourAIIcon = TokenView(
+        width = 28 * 1.5, height = 25 * 1.5,
+        posX = 230 + playerListOffsetX, posY = 755 + playerListOffsetY,
+        visual = ImageVisual(Constants.aiIcon)
+    )
+
     private val playerOneHand = TokenView(
         width = hexagonWidth,  height = hexagonHeight,
         posX = 70 + playerListOffsetX, posY = 90 + playerListOffsetY,
@@ -130,9 +163,106 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.pathTileImageList[0])
     )
 
+    private val rotateButton = Button(
+        width = 35 * 1.5, height = 32 * 1.5,
+        posX = 227 + playerListOffsetX, posY = 840 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2,
+        visual = ImageVisual(Constants.rotateIcon)
+    ).apply {
+        componentStyle = "-fx-background-radius: 25px;"
+    }
+
+
+
+
+
+
+
+    private val menuArea = Pane<ComponentView>(
+        width = 400, height = Constants.SCENE_HEIGHT,
+        posX = sceneWidth - 75, posY = 0,
+        visual = ColorVisual(0, 0, 0, 60)
+    ).apply {
+        onMouseEntered = {
+            playAnimation(
+                MovementAnimation(
+                    componentView = this,
+                    toX = sceneWidth - 400,
+                    duration = 100
+                ).apply {
+                    onFinished = {
+                        posX = sceneWidth - 400.0
+                    }
+                }
+            )
+
+        }
+
+        onMouseExited = {
+            playAnimation(
+                MovementAnimation(
+                    componentView = this,
+                    toX = sceneWidth - 75,
+                    duration = 100
+                ).apply {
+                    onFinished = {
+                        posX = sceneWidth - 75.0
+                    }
+                }
+            )
+
+        }
+    }
+
+    private val simulationSpeedLabel = Label(
+        posX = menuAreaMargin, posY = 475,
+        width = 300, height = 50,
+        text = "Simulationspeed: 10",
+        font = Font(size = 29, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        alignment = Alignment.CENTER
+    )
+
+    private val zeroButton = Button(
+        width = 90, height = 50,
+        posX = menuAreaMargin, posY = 550,
+        text = "0",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = {simulationSpeedBinary = "0$simulationSpeedBinary"}
+    }
+
+    private val oneButton = Button(
+        width = 90, height = 50,
+        posX = 100 + menuAreaMargin, posY = 550,
+        text = "1",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = {simulationSpeedBinary = "1$simulationSpeedBinary" }
+    }
+
+    private val setButton = Button(
+        width = 90, height = 50,
+        posX = 200 + menuAreaMargin, posY = 550,
+        text = "Set",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = {
+            val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
+            simulationSpeedLabel.text = "Simulationspeed: $newSpeed"
+            // rootService.setSimulationsSpeed(newSpeed)
+            simulationSpeedBinary = ""
+        }
+    }
+
+
     private val undoButton = Button(
         width = 145, height = 50,
-        posX = 1600, posY = 325,
+        posX = menuAreaMargin, posY = 625,
         text = "Undo",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -142,7 +272,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val redoButton = Button(
         width = 145, height = 50,
-        posX = 1600 + 155, posY = 325,
+        posX = menuAreaMargin + 155, posY = 625,
         text = "Redo",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -152,7 +282,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val saveGameButton = Button(
         width = 300, height = 50,
-        posX = 1600, posY = 400,
+        posX = menuAreaMargin, posY = 700,
         text = "Save Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -162,7 +292,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val loadGameButton = Button(
         width = 300, height = 50,
-        posX = 1600, posY = 475,
+        posX = menuAreaMargin, posY = 775,
         text = "Load Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -172,7 +302,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val quitGameButton = Button(
         width = 300, height = 50,
-        posX = 1600, posY = 550,
+        posX = menuAreaMargin, posY = 850,
         text = "Quit Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -194,10 +324,23 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playerTwoColor,
             playerThreeColor,
             playerFourColor,
+            playerOneAIIcon,
+            playerTwoAIIcon,
+            playerThreeAIIcon,
+            playerFourAIIcon,
             playerOneHand,
             playerTwoHand,
             playerThreeHand,
             playerFourHand,
+            rotateButton,
+            menuArea
+        )
+
+        menuArea.addAll(
+            simulationSpeedLabel,
+            zeroButton,
+            oneButton,
+            setButton,
             undoButton,
             redoButton,
             saveGameButton,
