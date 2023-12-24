@@ -6,6 +6,8 @@ import java.io.InputStreamReader
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
+import kotlin.IllegalArgumentException
+
 
 
 /**
@@ -22,15 +24,15 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         simulationSpeed: Double,
         isNetworkGame: Boolean
     ) {
-        val undostack = ArrayDeque<Turn>()
-        val redostack = ArrayDeque<Turn>()
-        val gatelist: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
-        val drawpile: MutableList<PathTile> = loadTiles()
-        val gamelayout: MutableList<MutableList<Tile>> = mutableListOf()
+        val undoStack = ArrayDeque<Turn>()
+        val redoStack = ArrayDeque<Turn>()
+        val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
+        val drawPile: MutableList<PathTile> = loadTiles()
+        val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
-            0, simulationSpeed, isNetworkGame, undostack,
-            redostack, players, gatelist, drawpile, gameLayout = gamelayout
+            0, simulationSpeed, isNetworkGame, undoStack,
+            redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
 
@@ -393,6 +395,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game)
 
+        if (game.playerList.size != 3 && threePlayerVariant) {
+            throw IllegalArgumentException ("You can't choose threePlayerVariant because the number of players is " +
+             game.playerList.size)
+        }
+
         when (game.playerList.size) {
 
             2 -> {
@@ -422,6 +429,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
                 }
             }
+            else -> throw IllegalArgumentException(" The Number of Players can be only 2,3 or 4")
 
         }
 
@@ -481,7 +489,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         var allGemsInGate = 0
 
         for (i in 0 until game.gateList.size) {
-            for (j in 0 until game.gameLayout[i].size) {
+            for (j in 0 until game.gateList[i].size) {
                 allGemsInGate += game.gateList[i][j].gemsCollected.size
             }
         }
