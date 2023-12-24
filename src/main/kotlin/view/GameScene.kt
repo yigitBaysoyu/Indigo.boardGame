@@ -375,18 +375,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 var gateNumber = 0
                 // Iterate over the List of all Gate tiles to find which Gate the tile belongs to
                 for(i in 0 until game.gateList.size) {
-                    /*if(game.gateList[i].contains(tile)) {
+                    if(game.gateList[i].contains(gateTile)) {
                         gateNumber = i
                         break
-                    }*/
+                    }
                 }
                 gateAssignments[gateNumber].add(playerList[playerIndex].color)
             }
         }
 
         // Remove duplicates from the gateAssignments
-        // val filteredGateAssignments: List<List<Int>> = gateAssignments.map { it.distinct() }
-        val filteredGateAssignments: List<List<Int>> = MutableList(6){ mutableListOf(0, 0)}
+        val filteredGateAssignments: List<MutableList<Int>> = gateAssignments.map { it.distinct().toMutableList() }
+        for(list in filteredGateAssignments) {
+            if(list.size == 1) list.add(list[0])
+        }
 
         val gateVisuals: List<List<ImageVisual>> = filteredGateAssignments.map { n -> n.map { visualFromColorInt(it) } }
 
