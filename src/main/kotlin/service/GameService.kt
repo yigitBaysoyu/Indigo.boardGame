@@ -18,6 +18,14 @@ import kotlin.IllegalArgumentException
  */
 class GameService (private  val rootService: RootService) : AbstractRefreshingService() {
 
+    /**
+     * Function to initializes and starts a new game with the given parameters.
+     *
+     * @param players A list of players in the game.
+     * @param threePlayerVariant A boolean for two threePlayerVariant.
+     * @param simulationSpeed The speed at which the game simulation runs.
+     * @param isNetworkGame A boolean if the game is a network game.
+     */
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
@@ -202,6 +210,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game)
 
+        if (xCoordinate < -4 || xCoordinate > 4) return false
+        if (yCoordinate < -4 || yCoordinate > 4) return false
+
         val adjacentTiles = findAdjacentTiles(xCoordinate, yCoordinate)
 
         val targetTile = getTileFromAxialCoordinates(xCoordinate, yCoordinate)
@@ -216,6 +227,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
+
         return false
 
     }
