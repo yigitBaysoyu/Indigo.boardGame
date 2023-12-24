@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * @property gameLayout 2d List which holds all the tiles on the board.
  */
 @Serializable
-data class IndigoGame (
+data class IndigoGame(
     var activePlayerID: Int = 0,
     var simulationSpeed: Double = 1.0,
     val isNetworkGame: Boolean = false,
@@ -19,7 +19,7 @@ data class IndigoGame (
     @Serializable(with = ArrayDequeSerializer::class)
     val redoStack: ArrayDeque<Turn> = ArrayDeque(),
     val playerList: MutableList<Player> = mutableListOf(),
-    val gateList: MutableList<GateTile> = mutableListOf(),
+    val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
     val drawPile: MutableList<PathTile> = mutableListOf(),
     val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 ) {

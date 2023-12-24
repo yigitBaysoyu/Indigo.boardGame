@@ -6,6 +6,8 @@ import java.io.InputStreamReader
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
+import kotlin.IllegalArgumentException
+
 
 
 /**
@@ -22,20 +24,20 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         simulationSpeed: Double,
         isNetworkGame: Boolean
     ) {
-        val undostack = ArrayDeque<Turn>()
-        val redostack = ArrayDeque<Turn>()
-        val gatelist: MutableList<GateTile> = createGateTiles()
-        val drawpile: MutableList<PathTile> = mutableListOf()
-        val gamelayout: MutableList<MutableList<Tile>> = mutableListOf()
+        val undoStack = ArrayDeque<Turn>()
+        val redoStack = ArrayDeque<Turn>()
+        val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
+        val drawPile: MutableList<PathTile> = loadTiles()
+        val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
-            1, 1.0, false, undostack,
-            redostack, players, gatelist, drawpile, gameLayout = gamelayout
+            0, simulationSpeed, isNetworkGame, undoStack,
+            redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        setGates(threePlayerVariant)
 
         setDefaultGameLayout()
+        setGates(threePlayerVariant)
         onAllRefreshables { refreshAfterStartNewGame() }
     }
 
@@ -61,22 +63,25 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
                 // Outer ring of tiles should be gateTiles. They all have distance 5 to center
                 if (distanceToCenter == 5) {
-                    setTileFromAxialCoordinates(
-                        x, y, GateTile(
-                            connections = mutableMapOf(
-                                Pair(0, 3),
-                                Pair(1, 4),
-                                Pair(2, 5),
-                                Pair(3, 0),
-                                Pair(4, 1),
-                                Pair(5, 2)
-                            ),
-                            rotationOffset = 0,
-                            gemsCollected = mutableListOf(),
-                            xCoordinate = x,
-                            yCoordinate = y
-                        )
+                    val gateTile = GateTile(
+                        connections = mutableMapOf(
+                            Pair(0, 3),
+                            Pair(1, 4),
+                            Pair(2, 5),
+                            Pair(3, 0),
+                            Pair(4, 1),
+                            Pair(5, 2)
+                        ),
+                        rotationOffset = 0,
+                        gemsCollected = mutableListOf(),
+                        xCoordinate = x,
+                        yCoordinate = y
                     )
+
+                    setTileFromAxialCoordinates(x, y, gateTile)
+
+                    addGatesToList(x,y,gateTile)
+
                 } else {
                     setTileFromAxialCoordinates(
                         x, y, EmptyTile(
@@ -335,69 +340,148 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
 
-    private fun createGateTiles(): MutableList<GateTile> {
-        val gateTiles = mutableListOf<GateTile>()
-
-        for (i in 1..6) {
-            val connections = mapOf<Int, Int>()
-            val rotationOffset = 0
-            val xCoordinate = 0
-            val yCoordinate = 0
-            val gemsCollected = mutableListOf<GemType>()
-
-            gateTiles.add(GateTile(connections, rotationOffset, xCoordinate, yCoordinate, gemsCollected))
-        }
-
-        return gateTiles
-    }
-
     /**
-     * This method assigns gates to each player.
+     * Private function that helps to fill the gateList with gateTiles.
+     * And to numbering the gateLists, also gateList[0] = gate 1 and gateList[1] = gate 2 and so on.
+     *
+     * @param x The X coordinate of the placement position.
+     * @param y The Y coordinate of the placement position.
+     * @param tile The GateTile being added.
      */
-    fun setGates(threePlayerVariant: Boolean) {
+    private fun addGatesToList(x : Int, y : Int ,tile : GateTile){
 
         val game = rootService.currentGame
         checkNotNull(game)
 
-        val gateSize = game.gateList.size
+        val pair= Pair(x,y)
 
-        if (!threePlayerVariant) {
-            for (i in 0 until gateSize) {
+        //The first gate, gate 1
+        if (x == 5 && y<= -1 && y >= -4) {
+            game.gateList[0].add(tile)
+        }
+        //The second gate , gate 2
+        val positions = listOf(Pair(1,4), Pair(2,3),Pair(3,2),Pair(4,1))
+        if (positions.contains(pair)) {
+            game.gateList[1].add(tile)
+        }
+        //The third gate, gate 3
+        if(y == 5 && x <= -1 && x>= -4) {
+            game.gateList[2].add(tile)
+        }
+        //The fourth gate, gate 4
+        if (x == -5 && y>= 1 && y <= 4) {
+            game.gateList[3].add(tile)
+        }
+        //The fifth gate, gate 5
+        val positions1 = listOf(Pair(-1,-4), Pair(-2,-3),Pair(-3,-2),Pair(-4,-1))
+        if (positions1.contains(pair)) {
+            game.gateList[4].add(tile)
+        }
+        //The sixth gate, gate 6
+        if (y == -5 && x>= 1 && x <= 4) {
+            game.gateList[5].add(tile)
+        }
 
-                val playerIndex = i % 2
-                game.playerList[playerIndex].gateList.add(game.gateList[i])
+
+    }
+
+    /**
+     * Private Funktion that helps to assign gates to each player.
+     *
+     *@param threePlayerVariant if false gates are alternated between players,
+     * else  each player has one exclusive gate and shares two with others
+     */
+     private fun setGates(threePlayerVariant: Boolean) {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        if (game.playerList.size != 3 && threePlayerVariant) {
+            throw IllegalArgumentException ("You can't choose threePlayerVariant because the number of players is " +
+             game.playerList.size)
+        }
+
+        when (game.playerList.size) {
+
+            2 -> {
+                // for three players, gates are alternated between players
+                game.gateList.forEachIndexed { index, gateList ->
+                    val playerIndex = index % 2
+                    game.playerList[playerIndex].gateList.addAll(gateList)
+                }
+            }
+
+            3 -> {
+                setGatesForThree(threePlayerVariant)
+            }
+
+            4 -> {
+                //with four players shares each player one Gate with the other players
+                val positions = listOf(
+                    Pair(0, 1), Pair(1, 2),
+                    Pair(0, 3), Pair(3, 1),
+                    Pair(2, 0), Pair(2, 3)
+                )
+
+                positions.forEachIndexed { index, (first, second) ->
+
+                    game.playerList[first].gateList.addAll(game.gateList[index])
+                    game.playerList[second].gateList.addAll(game.gateList[index])
+
+                }
+            }
+            else -> throw IllegalArgumentException(" The Number of Players can be only 2,3 or 4")
+
+        }
+
+    }
+
+    /**
+     * Private Funktion that helps to assign gates to three players.
+     *
+     *@param threeVariant if false gates are alternated between players,
+     * else  each player has one exclusive gate and shares two with others
+     */
+    private fun setGatesForThree(threeVariant : Boolean){
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+
+        if (!threeVariant) {
+            // for three players, gates are alternated between players
+            game.gateList.forEachIndexed { index, gateList ->
+                val playerIndex = index % 3
+                game.playerList[playerIndex].gateList.addAll(gateList)
             }
         } else {
-            for (i in 0 until gateSize) {
-
-                if (i % 2 == 0) {
-                    val playerIndex = i % 3
-                    game.playerList[playerIndex].gateList.add(game.gateList[i])
-                } else {
-                    when (i) {
-                        1 -> {
-                            game.playerList[0].gateList.add(game.gateList[i])
-                            game.playerList[2].gateList.add(game.gateList[i])
-                        }
-
-                        3 -> {
-
-                            game.playerList[1].gateList.add(game.gateList[i])
-                            game.playerList[0].gateList.add(game.gateList[i])
-                        }
-
-                        5 -> {
-                            game.playerList[2].gateList.add(game.gateList[i])
-                            game.playerList[1].gateList.add(game.gateList[i])
-                        }
+            // for three player each player has one exclusive gate and shares two with others
+            game.gateList.forEachIndexed { index, gateList ->
+                when (index) {
+                    0, 2, 4 -> {
+                        val playerIndex = index / 2
+                        game.playerList[playerIndex].gateList.addAll(gateList)
+                    }
+                    1 -> {
+                        game.playerList[0].gateList.addAll(gateList)
+                        game.playerList[2].gateList.addAll(gateList)
+                    }
+                    3 -> {
+                        game.playerList[1].gateList.addAll(gateList)
+                        game.playerList[0].gateList.addAll(gateList)
+                    }
+                    5 -> {
+                        game.playerList[2].gateList.addAll(gateList)
+                        game.playerList[1].gateList.addAll(gateList)
                     }
                 }
             }
         }
     }
 
-
-    fun endGame() {
+    /**
+     * Function that checks whether all stones have been removed from the game field,
+     * and if they have been removed, the game ends.
+     */
+    fun checkIfGameEnded() {
 
         val game = rootService.currentGame
         checkNotNull(game)
@@ -405,7 +489,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         var allGemsInGate = 0
 
         for (i in 0 until game.gateList.size) {
-            allGemsInGate += game.gateList[i].gemsCollected.size
+            for (j in 0 until game.gateList[i].size) {
+                allGemsInGate += game.gateList[i][j].gemsCollected.size
+            }
         }
 
         if (allGemsInGate == 12) {
