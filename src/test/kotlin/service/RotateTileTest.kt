@@ -4,7 +4,7 @@ import kotlin.test.*
 import entity.*
 
 /**
- * This test class verifies the functionality of the `rotateTile` method in the player service.
+ * This test class verifies the functionality of the `rotateTile` method in the playerService.
  * It includes tests to checks if a rotated is correct.
  */
 class RotateTileTest {
