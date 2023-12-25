@@ -11,8 +11,8 @@ import kotlin.IllegalArgumentException
 
 
 /**
- * A service responsible for the game logic of a Pyramid card game. It manages the state
- * and progression of the game, including starting new games, ending games, and switching players.
+ * A service responsible for the game logic of a Indigo game. It manages the state
+ * and progression of the game, including starting new games, ending games.
  *
  * @param rootService The root service that holds the current state of the game.
  */
