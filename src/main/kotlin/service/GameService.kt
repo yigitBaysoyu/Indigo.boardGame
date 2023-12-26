@@ -300,7 +300,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @param y The Y coordinate of the placement position.
      * @param tile The GateTile being added.
      */
-    private fun addGatesToList(x : Int, y : Int ,tile : GateTile){
+    private fun addGatesToList(x : Int, y : Int ,tile : GateTile) {
 
         val game = rootService.currentGame
         checkNotNull(game)
@@ -325,7 +325,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         for (i in gateTilesPositions.indices){
             if (gateTilesPositions[i].contains(pair)){
                 game.gateList[i].add(tile)
-                break
+                return
             }
         }
     }
