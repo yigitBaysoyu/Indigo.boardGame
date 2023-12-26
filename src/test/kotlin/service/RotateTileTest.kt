@@ -3,8 +3,19 @@ package service
 import kotlin.test.*
 import entity.*
 
+/**
+ * This test class verifies the functionality of the `rotateTile` method in the game service.
+ * It includes tests to checks if a rotated is correct.
+ */
 class RotateTileTest {
 
+
+    /**
+     * Tests the functionality of the `rotateTile` method.
+     * This test ensures that the method correctly rotates tiles by the specified angle = 60 grad.
+     * It covers various scenarios to check if the rotation results align with expected outcomes,
+     * including changes in tile connections and rotation offsets.
+     */
     @Test
     fun TestRotateTile() {
         val game = RootService()

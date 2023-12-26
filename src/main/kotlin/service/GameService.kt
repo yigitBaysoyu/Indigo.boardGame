@@ -18,6 +18,14 @@ import kotlin.IllegalArgumentException
  */
 class GameService (private  val rootService: RootService) : AbstractRefreshingService() {
 
+    /**
+     * Function to initializes and starts a new game with the given parameters.
+     *
+     * @param players A list of players in the game.
+     * @param threePlayerVariant A boolean for two threePlayerVariant.
+     * @param simulationSpeed The speed at which the game simulation runs.
+     * @param isNetworkGame A boolean if the game is a network game.
+     */
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
@@ -65,30 +73,23 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 if (distanceToCenter == 5) {
                     val gateTile = GateTile(
                         connections = mutableMapOf(
-                            Pair(0, 3),
-                            Pair(1, 4),
-                            Pair(2, 5),
-                            Pair(3, 0),
-                            Pair(4, 1),
-                            Pair(5, 2)
-                        ),
+                            Pair(0, 3), Pair(1, 4), Pair(2, 5),
+                            Pair(3, 0), Pair(4, 1), Pair(5, 2)),
                         rotationOffset = 0,
                         gemsCollected = mutableListOf(),
-                        xCoordinate = x,
-                        yCoordinate = y
+                        xCoordinate = x, yCoordinate = y
                     )
 
                     setTileFromAxialCoordinates(x, y, gateTile)
 
-                    addGatesToList(x,y,gateTile)
+                    addGatesToList(x, y, gateTile)
 
                 } else {
                     setTileFromAxialCoordinates(
                         x, y, EmptyTile(
                             connections = mutableMapOf(),
                             rotationOffset = 0,
-                            xCoordinate = x,
-                            yCoordinate = y
+                            xCoordinate = x, yCoordinate = y
                         )
                     )
                 }
@@ -102,117 +103,82 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val centerTile = CenterTile(
             connections = mutableMapOf(),
             rotationOffset = 0,
-            xCoordinate = 0,
-            yCoordinate = 0,
+            xCoordinate = 0, yCoordinate = 0,
             availableGems = centerTileGems
         )
         setTileFromAxialCoordinates(0, 0, centerTile)
 
-        val treasureTile1 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 0,
-            xCoordinate = 4,
-            yCoordinate = 0,
-            gemPositions = mutableListOf(
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.AMBER,
-                GemType.NONE
-            )
-        )
-        setTileFromAxialCoordinates(4, 0, treasureTile1)
+        setTreasureTiles()
+    }
 
-        val treasureTile2 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 0,
-            xCoordinate = 0,
-            yCoordinate = 4,
-            gemPositions = mutableListOf(
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.AMBER
-            )
-        )
-        rotateConnections(treasureTile2)
-        setTileFromAxialCoordinates(0, 4, treasureTile2)
+    /**
+     * Only used as helper function in setDefaultGameLayout.
+     * Fills the GameLayout with the correct treasureTiles to start a new Game.
+     */
+     private fun  setTreasureTiles(){
+         val treasureTile1 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 0, xCoordinate = 4, yCoordinate = 0,
+             gemPositions = mutableListOf(
+                 GemType.NONE, GemType.NONE, GemType.NONE,
+                 GemType.NONE, GemType.AMBER, GemType.NONE )
+         )
+         setTileFromAxialCoordinates(4, 0, treasureTile1)
 
-        val treasureTile3 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 2,
-            xCoordinate = -4,
-            yCoordinate = 4,
-            gemPositions = mutableListOf(
-                GemType.AMBER,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE
-            )
-        )
-        rotateConnections(treasureTile3)
-        setTileFromAxialCoordinates(-4, 4, treasureTile3)
+         val treasureTile2 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 0, xCoordinate = 0, yCoordinate = 4,
+             gemPositions = mutableListOf(
+                 GemType.NONE, GemType.NONE, GemType.NONE,
+                 GemType.NONE, GemType.NONE, GemType.AMBER )
+         )
+         rotateConnections(treasureTile2)
+         setTileFromAxialCoordinates(0, 4, treasureTile2)
 
-        val treasureTile4 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 3,
-            xCoordinate = -4,
-            yCoordinate = 0,
-            gemPositions = mutableListOf(
-                GemType.NONE,
-                GemType.AMBER,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE
-            )
-        )
-        rotateConnections(treasureTile4)
-        setTileFromAxialCoordinates(-4, 0, treasureTile4)
+         val treasureTile3 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 2, xCoordinate = -4, yCoordinate = 4,
+             gemPositions = mutableListOf(
+                 GemType.AMBER, GemType.NONE, GemType.NONE,
+                 GemType.NONE, GemType.NONE, GemType.NONE )
+         )
+         rotateConnections(treasureTile3)
+         setTileFromAxialCoordinates(-4, 4, treasureTile3)
 
-        val treasureTile5 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 4,
-            xCoordinate = 0,
-            yCoordinate = -4,
-            gemPositions = mutableListOf(
-                GemType.NONE,
-                GemType.NONE,
-                GemType.AMBER,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE
-            )
-        )
-        rotateConnections(treasureTile5)
-        setTileFromAxialCoordinates(0, -4, treasureTile5)
+         val treasureTile4 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 3, xCoordinate = -4, yCoordinate = 0,
+             gemPositions = mutableListOf(
+                 GemType.NONE, GemType.AMBER, GemType.NONE,
+                 GemType.NONE, GemType.NONE, GemType.NONE )
+         )
+         rotateConnections(treasureTile4)
+         setTileFromAxialCoordinates(-4, 0, treasureTile4)
 
-        val treasureTile6 = TreasureTile(
-            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-            rotationOffset = 5,
-            xCoordinate = 4,
-            yCoordinate = -4,
-            gemPositions = mutableListOf(
-                GemType.NONE,
-                GemType.NONE,
-                GemType.NONE,
-                GemType.AMBER,
-                GemType.NONE,
-                GemType.NONE
-            )
-        )
-        rotateConnections(treasureTile6)
-        setTileFromAxialCoordinates(4, -4, treasureTile6)
+         val treasureTile5 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 4, xCoordinate = 0, yCoordinate = -4,
+             gemPositions = mutableListOf(
+                 GemType.NONE, GemType.NONE, GemType.AMBER,
+                 GemType.NONE, GemType.NONE, GemType.NONE )
+         )
+         rotateConnections(treasureTile5)
+         setTileFromAxialCoordinates(0, -4, treasureTile5)
+
+         val treasureTile6 = TreasureTile(
+             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+             rotationOffset = 5, xCoordinate = 4, yCoordinate = -4,
+             gemPositions = mutableListOf(
+                 GemType.NONE, GemType.NONE, GemType.NONE,
+                 GemType.AMBER, GemType.NONE, GemType.NONE )
+         )
+         rotateConnections(treasureTile6)
+         setTileFromAxialCoordinates(4, -4, treasureTile6)
     }
 
     /**
      * Rotates the connections of a treasure tile based on its rotation offset.
-     * Only used as helper function for setDefaultGameLayout
+     * Only used as helper function for setDefaultGameLayout.
      */
     private fun rotateConnections(tile: TreasureTile) {
         for (i in 0 until tile.rotationOffset) {
@@ -229,8 +195,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * * This function checks whether the specified position is blocked or if placing
-     * the tile would result in an illegal connection with an adjacent GateTile.
+     * This function checks whether the specified position is blocked or if placing.
+     * The tile would result in an illegal connection with an adjacent GateTile.
      *
      * @param xCoordinate The X coordinate where the tile is to be placed.
      * @param yCoordinate The Y coordinate where the tile is to be placed.
@@ -243,6 +209,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         val game = rootService.currentGame
         checkNotNull(game)
+
+        if (xCoordinate < -4 || xCoordinate > 4) return false
+        if (yCoordinate < -4 || yCoordinate > 4) return false
 
         val adjacentTiles = findAdjacentTiles(xCoordinate, yCoordinate)
 
@@ -258,6 +227,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
+
         return false
 
     }
@@ -268,7 +238,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @param x The X coordinate where the tile is to be placed.
      * @param y The Y coordinate where the tile is to be placed.
      *
-     * return a list that contains all adjacent Tiles.
+     * @return a list that contains all adjacent Tiles.
      *
      */
     private fun findAdjacentTiles(x: Int, y: Int): List<Tile> {
@@ -292,7 +262,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     /**
      * Private Function that checks if placing a PathTile next to a GateTile would result in an illegal connection.
      *
-     * if any of these connections would illegally connect to a GateTile.
+     * If any of these connections would illegally connect to a GateTile.
      *
      * @param x The X coordinate of the placement position.
      * @param y The Y coordinate of the placement position.
@@ -301,44 +271,26 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @return false if placing the tile would result in an illegal connection, true otherwise.
      */
     private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
-        // Check for a specific connection (0 to 1) when the y-coordinate is 4.
-        if (x == 4 && (tile.connections[0] == 1 || tile.connections[1] == 0)) {
-            return false
+        // The tile with these conditions cannot be placed.
+        if (y == 4 && tile.connections[0] == 1 ) return false
+        if (x == 4 && tile.connections[2] == 3 ) return false
+        if (y == -4 && tile.connections[3] == 4 ) return false
+        if (x == -4 && tile.connections[5] == 0 ) return false
+
+        val tilesPositions = listOf(
+            //two Pairs that have a list of positions and a pair of connections
+            Pair(listOf(Pair(1, 3), Pair(2, 2), Pair(3, 1)), Pair(1, 2)),
+            Pair(listOf(Pair(-1, -3), Pair(-2, -2), Pair(-3, -1)), Pair(4, 5))
+        )
+
+        for ((positions, connection) in tilesPositions) {
+            if (positions.contains(Pair(x, y)) && tile.connections[connection.first] == connection.second ) {
+                return false
+            }
         }
 
-        // Check for a connection (1 to 2) at specific positions.
-        val positionsForConnection1to2 = listOf(Pair(1, 3), Pair(2, 2), Pair(3, 1))
-        if (positionsForConnection1to2.any { it.first == x && it.second == y } && (tile.connections[1] == 2
-                    || tile.connections[2] == 1)) {
-            return false
-        }
-
-        // Check for a connection (4 to 5) at specific positions.
-        val positionsForConnection4to5 = listOf(Pair(-1, -3), Pair(-2, -2), Pair(-3, -1))
-        if (positionsForConnection4to5.any { it.first == x && it.second == y } && (tile.connections[4] == 5
-                    || tile.connections[5] == 4)) {
-            return false
-        }
-
-        // Check for a specific connection (2 to 3) when the x-coordinate is 4.
-        if (y == 4 && (tile.connections[2] == 3 || tile.connections[3] == 2)) {
-            return false
-        }
-
-        // Check for a specific connection (3 to 4) when the y-coordinate is -4.
-        if (y == -4 && (tile.connections[3] == 4 || tile.connections[4] == 3)) {
-            return false
-        }
-
-        // Check for a specific connection (5 to 0) when the x-coordinate is -4.
-        if (x == -4 && (tile.connections[5] == 0 || tile.connections[0] == 5)) {
-            return false
-        }
-
-        // If none of the above conditions are met, then the placement is legal.
         return true
     }
-
 
     /**
      * Private function that helps to fill the gateList with gateTiles.
@@ -348,56 +300,51 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @param y The Y coordinate of the placement position.
      * @param tile The GateTile being added.
      */
-    private fun addGatesToList(x : Int, y : Int ,tile : GateTile){
+    private fun addGatesToList(x : Int, y : Int ,tile : GateTile) {
 
         val game = rootService.currentGame
         checkNotNull(game)
 
         val pair= Pair(x,y)
 
-        //The first gate, gate 1
-        if (x == 5 && y<= -1 && y >= -4) {
-            game.gateList[0].add(tile)
-        }
-        //The second gate , gate 2
-        val positions = listOf(Pair(1,4), Pair(2,3),Pair(3,2),Pair(4,1))
-        if (positions.contains(pair)) {
-            game.gateList[1].add(tile)
-        }
-        //The third gate, gate 3
-        if(y == 5 && x <= -1 && x>= -4) {
-            game.gateList[2].add(tile)
-        }
-        //The fourth gate, gate 4
-        if (x == -5 && y>= 1 && y <= 4) {
-            game.gateList[3].add(tile)
-        }
-        //The fifth gate, gate 5
-        val positions1 = listOf(Pair(-1,-4), Pair(-2,-3),Pair(-3,-2),Pair(-4,-1))
-        if (positions1.contains(pair)) {
-            game.gateList[4].add(tile)
-        }
-        //The sixth gate, gate 6
-        if (y == -5 && x>= 1 && x <= 4) {
-            game.gateList[5].add(tile)
-        }
+        val gateTilesPositions = listOf(
+            // Gate 1 positions
+            listOf(Pair(5, -1), Pair(5, -2), Pair(5, -3), Pair(5, -4)),
+            // Gate 2 positions
+            listOf(Pair(1, 4), Pair(2, 3), Pair(3, 2), Pair(4, 1)),
+            // Gate 3 positions
+            listOf(Pair(-1, 5), Pair(-2, 5), Pair(-3, 5), Pair(-4, 5)),
+            // Gate 4 positions
+            listOf(Pair(-5, 1), Pair(-5, 2), Pair(-5, 3), Pair(-5, 4)),
+            // Gate 5 positions
+            listOf(Pair(-1, -4), Pair(-2, -3), Pair(-3, -2), Pair(-4, -1)),
+            // Gate 6 positions
+            listOf(Pair(1, -5), Pair(2, -5), Pair(3, -5), Pair(4, -5))
+        )
 
-
+        for (i in gateTilesPositions.indices){
+            if (gateTilesPositions[i].contains(pair)){
+                game.gateList[i].add(tile)
+                return
+            }
+        }
     }
 
     /**
      * Private Funktion that helps to assign gates to each player.
      *
-     *@param threePlayerVariant if false gates are alternated between players,
-     * else  each player has one exclusive gate and shares two with others
+     * @param threePlayerVariant if false gates are alternated between players,
+     * else each player has one exclusive gate and shares two with others.
      */
      private fun setGates(threePlayerVariant: Boolean) {
         val game = rootService.currentGame
         checkNotNull(game)
 
         if (game.playerList.size != 3 && threePlayerVariant) {
-            throw IllegalArgumentException ("You can't choose threePlayerVariant because the number of players is " +
-             game.playerList.size)
+            throw IllegalArgumentException(
+                "You can't choose threePlayerVariant because the number of players is " +
+                        game.playerList.size
+            )
         }
 
         when (game.playerList.size) {
@@ -429,6 +376,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
                 }
             }
+
             else -> throw IllegalArgumentException(" The Number of Players can be only 2,3 or 4")
 
         }
@@ -438,8 +386,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     /**
      * Private Funktion that helps to assign gates to three players.
      *
-     *@param threeVariant if false gates are alternated between players,
-     * else  each player has one exclusive gate and shares two with others
+     * @param threeVariant if false gates are alternated between players,
+     * else each player has one exclusive gate and shares two with others.
      */
     private fun setGatesForThree(threeVariant : Boolean){
         val game = rootService.currentGame
@@ -533,14 +481,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf<GemType>()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf()))
             }
         }
         return playingTiles
     }
 
     /**
-     * loads the current Game from the saveGame.ser file, this is achieved through the kotlinx serializable interface,
+     * Loads the current Game from the saveGame.ser file, this is achieved through the kotlinx serializable interface,
      * where the text in the file will be decoded into a Game Object
      */
     fun loadGame() {
@@ -550,7 +498,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * saves the current Game in the file "saveGame.ser", this is achieved with the kotlinx serializable,
+     * Saves the current Game in the file "saveGame.ser", this is achieved with the kotlinx serializable,
      * by serializing the current Game Object, and every Object attached to it, and converting it to a String,
      * then saving that String in the .ser file
      */
@@ -564,8 +512,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * and if they are not inside the hexagonal play area.
      */
     fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {
-        if (x < -5 || x > 5 || y < -5 || y > 5) return false
-        if ((x < 0 && y < -5 - x) || (x > 0 && y > 5 - x)) return false
+        if (x < -5 || x > 5) return false
+        if (y < -5 || y > 5) return false
+        if (x < 0 && y < -5 - x) return false
+        if (x > 0 && y > 5 - x) return false
         return true
     }
 
