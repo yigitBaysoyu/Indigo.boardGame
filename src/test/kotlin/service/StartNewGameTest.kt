@@ -20,7 +20,7 @@ class StartNewGameTest {
      * Verifies the initialization of the game components and the correct distribution of gates.
      */
     @Test
-    fun testStartNewGameTowPlayers() {
+    fun testStartNewGameTwoPlayers() {
         val game = RootService()
 
         val test = TestRefreshable()
@@ -53,7 +53,7 @@ class StartNewGameTest {
         assertEquals(12, newGame.playerList[1].gateList.size)
         assertEquals(0, newGame.redoStack.size)
         assertEquals(0, newGame.undoStack.size)
-        assertEquals(54, newGame.drawPile.size)
+        assertEquals(52, newGame.drawPile.size)
 
         //check if the players shares gates with each other
         assertNotEquals(newGame.playerList[0].gateList, newGame.playerList[1].gateList)
@@ -122,7 +122,7 @@ class StartNewGameTest {
         assertEquals(8, newGame.playerList[2].gateList.size)
         assertEquals(0, newGame.redoStack.size)
         assertEquals(0, newGame.undoStack.size)
-        assertEquals(54, newGame.drawPile.size)
+        assertEquals(51, newGame.drawPile.size)
 
         //check if the players shares gates with each other
         assertNotEquals(newGame.playerList[0].gateList, newGame.playerList[1].gateList)
@@ -166,7 +166,10 @@ class StartNewGameTest {
         assertEquals(12, newGame.playerList[2].gateList.size)
         assertEquals(0, newGame.redoStack.size)
         assertEquals(0, newGame.undoStack.size)
-        assertEquals(54, newGame.drawPile.size)
+        assertEquals(51, newGame.drawPile.size)
+        assertEquals(1, newGame.playerList[0].playHand.size)
+        assertEquals(1, newGame.playerList[1].playHand.size)
+        assertEquals(1, newGame.playerList[2].playHand.size)
 
         //check if player1 shares gates with player 2
         var shared = 0
@@ -239,7 +242,7 @@ class StartNewGameTest {
         assertEquals(12, newGame.playerList[3].gateList.size)
         assertEquals(0, newGame.redoStack.size)
         assertEquals(0, newGame.undoStack.size)
-        assertEquals(54, newGame.drawPile.size)
+        assertEquals(50, newGame.drawPile.size)
 
         //check if player1 shares gates with player 2
         var shared = 0
