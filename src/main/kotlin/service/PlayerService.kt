@@ -82,12 +82,13 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
                 is TreasureTile -> startTile.gemPositions[positionOnStartTile] = gemType
             }
 
-            when (endTile) {
-                is PathTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
-                is GateTile -> endTile.gemsCollected.remove(movement.gemType)
-                is TreasureTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+            if(!movement.didCollide) {
+                when (endTile) {
+                    is PathTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+                    is GateTile -> endTile.gemsCollected.remove(movement.gemType)
+                    is TreasureTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+                }
             }
-
         }
 
         // If the player has tiles in hand, return the last tile to the draw pile
