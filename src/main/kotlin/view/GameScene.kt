@@ -6,6 +6,7 @@ import service.RootService
 import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.ComponentView
 import tools.aqua.bgw.components.container.Area
+import tools.aqua.bgw.components.container.LinearLayout
 import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
@@ -34,7 +35,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private val hexagonSize = hexagonHeight / 2
     private val gemSize = 25
 
-    private val playerColorSize = 45
     private val playerListOffsetX = 125
     private val playerListOffsetY = 65
 
@@ -46,12 +46,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val outerArea = Pane<Area<TokenView>>(
         width = hexagonWidth * 9, height = hexagonHeight * 5 + (hexagonHeight / 2) * 4,
-        posX = halfWidth - hexagonWidth * 9 / 2, posY = 85,
+        posX = halfWidth - hexagonWidth * 9 / 2 + 50, posY = 85,
         visual = Visual.EMPTY
     )
 
     private val gateColorsBackground = TokenView(
-        posX = halfWidth - (1077 / 1.07 / 2), posY = 23,
+        posX = halfWidth - (1077 / 1.07 / 2) + 50, posY = 23,
         width = 1077 / 1.07, height = 1106 / 1.07,
         visual = ImageVisual(Constants.gates)
     )
@@ -62,106 +62,62 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.cornersBackground)
     )
 
-    private val playerOneLabel = Label(
-        width = 300, height = 50,
-        posX = playerListOffsetX, posY = playerListOffsetY,
-        text = "Player1",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
+    private val playerLabelList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerLabel = Label(
+                width = 300, height = 50,
+                posX = playerListOffsetX, posY = playerListOffsetY + i*250,
+                text = "Player" + (i+1),
+                font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+            )
+            add(playerLabel)
+        }
+    }
 
-    private val playerTwoLabel = Label(
-        width = 300, height = 50,
-        posX = playerListOffsetX, posY = 250 + playerListOffsetY,
-        text = "Player2",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
+    private val playerColorList = mutableListOf<TokenView>().apply {
+        for(i in 0 until 4) {
+            val playerColor = TokenView(
+                width = 45, height = 45,
+                posX = 10 + playerListOffsetX, posY = 5 + playerListOffsetY + i * 250,
+                visual = ImageVisual(Constants.redGate)
+            )
+            add(playerColor)
+        }
+    }
 
-    private val playerThreeLabel = Label(
-        width = 300, height = 50,
-        posX = playerListOffsetX, posY = 500 + playerListOffsetY,
-        text = "Player3",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
+    private val playerAIIconList = mutableListOf<TokenView>().apply {
+        for(i in 0 until 4) {
+            val playerAIIcon = TokenView(
+                width = 28 * 1.5, height = 25 * 1.5,
+                posX = 230 + playerListOffsetX, posY = 5 + playerListOffsetY + i*250,
+                visual = ImageVisual(Constants.aiIcon)
+            )
+            add(playerAIIcon)
+        }
+    }
 
-    private val playerFourLabel = Label(
-        width = 300, height = 50,
-        posX = playerListOffsetX, posY = 750 + playerListOffsetY,
-        text = "Player4",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
+    private val playerHandList = mutableListOf<TokenView>().apply {
+        for(i in 0 until 4) {
+            val playerHand = TokenView(
+                width = hexagonWidth,  height = hexagonHeight,
+                posX = 90 + playerListOffsetX, posY = 90 + playerListOffsetY + i*250,
+                visual = ImageVisual(Constants.pathTileImageList[0])
+            )
+            add(playerHand)
+        }
+    }
 
-
-    private val playerOneColor = TokenView(
-        width = playerColorSize, height = playerColorSize,
-        posX = 20 + playerListOffsetX, posY = 5 + playerListOffsetY,
-        visual = ImageVisual(Constants.redGate)
-    )
-
-    private val playerTwoColor = TokenView(
-        width = playerColorSize, height = playerColorSize,
-        posX = 20 + playerListOffsetX, posY = 255 + playerListOffsetY,
-        visual = ImageVisual(Constants.redGate)
-    )
-
-    private val playerThreeColor = TokenView(
-        width = playerColorSize, height = playerColorSize,
-        posX = 20 + playerListOffsetX, posY = 505 + playerListOffsetY,
-        visual = ImageVisual(Constants.redGate)
-    )
-
-    private val playerFourColor = TokenView(
-        width = playerColorSize, height = playerColorSize,
-        posX = 20 + playerListOffsetX, posY = 755 + playerListOffsetY,
-        visual = ImageVisual(Constants.redGate)
-    )
-
-    private val playerOneAIIcon = TokenView(
-        width = 28 * 1.5, height = 25 * 1.5,
-        posX = 230 + playerListOffsetX, posY = 5 + playerListOffsetY,
-        visual = ImageVisual(Constants.aiIcon)
-    )
-
-    private val playerTwoAIIcon = TokenView(
-        width = 28 * 1.5, height = 25 * 1.5,
-        posX = 230 + playerListOffsetX, posY = 255 + playerListOffsetY,
-        visual = ImageVisual(Constants.aiIcon)
-    )
-
-    private val playerThreeAIIcon = TokenView(
-        width = 28 * 1.5, height = 25 * 1.5,
-        posX = 230 + playerListOffsetX, posY = 505 + playerListOffsetY,
-        visual = ImageVisual(Constants.aiIcon)
-    )
-
-    private val playerFourAIIcon = TokenView(
-        width = 28 * 1.5, height = 25 * 1.5,
-        posX = 230 + playerListOffsetX, posY = 755 + playerListOffsetY,
-        visual = ImageVisual(Constants.aiIcon)
-    )
-
-    private val playerOneHand = TokenView(
-        width = hexagonWidth,  height = hexagonHeight,
-        posX = 70 + playerListOffsetX, posY = 90 + playerListOffsetY,
-        visual = ImageVisual(Constants.pathTileImageList[0])
-    )
-
-    private val playerTwoHand = TokenView(
-        width = hexagonWidth,  height = hexagonHeight,
-        posX = 70 + playerListOffsetX, posY = 340 + playerListOffsetY,
-        visual = ImageVisual(Constants.pathTileImageList[0])
-    )
-
-    private val playerThreeHand = TokenView(
-        width = hexagonWidth,  height = hexagonHeight,
-        posX = 70 + playerListOffsetX, posY = 590 + playerListOffsetY,
-        visual = ImageVisual(Constants.pathTileImageList[0])
-    )
-
-    private val playerFourHand = TokenView(
-        width = hexagonWidth,  height = hexagonHeight,
-        posX = 70 + playerListOffsetX, posY = 840 + playerListOffsetY,
-        visual = ImageVisual(Constants.pathTileImageList[0])
-    )
+    private val playerGemLayoutList = mutableListOf<LinearLayout<TokenView>>().apply {
+        for(i in 0 until 4) {
+            val playerGemLayout = LinearLayout<TokenView>(
+                posX = 0 + playerListOffsetX, posY = 48 + playerListOffsetY + i*250,
+                width = 300, height = 35,
+                visual = Visual.EMPTY,
+                alignment = Alignment.CENTER_LEFT
+            )
+            add(playerGemLayout)
+        }
+    }
 
     private val rotateButton = Button(
         width = 35 * 1.5, height = 32 * 1.5,
@@ -170,6 +126,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     ).apply {
         componentStyle = "-fx-background-radius: 25px;"
     }
+
 
 
 
@@ -253,8 +210,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = {
             val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
-            simulationSpeedLabel.text = "Simulationspeed: $newSpeed"
             // rootService.setSimulationsSpeed(newSpeed)
+            simulationSpeedLabel.text = "Simulationspeed: $newSpeed"
             simulationSpeedBinary = ""
         }
     }
@@ -316,22 +273,26 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             cornersBackground,
             gateColorsBackground,
             outerArea,
-            playerOneLabel,
-            playerTwoLabel,
-            playerThreeLabel,
-            playerFourLabel,
-            playerOneColor,
-            playerTwoColor,
-            playerThreeColor,
-            playerFourColor,
-            playerOneAIIcon,
-            playerTwoAIIcon,
-            playerThreeAIIcon,
-            playerFourAIIcon,
-            playerOneHand,
-            playerTwoHand,
-            playerThreeHand,
-            playerFourHand,
+            playerLabelList[0],
+            playerLabelList[1],
+            playerLabelList[2],
+            playerLabelList[3],
+            playerColorList[0],
+            playerColorList[1],
+            playerColorList[2],
+            playerColorList[3],
+            playerAIIconList[0],
+            playerAIIconList[1],
+            playerAIIconList[2],
+            playerAIIconList[3],
+            playerHandList[0],
+            playerHandList[1],
+            playerHandList[2],
+            playerHandList[3],
+            playerGemLayoutList[0],
+            playerGemLayoutList[1],
+            playerGemLayoutList[2],
+            playerGemLayoutList[3],
             rotateButton,
             menuArea
         )
@@ -350,62 +311,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshAfterStartNewGame() {
-        rootService.gameService.setTileFromAxialCoordinates(1, 1, PathTile(
-            // mutableMapOf(0 to 3, 1 to 4, 5 to 2, 3 to 0, 4 to 1, 2 to 5),
-            // mutableMapOf(0 to 5, 1 to 2, 3 to 4, 4 to 3, 2 to 1, 5 to 0),
-            mutableMapOf(0 to 4, 1 to 5, 2 to 3, 3 to 2, 5 to 1, 4 to 0),
-            3,
-            1,
-            1,
-            gemPositions = mutableListOf(GemType.SAPPHIRE, GemType.EMERALD, GemType.AMBER, GemType.SAPPHIRE, GemType.AMBER, GemType.EMERALD),
-            3
-        ))
-
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
+        resetAllComponents()
+
         renderGateAssignments()
 
-        for (x in -5..5) {
-            for (y in -5..5) {
-                if (!rootService.gameService.checkIfValidAxialCoordinates(x, y)) continue
-                val tile = rootService.gameService.getTileFromAxialCoordinates(x, y)
-                if(tile is GateTile || tile is InvisibleTile) continue
+        renderTiles()
 
-                var image: BufferedImage = Constants.emptyTileImage
+        renderCollectedGemsLists()
 
-                if (tile is CenterTile) image = Constants.centerTileImage
-                if (tile is EmptyTile) image = Constants.emptyTileImage
-                if (tile is TreasureTile) image = Constants.treasureTileImage
-                if (tile is PathTile) image = Constants.pathTileImageList[tile.type]
+        renderPlayerConfiguration()
 
-                val tileVisual: Visual = ImageVisual(image)
+        setRotateButtonHeight()
 
+        renderPlayerHands()
 
-                val offsetX = hexagonWidth * 9 / 2
-                val offsetY = (hexagonHeight * 5 + (hexagonHeight / 2) * 4) / 2
-
-                val areaX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0)/2 * y)
-                val areaY = hexagonSize * (3.0/2.0 * y)
-
-                val area = Area<TokenView>(
-                    posX = areaX + offsetX - hexagonWidth/2, posY = areaY + offsetY - hexagonHeight / 2,
-                    width = hexagonWidth, height = hexagonHeight,
-                    visual = tileVisual
-                )
-                area.onMouseClicked = {
-                    val clickedTile = tileMap.backward(area)
-                    println("${clickedTile.xCoordinate}, ${clickedTile.yCoordinate}")
-                }
-                area.rotate(tile.rotationOffset * 60)
-
-                if(tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
-                if(tile is CenterTile) renderGemsForCenterTile(tile, area)
-
-                outerArea.add(area)
-                tileMap.add(tile, area)
-            }
-        }
+        refreshAfterSimulationSpeedChange()
     }
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int) {
@@ -571,4 +494,135 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
         }
     }
+
+    private fun renderCollectedGemsLists() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        game.playerList.forEachIndexed {index, player ->
+            val playersGemList = mutableListOf<GemType>()
+
+            for(gate in player.gateList) {
+                playersGemList.addAll(gate.gemsCollected)
+            }
+
+            for(gem in playersGemList) {
+                val gemVisual = when(gem) {
+                    GemType.AMBER -> ImageVisual(Constants.amberImage)
+                    GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                    GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                    GemType.NONE -> Visual.EMPTY
+                }
+                val gemView = TokenView( -gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
+                playerGemLayoutList[index].add(gemView)
+            }
+        }
+    }
+
+    private fun renderTiles() {
+        for (x in -5..5) {
+            for (y in -5..5) {
+                if (!rootService.gameService.checkIfValidAxialCoordinates(x, y)) continue
+                val tile = rootService.gameService.getTileFromAxialCoordinates(x, y)
+                if(tile is GateTile || tile is InvisibleTile) continue
+
+                var image: BufferedImage = Constants.emptyTileImage
+
+                if (tile is CenterTile) image = Constants.centerTileImage
+                if (tile is EmptyTile) image = Constants.emptyTileImage
+                if (tile is TreasureTile) image = Constants.treasureTileImage
+                if (tile is PathTile) image = Constants.pathTileImageList[tile.type]
+
+                val tileVisual: Visual = ImageVisual(image)
+
+                val offsetX = hexagonWidth * 9 / 2
+                val offsetY = (hexagonHeight * 5 + (hexagonHeight / 2) * 4) / 2
+
+                val areaX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0)/2 * y)
+                val areaY = hexagonSize * (3.0/2.0 * y)
+
+                val area = Area<TokenView>(
+                    posX = areaX + offsetX - hexagonWidth/2, posY = areaY + offsetY - hexagonHeight / 2,
+                    width = hexagonWidth, height = hexagonHeight,
+                    visual = tileVisual
+                )
+                area.onMouseClicked = {
+                    val clickedTile = tileMap.backward(area)
+                    println("${clickedTile.xCoordinate}, ${clickedTile.yCoordinate}")
+                }
+                area.rotate(tile.rotationOffset * 60)
+
+                if(tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
+                if(tile is CenterTile) renderGemsForCenterTile(tile, area)
+
+                outerArea.add(area)
+                tileMap.add(tile, area)
+            }
+        }
+    }
+
+    private fun renderPlayerConfiguration() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        game.playerList.forEachIndexed { index, player ->
+            playerLabelList[index].text = player.name
+            playerLabelList[index].isVisible = true
+            playerColorList[index].visual = visualFromColorInt(player.color)
+            playerColorList[index].isVisible = true
+            playerAIIconList[index].isVisible = when(player.playerType) {
+                PlayerType.RANDOMAI -> true
+                PlayerType.SMARTAI -> true
+                else -> false
+            }
+            playerHandList[index].isVisible = true
+            playerGemLayoutList[index].isVisible = true
+        }
+    }
+
+    private fun setRotateButtonHeight() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID*250)
+    }
+
+    private fun renderPlayerHands() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        game.playerList.forEachIndexed { index, player ->
+            check(player.playHand.size > 0) {"Player does not have tile in hand"}
+
+            val tileType = player.playHand[0].type
+            playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
+        }
+    }
+
+    private fun resetAllComponents() {
+        for(label in playerLabelList) label.isVisible = false
+        for(color in playerColorList) color.isVisible = false
+        for(aiIcon in playerAIIconList) aiIcon.isVisible = false
+        for(hand in playerHandList) hand.isVisible = false
+        for(gemLayout in playerGemLayoutList) gemLayout.isVisible = false
+        tileMap.clear()
+    }
+
+    override fun refreshAfterSimulationSpeedChange() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+        simulationSpeedLabel.text = "Simulationspeed: ${game.simulationSpeed}"
+    }
+
+    // TODO override fun refreshAfterTileRotated(tile: PathTile) {}
+
+    // TODO override fun refreshAfterTilePlaced(tile: PathTile) {}
+
+    // TODO override fun refreshAfterGemMoved(movement: GemMovement) {}
+
+    // TODO override fun refreshAfterUndo(turn: Turn) {}
+
+    // TODO override fun refreshAfterRedo(turn: Turn) {}
+
+    // TODO override fun refreshAfterLoadGame() {}
 }
