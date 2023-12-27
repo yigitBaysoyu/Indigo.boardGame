@@ -51,44 +51,72 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
     fun undo() {
         val game = rootService.currentGame
         checkNotNull(game)
-        if (game.undoStack.isNotEmpty()) {
-            val lastTurn = game.undoStack.removeLast()
-            //change the score
-            lastTurn.scoreChanges.forEachIndexed { index, score ->
-                game.playerList[index].score -= score
-            }
-            //When the stones are moved back to their original position
-            lastTurn.gemMovements.forEach { movement ->
-                val endTile = game.gameLayout[movement.endTile.xCoordinate][movement.endTile.yCoordinate]
-                val startTile = game.gameLayout[movement.startTile.xCoordinate][movement.startTile.yCoordinate]
+        check(game.undoStack.isNotEmpty()) {"undoStack is empty"}
 
-                when (endTile) {
-                    is PathTile -> endTile.gemPositions.remove(movement.gemType)
-                    is GateTile -> endTile.gemsCollected.remove(movement.gemType)
-                    is CenterTile -> { endTile.availableGems.remove(movement.gemType) }
-                    is TreasureTile ->{endTile.gemPositions.remove(movement.gemType)}
-                }
+        val lastTurn = game.undoStack.removeLast()
 
-                when (startTile) {
-                    is PathTile -> startTile.gemPositions.add(movement.gemType)
-                    is GateTile -> startTile.gemsCollected.add(movement.gemType)
-                    is CenterTile -> startTile.availableGems.add(movement.gemType)
-                    is TreasureTile ->{ startTile.gemPositions.add(movement.gemType)}
-            }
-            }
-            // Retrieve the player who made the last move
-            val playerWhoPlacedTile = game.playerList[lastTurn.playerID]
-            // If the player has tiles in hand, return the last tile to the draw pile
-            if (playerWhoPlacedTile.playHand.isNotEmpty()) {
-                val tileToReturn = playerWhoPlacedTile.playHand.removeLast()
-                game.drawPile.add(tileToReturn)
-            }
-
-            game.activePlayerID = lastTurn.playerID
-            game.redoStack.addFirst(lastTurn)
-            onAllRefreshables { refreshAfterUndo(lastTurn) }
-        } else {
-            println("No moves to undo.")
+        //change the scores
+        lastTurn.scoreChanges.forEachIndexed { index, score ->
+            game.playerList[index].score -= score
         }
+
+        //When the stones are moved back to their original position
+        lastTurn.gemMovements.forEach { movement ->
+            val startTileX = movement.startTile.xCoordinate
+            val startTileY = movement.startTile.yCoordinate
+            val endTileX = movement.endTile.xCoordinate
+            val endTileY = movement.endTile.yCoordinate
+            val positionOnStartTile = movement.positionOnStartTile
+            val positionOnEndTile = movement.positionOnEndTile
+            val gemType = movement.gemType
+
+            val startTile = rootService.gameService.getTileFromAxialCoordinates(startTileX, startTileY)
+            val endTile = rootService.gameService.getTileFromAxialCoordinates(endTileX, endTileY)
+
+            when (startTile) {
+                is PathTile -> startTile.gemPositions[positionOnStartTile] = gemType
+                is CenterTile -> {
+                    if(gemType == GemType.SAPPHIRE) startTile.availableGems.addFirst(gemType)
+                    else startTile.availableGems.add(gemType)
+                }
+                is TreasureTile -> startTile.gemPositions[positionOnStartTile] = gemType
+            }
+
+            when (endTile) {
+                is PathTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+                is GateTile -> endTile.gemsCollected.remove(movement.gemType)
+                is TreasureTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+            }
+
+        }
+
+        // If the player has tiles in hand, return the last tile to the draw pile
+        val playerWhoPlacedTile = game.playerList[lastTurn.playerID]
+        if (playerWhoPlacedTile.playHand.isNotEmpty()) {
+            val tileToReturn = playerWhoPlacedTile.playHand.removeLast()
+            game.drawPile.add(tileToReturn)
+        }
+
+        // Remove placed tile from board
+        val newEmptyTile = EmptyTile(
+            connections = mapOf(),
+            rotationOffset = 0,
+            xCoordinate = lastTurn.placedTile.xCoordinate,
+            yCoordinate = lastTurn.placedTile.yCoordinate,
+        )
+        rootService.gameService.setTileFromAxialCoordinates(
+            lastTurn.placedTile.xCoordinate,
+            lastTurn.placedTile.yCoordinate,
+            newEmptyTile
+        )
+
+        // Return placed tile to players hand
+        playerWhoPlacedTile.playHand.add(lastTurn.placedTile)
+
+        // Set active player
+        game.activePlayerID = lastTurn.playerID
+
+        game.redoStack.add(lastTurn)
+        onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 }
