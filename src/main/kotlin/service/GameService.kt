@@ -28,6 +28,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val redoStack = ArrayDeque<Turn>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
+        drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
@@ -35,6 +36,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
+
+        for(player in players) {
+            player.playHand.clear()
+            player.playHand.add(drawPile.removeLast())
+        }
 
         setDefaultGameLayout()
         setGates(threePlayerVariant)
