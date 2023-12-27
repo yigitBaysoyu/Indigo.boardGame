@@ -15,5 +15,5 @@ class PathTile(
     override val xCoordinate: Int = 0,
     override  val yCoordinate: Int = 0,
     val gemPositions: MutableList<GemType> = mutableListOf(),
-    val type: Int
+    val type: Int = 0
 ) :Tile()
