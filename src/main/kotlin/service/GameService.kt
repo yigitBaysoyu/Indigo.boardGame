@@ -552,4 +552,19 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         game.gameLayout[x + 5][y + 5] = tile
     }
+
+    /**
+     * Setter for simulationSpeed which allows values between 1 and 100.
+     */
+    fun setSimulationSpeed(speed: Double) {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        var newSpeed = speed
+        if(newSpeed < 1) newSpeed = 1.0
+        if(newSpeed > 100) newSpeed = 100.0
+        game.simulationSpeed = newSpeed
+
+        onAllRefreshables { refreshAfterSimulationSpeedChange(newSpeed) }
+    }
 }

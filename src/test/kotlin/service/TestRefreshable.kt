@@ -121,7 +121,7 @@ class TestRefreshable : Refreshable {
 
     }
 
-    override fun refreshAfterSimulationSpeedChange() {
+    override fun refreshAfterSimulationSpeedChange(speed: Double) {
         refreshAfterSimulationSpeedChangeCalled = true
 
     }

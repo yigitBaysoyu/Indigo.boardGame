@@ -79,5 +79,5 @@ interface Refreshable {
     /**
      * perform refreshes that are necessary after the simulation speed changed.
      */
-    fun refreshAfterSimulationSpeedChange() {}
+    fun refreshAfterSimulationSpeedChange(speed: Double) {}
 }
