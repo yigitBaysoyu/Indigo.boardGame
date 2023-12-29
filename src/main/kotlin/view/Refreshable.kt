@@ -18,7 +18,7 @@ interface Refreshable {
      */
     fun refreshAfterStartNewGame() {}
 
-    fun refreshAfterTileRotated(tile: PathTile) {}
+    fun refreshAfterTileRotated() {}
 
     fun refreshAfterTilePlaced(tile: PathTile) {}
 
