@@ -210,7 +210,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = {
             val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
-            rootService.setSimulationsSpeed(newSpeed)
+            rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
             simulationSpeedBinary = ""
         }
     }
@@ -334,7 +334,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         renderPlayerHands()
 
-        refreshAfterSimulationSpeedChange()
+        refreshAfterSimulationSpeedChange(game.simulationSpeed)
     }
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int) {
@@ -615,10 +615,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         tileMap.clear()
     }
 
-    override fun refreshAfterSimulationSpeedChange() {
-        val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
-        simulationSpeedLabel.text = "Simulationspeed: ${game.simulationSpeed.toInt()}"
+    override fun refreshAfterSimulationSpeedChange(speed: Double) {
+        simulationSpeedLabel.text = "Simulationspeed: ${speed.toInt()}"
     }
 
     override fun refreshAfterTileRotated() {
