@@ -38,7 +38,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private val playerListOffsetX = 125
     private val playerListOffsetY = 65
 
-    private val menuAreaMargin = 50
+    private val menuAreaMargin = 64
+    private val menuAreaOffsetY = -200
     private var simulationSpeedBinary = ""
 
 
@@ -46,12 +47,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val outerArea = Pane<Area<TokenView>>(
         width = hexagonWidth * 9, height = hexagonHeight * 5 + (hexagonHeight / 2) * 4,
-        posX = halfWidth - hexagonWidth * 9 / 2 + 50, posY = 85,
+        posX = halfWidth - hexagonWidth * 9 / 2, posY = 85,
         visual = Visual.EMPTY
     )
 
     private val gateColorsBackground = TokenView(
-        posX = halfWidth - (1077 / 1.07 / 2) + 50, posY = 23,
+        posX = halfWidth - (1077 / 1.07 / 2), posY = 23,
         width = 1077 / 1.07, height = 1106 / 1.07,
         visual = ImageVisual(Constants.gates)
     )
@@ -135,7 +136,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
 
     private val menuArea = Pane<ComponentView>(
-        width = 400, height = Constants.SCENE_HEIGHT,
+        width = 425, height = Constants.SCENE_HEIGHT,
         posX = sceneWidth - 75, posY = 0,
         visual = ColorVisual(0, 0, 0, 60)
     ).apply {
@@ -143,11 +144,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playAnimation(
                 MovementAnimation(
                     componentView = this,
-                    toX = sceneWidth - 400,
+                    toX = sceneWidth - 425,
                     duration = 100
                 ).apply {
                     onFinished = {
-                        posX = sceneWidth - 400.0
+                        posX = sceneWidth - 425.0
                     }
                 }
             )
@@ -166,12 +167,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     }
                 }
             )
-
         }
     }
 
     private val simulationSpeedLabel = Label(
-        posX = menuAreaMargin, posY = 475,
+        posX = menuAreaMargin, posY = 275 + menuAreaOffsetY,
         width = 300, height = 50,
         text = "Simulationspeed: 10",
         font = Font(size = 29, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
@@ -180,7 +180,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val zeroButton = Button(
         width = 90, height = 50,
-        posX = menuAreaMargin, posY = 550,
+        posX = menuAreaMargin, posY = 350 + menuAreaOffsetY,
         text = "0",
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -191,7 +191,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val oneButton = Button(
         width = 90, height = 50,
-        posX = 100 + menuAreaMargin, posY = 550,
+        posX = 100 + menuAreaMargin, posY = 350 + menuAreaOffsetY,
         text = "1",
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -202,7 +202,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val setButton = Button(
         width = 90, height = 50,
-        posX = 200 + menuAreaMargin, posY = 550,
+        posX = 200 + menuAreaMargin, posY = 350 + menuAreaOffsetY,
         text = "Set",
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -210,16 +210,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = {
             val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
-            // rootService.setSimulationsSpeed(newSpeed)
-            simulationSpeedLabel.text = "Simulationspeed: $newSpeed"
+            rootService.setSimulationsSpeed(newSpeed)
             simulationSpeedBinary = ""
         }
     }
 
 
     private val undoButton = Button(
-        width = 145, height = 50,
-        posX = menuAreaMargin, posY = 625,
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 525 + menuAreaOffsetY,
         text = "Undo",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -228,8 +227,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val redoButton = Button(
-        width = 145, height = 50,
-        posX = menuAreaMargin + 155, posY = 625,
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 600 + menuAreaOffsetY,
         text = "Redo",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -239,7 +238,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val saveGameButton = Button(
         width = 300, height = 50,
-        posX = menuAreaMargin, posY = 700,
+        posX = menuAreaMargin, posY = 800 + menuAreaOffsetY,
         text = "Save Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -249,7 +248,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val loadGameButton = Button(
         width = 300, height = 50,
-        posX = menuAreaMargin, posY = 775,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY,
         text = "Load Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -259,13 +258,19 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val quitGameButton = Button(
         width = 300, height = 50,
-        posX = menuAreaMargin, posY = 850,
+        posX = menuAreaMargin, posY = 1150 + menuAreaOffsetY,
         text = "Quit Game",
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
     }
+
+    private val menuAreaArrow = TokenView(
+        width = 96, height = Constants.SCENE_HEIGHT,
+        posX = -57, posY = Constants.SCENE_HEIGHT / 2 - (Constants.SCENE_HEIGHT / 2),
+        visual = ImageVisual(Constants.menuAreaArrow)
+    )
 
     init {
         background = Constants.sceneBackgroundColorVisual
@@ -306,7 +311,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             redoButton,
             saveGameButton,
             loadGameButton,
-            quitGameButton
+            quitGameButton,
+            menuAreaArrow
         )
     }
 
@@ -596,6 +602,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
             val tileType = player.playHand[0].type
             playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
+            playerHandList[index].rotation = player.playHand[0].rotationOffset * 60.0
         }
     }
 
@@ -611,10 +618,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     override fun refreshAfterSimulationSpeedChange() {
         val game = rootService.currentGame
         checkNotNull(game) {"game is null"}
-        simulationSpeedLabel.text = "Simulationspeed: ${game.simulationSpeed}"
+        simulationSpeedLabel.text = "Simulationspeed: ${game.simulationSpeed.toInt()}"
     }
 
-    // TODO override fun refreshAfterTileRotated(tile: PathTile) {}
+    override fun refreshAfterTileRotated() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        val rotationOffset = game.playerList[game.activePlayerID].playHand[0].rotationOffset
+        playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+    }
 
     // TODO override fun refreshAfterTilePlaced(tile: PathTile) {}
 
