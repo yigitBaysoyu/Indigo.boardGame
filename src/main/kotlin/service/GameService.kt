@@ -626,79 +626,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 turn.gemMovements.add(gemMovement)
             }
         }
-
-        for(i in 0..5){
-            val neighbour = neighbours[i] ?: continue
-
-            if(neighbour is PathTile){
-                //If we move a gem from our placedTile to the neighbour it should be at neighbourConnection
-                val neighbourConnection = neighbour.connections[(i+3)%6] ?: continue
-
-                if(neighbour.gemPositions[neighbourConnection] != GemType.NONE){
-                    val originTile = neighbours[tile.connections[i]]
-                    val originConnection = tile.connections[i]
-                    checkNotNull(originTile)
-                    checkNotNull(originConnection)
-
-                    val endPos = findNextPosition(neighbour, neighbourConnection)
-
-                    if(endPos.first is GateTile){
-                        scoringAction(
-                            originTile,
-                            (originConnection+3)%6,
-                            endPos.first,
-                            endPos.second,
-                            neighbour.gemPositions[neighbourConnection],
-                            turn
-                        )
-                    }
-
-                    val gemMovement = GemMovement(
-                        neighbour.gemPositions[neighbourConnection],
-                        originTile,
-                        (originConnection+3)%6,
-                        endPos.first,
-                        endPos.second,
-                        false
-                    )
-                }
-            }
-            else if(neighbour is TreasureTile){
-                //If we move a gem from our placedTile to the neighbour it should be at neighbourConnection
-                val neighbourConnection = neighbour.connections[(i+3)%6]
-                checkNotNull(neighbourConnection)
-
-                if(neighbour.gemPositions[neighbourConnection] != GemType.NONE){
-                    val originTile = neighbours[tile.connections[i]]
-                    val originConnection = tile.connections[i]
-                    checkNotNull(originTile)
-                    checkNotNull(originConnection)
-
-                    val endPos = findNextPosition(neighbour, neighbourConnection)
-
-                    if(endPos.first is GateTile){
-                        scoringAction(
-                            originTile,
-                            (originConnection+3)%6,
-                            endPos.first,
-                            endPos.second,
-                            neighbour.gemPositions[neighbourConnection],
-                            turn
-                        )
-                    }
-
-                    val gemMovement = GemMovement(
-                        neighbour.gemPositions[neighbourConnection],
-                        originTile,
-                        (originConnection+3)%6,
-                        endPos.first,
-                        endPos.second,
-                        false
-                    )
-                }
-            }
-        }
-
         return turn
     }
 
@@ -810,13 +737,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             placedTile.gemPositions[startConnection] = GemType.NONE
             neighbourTile.gemPositions[endConnection] = GemType.NONE
         }
-        else if(gemAtStart != GemType.NONE){
-            placedTile.gemPositions[startConnection] = GemType.NONE
-
-            val destination = neighbourTile.connections[endConnection]
-            checkNotNull(destination)
-            neighbourTile.gemPositions[destination] = gemAtStart
-        }
         else if(gemAtEnd != GemType.NONE){
             neighbourTile.gemPositions[endConnection] = GemType.NONE
 
@@ -877,10 +797,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                             , endConnection: Int
                             , turn: Turn )
     {
-        val gemAtStart = treasureTile.gemPositions[endConnection]
-        val gemAtEnd = placedTile.gemPositions[startConnection]
+        val gemAtTreasureTile = treasureTile.gemPositions[endConnection]
+        val gemAtPlacedTile = placedTile.gemPositions[startConnection]
 
-        if(gemAtStart != GemType.NONE && gemAtEnd != GemType.NONE){
+        if(gemAtTreasureTile != GemType.NONE && gemAtPlacedTile != GemType.NONE){
             //Find origin of gem on placedTile
             val originConnection = placedTile.connections[startConnection]
             checkNotNull(originConnection)
@@ -889,7 +809,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             checkNotNull(originTile)
 
             val collisionPathTile = GemMovement(
-                gemAtStart,
+                gemAtTreasureTile,
                 originTile,
                 (originConnection + 3) % 6,
                 placedTile,
@@ -898,7 +818,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             )
 
             val collisionTreasureTile = GemMovement(
-                gemAtEnd,
+                gemAtPlacedTile,
                 treasureTile,
                 endConnection,
                 placedTile,
@@ -912,19 +832,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             placedTile.gemPositions[startConnection] = GemType.NONE
             treasureTile.gemPositions[endConnection] = GemType.NONE
         }
-        else if(gemAtStart != GemType.NONE){
+        else if(gemAtTreasureTile != GemType.NONE){
             treasureTile.gemPositions[endConnection] = GemType.NONE
 
             val destination = placedTile.connections[startConnection]
             checkNotNull(destination)
-            placedTile.gemPositions[destination] = gemAtStart
-        }
-        else if(gemAtEnd != GemType.NONE){
-            placedTile.gemPositions[startConnection] = GemType.NONE
-
-            val destination = treasureTile.connections[endConnection]
-            checkNotNull(destination)
-            treasureTile.gemPositions[destination] = gemAtEnd
+            placedTile.gemPositions[destination] = gemAtTreasureTile
         }
     }
 
@@ -938,31 +851,17 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
             checkNotNull(originTile)
 
-            val scoringMovement = GemMovement(
-                gemOnPlacedTile,
+            scoringAction(
                 originTile,
-                (originConnection +3) % 6,
+                (originConnection+3)%6,
                 gateTile,
-                (startConnection + 3) % 6,
-                false
+                (startConnection+3)%6,
+                gemOnPlacedTile,
+                turn
             )
-
-            turn.gemMovements.add(scoringMovement)
 
             placedTile.gemPositions[startConnection] = GemType.NONE
             gateTile.gemsCollected.add(gemOnPlacedTile)
-
-            val currentGame = rootService.currentGame
-            checkNotNull(currentGame)
-
-            for((index, player) in currentGame.playerList.withIndex()){
-                if(gateTile in player.gateList){
-                    player.score += gemOnPlacedTile.toInt()
-                    player.amountOfGems++
-
-                    turn.scoreChanges[index] += gemOnPlacedTile.toInt()
-                }
-            }
         }
     }
 
