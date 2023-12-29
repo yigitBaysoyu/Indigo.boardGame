@@ -69,7 +69,8 @@ class StartNewGameTest {
 
         //check if the assertion is correct, when threePlayerVariant == true and the number of player == 2
         assertThrows<IllegalArgumentException> {
-            game.gameService.startNewGame(player1,true,1.0,false) }
+            game.gameService.startNewGame(player1, true, 1.0, false)
+        }
 
         val player2 = mutableListOf(
             Player("q", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf()),
@@ -80,15 +81,17 @@ class StartNewGameTest {
             Player("q", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf())
         )
         //check if the assertion is correct, true and the number of player < 2 or > 4
-         assertThrows<IllegalArgumentException> {
-            game.gameService.startNewGame(player2,false,1.0,false) }
+        assertThrows<IllegalArgumentException> {
+            game.gameService.startNewGame(player2, false, 1.0, false)
+        }
 
         val player3 = mutableListOf(
             Player("q", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf()),
         )
 
         assertThrows<IllegalArgumentException> {
-            game.gameService.startNewGame(player3,false,1.0,false) }
+            game.gameService.startNewGame(player3, false, 1.0, false)
+        }
 
     }
 
@@ -173,9 +176,9 @@ class StartNewGameTest {
 
         //check if player1 shares gates with player 2
         var shared = 0
-        newGame.playerList[0].gateList.forEach {gateTile ->
+        newGame.playerList[0].gateList.forEach { gateTile ->
             newGame.playerList[1].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
+                if (gateTile == gateTile1) {
                     shared++
                 }
             }
@@ -184,9 +187,9 @@ class StartNewGameTest {
 
         //check if player 1 shares gates with player 3
         var shared1 = 0
-        newGame.playerList[0].gateList.forEach {gateTile ->
+        newGame.playerList[0].gateList.forEach { gateTile ->
             newGame.playerList[2].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
+                if (gateTile == gateTile1) {
                     shared1++
                 }
             }
@@ -195,9 +198,9 @@ class StartNewGameTest {
 
         //check if player 3 shares gates with player 2
         var shared2 = 0
-        newGame.playerList[1].gateList.forEach {gateTile ->
+        newGame.playerList[1].gateList.forEach { gateTile ->
             newGame.playerList[2].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
+                if (gateTile == gateTile1) {
                     shared2++
                 }
             }
@@ -244,75 +247,67 @@ class StartNewGameTest {
         assertEquals(0, newGame.undoStack.size)
         assertEquals(50, newGame.drawPile.size)
 
-        //check if player1 shares gates with player 2
-        var shared = 0
-        newGame.playerList[0].gateList.forEach {gateTile ->
-            newGame.playerList[1].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared++
-                }
-            }
-        }
-        assertEquals(4, shared)
-
-        //check if player 1 shares gates with player 3
-        var shared1 = 0
-        newGame.playerList[0].gateList.forEach {gateTile ->
-            newGame.playerList[2].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared1++
-                }
-            }
-        }
-        assertEquals(4, shared1)
-
-        //check if player 3 shares gates with player 2
-        var shared2 = 0
-        newGame.playerList[1].gateList.forEach {gateTile ->
-            newGame.playerList[2].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared2++
-                }
-            }
-        }
-        assertEquals(4, shared2)
-
-        //check if player1 shares gates with player 4
-        var shared3 = 0
-        newGame.playerList[0].gateList.forEach {gateTile ->
-            newGame.playerList[3].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared3++
-                }
-            }
-        }
-        assertEquals(4, shared3)
-
-        //check if player 2  shares gates with player 4
-        var shared4 = 0
-        newGame.playerList[3].gateList.forEach {gateTile ->
-            newGame.playerList[1].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared4++
-                }
-            }
-        }
-        assertEquals(4, shared4)
-
-        //check if player 3  shares gates with player 4
-        var shared5 = 0
-        newGame.playerList[3].gateList.forEach {gateTile ->
-            newGame.playerList[2].gateList.forEach { gateTile1 ->
-                if(gateTile == gateTile1){
-                    shared5++
-                }
-            }
-        }
-        assertEquals(4, shared5)
 
         //check if the call of Refreshs are correct
         assertTrue(test.refreshAfterStartNewGameCalled)
 
+    }
+
+    /**
+     * Tests the game start behavior with four players.
+     * Verifies the initialization of the game components and the correct distribution of gates.
+     */
+    @Test
+    fun testStartNewGameFourPlayersGates() {
+        val game = RootService()
+
+        val test = TestRefreshable()
+        test.reset()
+        game.addRefreshables(test)
+        val player = mutableListOf(
+            Player("q", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf()),
+            Player("q1", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf()),
+            Player("q2", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf()),
+            Player("q3", 0, PlayerType.LOCALPLAYER, 0, 0, mutableListOf(), mutableListOf())
+        )
+        game.gameService.startNewGame(player, false, 1.0, false)
+
+        val newGame = game.currentGame
+        checkNotNull(newGame)
+        //check if player1 shares gates with player 2
+        assertEquals(4 , countSharedGates(newGame.playerList[0] , newGame.playerList[1]))
+
+        //check if player 1 shares gates with player 3
+        assertEquals(4 , countSharedGates(newGame.playerList[0] , newGame.playerList[2]))
+
+        //check if player 3 shares gates with player 2
+        assertEquals(4 , countSharedGates(newGame.playerList[2] , newGame.playerList[1]))
+
+        //check if player1 shares gates with player 4
+        assertEquals(4 , countSharedGates(newGame.playerList[0] , newGame.playerList[3]))
+
+        //check if player 2  shares gates with player 4
+        assertEquals(4 , countSharedGates(newGame.playerList[3] , newGame.playerList[1]))
+
+        //check if player 3  shares gates with player 4
+        assertEquals(4 , countSharedGates(newGame.playerList[2] , newGame.playerList[3]))
+
+    }
+
+    /**
+     * Private function helps to counting the shared gates
+     */
+    private fun countSharedGates(player1 : Player , player2: Player) : Int{
+
+        var shared = 0
+        player1.gateList.forEach { gateTile ->
+            player2.gateList.forEach { gateTile1 ->
+                if (gateTile == gateTile1) {
+                    shared++
+                }
+            }
+        }
+        return shared
     }
 }
 
