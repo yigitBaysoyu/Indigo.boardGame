@@ -585,10 +585,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             //stone movement entity and letting them add collision handling
             //For each
             when(currentNeighbour){
-                is PathTile ->  moveGemTo(tile, i, currentNeighbour, currentConnection, turn)
-                is CenterTile -> moveGemTo(tile, i, currentNeighbour, turn)
-                is GateTile -> moveGemTo(tile, i, currentNeighbour, turn)
-                is TreasureTile -> moveGemTo(tile, i, currentNeighbour, currentConnection, turn)
+                is PathTile ->  collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
+                is CenterTile -> collisionCheck(tile, i, currentNeighbour, turn)
+                is GateTile -> collisionCheck(tile, i, currentNeighbour, turn)
+                is TreasureTile -> collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
             }
         }
 
@@ -696,11 +696,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Moves a gem from [placedTile] to [neighbourTile] or the other way around and
      * checks for collisions
      */
-    private fun moveGemTo(placedTile: PathTile
-                          , startConnection: Int
-                          , neighbourTile: PathTile
-                          , endConnection: Int
-                          , turn: Turn )
+    private fun collisionCheck(placedTile: PathTile
+                               , startConnection: Int
+                               , neighbourTile: PathTile
+                               , endConnection: Int
+                               , turn: Turn )
     {
         val gemAtStart = placedTile.gemPositions[startConnection]
         val gemAtEnd = neighbourTile.gemPositions[endConnection]
@@ -750,7 +750,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * In the case of center tile and pathtile either there is a stone on the pathtile
      * which means a collision will happen or the stone needs to be moved to the pathtile destination
      */
-    private fun moveGemTo(placedTile: PathTile, startConnection: Int, centerTile: CenterTile, turn: Turn ){
+    private fun collisionCheck(placedTile: PathTile, startConnection: Int, centerTile: CenterTile, turn: Turn ){
         val gemOnPlacedTile = placedTile.gemPositions[startConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
@@ -791,11 +791,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
-    private fun moveGemTo(  placedTile: PathTile
-                            , startConnection: Int
-                            , treasureTile: TreasureTile
-                            , endConnection: Int
-                            , turn: Turn )
+    private fun collisionCheck(placedTile: PathTile
+                               , startConnection: Int
+                               , treasureTile: TreasureTile
+                               , endConnection: Int
+                               , turn: Turn )
     {
         val gemAtTreasureTile = treasureTile.gemPositions[endConnection]
         val gemAtPlacedTile = placedTile.gemPositions[startConnection]
@@ -841,7 +841,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
-    private fun moveGemTo(placedTile: PathTile, startConnection: Int, gateTile: GateTile, turn: Turn ){
+    private fun collisionCheck(placedTile: PathTile, startConnection: Int, gateTile: GateTile, turn: Turn ){
         val gemOnPlacedTile = placedTile.gemPositions[startConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
