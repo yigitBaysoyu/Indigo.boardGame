@@ -11,9 +11,9 @@ import entity.*
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
     /**
-     * Funktion to rotate a tile.
+     * Function to rotate a tile.
      *
-     * This funktion updates the rotationOffset and connections of the provided PathTile.
+     * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
      *
      * @param tile the PathTIle to be rotated
