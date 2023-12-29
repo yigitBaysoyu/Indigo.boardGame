@@ -86,6 +86,18 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         }
     }
 
+    private val playerScoreList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val scoreLabel = Label(
+                width = 100, height = 50,
+                posX = -25 + playerListOffsetX, posY = 90 + playerListOffsetY + i*250 + hexagonHeight / 2 - 25,
+                text = "0 pts.",
+                font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+            )
+            add(scoreLabel)
+        }
+    }
+
     private val playerAIIconList = mutableListOf<TokenView>().apply {
         for(i in 0 until 4) {
             val playerAIIcon = TokenView(
@@ -286,6 +298,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playerColorList[1],
             playerColorList[2],
             playerColorList[3],
+            playerScoreList[0],
+            playerScoreList[1],
+            playerScoreList[2],
+            playerScoreList[3],
             playerAIIconList[0],
             playerAIIconList[1],
             playerAIIconList[2],
@@ -333,6 +349,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         setRotateButtonHeight()
 
         renderPlayerHands()
+
+        updatePlayerScores()
 
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
     }
@@ -593,6 +611,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID*250)
     }
 
+    private fun updatePlayerScores() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        game.playerList.forEachIndexed {index, player ->
+            playerScoreList[index].text = "${player.score} pts."
+        }
+    }
+
     private fun renderPlayerHands() {
         val game = rootService.currentGame
         checkNotNull(game) {"game is null"}
@@ -635,6 +662,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
         view.visual = newVisual
         view.rotation = tile.rotationOffset * 60.0
+
+        renderPlayerHands()
+        updatePlayerScores()
+        setRotateButtonHeight()
     }
 
     // TODO override fun refreshAfterGemMoved(movement: GemMovement) {}
