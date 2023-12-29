@@ -43,6 +43,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         setDefaultGameLayout()
+        setSimulationSpeed(simulationSpeed)
         setGates(threePlayerVariant)
         onAllRefreshables { refreshAfterStartNewGame() }
     }
