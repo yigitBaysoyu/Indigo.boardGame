@@ -43,7 +43,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private var simulationSpeedBinary = ""
 
 
-	private val tileMap: BidirectionalMap<Tile, Area<TokenView>> = BidirectionalMap()
+	private val tileMap: BidirectionalMap<Pair<Int, Int>, Area<TokenView>> = BidirectionalMap()
 
     private val outerArea = Pane<Area<TokenView>>(
         width = hexagonWidth * 9, height = hexagonHeight * 5 + (hexagonHeight / 2) * 4,
@@ -553,8 +553,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     visual = tileVisual
                 )
                 area.onMouseClicked = {
-                    val clickedTile = tileMap.backward(area)
-                    println("${clickedTile.xCoordinate}, ${clickedTile.yCoordinate}")
+                    val clickedCoords = tileMap.backward(area)
+                    println("${clickedCoords.first}, ${clickedCoords.second}")
                 }
                 area.rotate(tile.rotationOffset * 60)
 
@@ -562,7 +562,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 if(tile is CenterTile) renderGemsForCenterTile(tile, area)
 
                 outerArea.add(area)
-                tileMap.add(tile, area)
+                tileMap.add(Pair(x,y), area)
             }
         }
     }
@@ -627,7 +627,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
     }
 
-    // TODO override fun refreshAfterTilePlaced(tile: PathTile) {}
+    override fun refreshAfterTilePlaced(tile: PathTile) {
+        val x = tile.xCoordinate
+        val y = tile.yCoordinate
+        val view = tileMap.forward(Pair(x,y))
+
+        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+        view.visual = newVisual
+        view.rotation = tile.rotationOffset * 60.0
+    }
 
     // TODO override fun refreshAfterGemMoved(movement: GemMovement) {}
 
