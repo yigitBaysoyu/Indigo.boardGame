@@ -44,5 +44,7 @@ class Constants {
         val redoIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RedoIcon.png"))
         val rotateIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RotateIcon.png"))
         val aiIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/AIIcon.png"))
+        val menuAreaArrow: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MenuAreaArrow.png"))
+
     }
 }
