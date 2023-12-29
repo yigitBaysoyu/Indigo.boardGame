@@ -632,8 +632,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
             if(neighbour is PathTile){
                 //If we move a gem from our placedTile to the neighbour it should be at neighbourConnection
-                val neighbourConnection = neighbour.connections[(i+3)%6]
-                checkNotNull(neighbourConnection)
+                val neighbourConnection = neighbour.connections[(i+3)%6] ?: continue
 
                 if(neighbour.gemPositions[neighbourConnection] != GemType.NONE){
                     val originTile = neighbours[tile.connections[i]]
