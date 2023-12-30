@@ -27,6 +27,7 @@ import kotlin.math.sqrt
  */
 class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
+    // Constants / Measurements
     private val sceneWidth = Constants.SCENE_WIDTH
     private val halfWidth = sceneWidth / 2
 
@@ -43,7 +44,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private var simulationSpeedBinary = ""
 
 
+    // Data holders
 	private val tileMap: BidirectionalMap<Pair<Int, Int>, Area<TokenView>> = BidirectionalMap()
+    private val gemMap: BidirectionalMap<Area<TokenView>, MutableList<TokenView>> = BidirectionalMap()
 
     private val outerArea = Pane<Area<TokenView>>(
         width = hexagonWidth * 9, height = hexagonHeight * 5 + (hexagonHeight / 2) * 4,
@@ -367,6 +370,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if(tile is TreasureTile) gemPositions = tile.gemPositions
 
         rotateListBackwards(gemPositions, tile.rotationOffset)
+        val gemList = mutableListOf<TokenView>()
 
         for(i in 0 .. 5) {
             val gemVisual = when(gemPositions[i]) {
@@ -402,7 +406,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             //SAPPHIRE, EMERALD, AMBER, NONE, AMBER, NONE
             val gemView = TokenView(gemX - gemSize / 2, gemY - gemSize / 2, gemSize, gemSize, gemVisual)
             area.add(gemView)
+            gemList.add(gemView)
         }
+
+        gemMap.add(area, gemList)
     }
 
     private fun renderGemsForCenterTile(tile: CenterTile, area: Area<TokenView>) {
@@ -413,6 +420,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             Pair(hexagonWidth / 4, hexagonHeight / 8),
             Pair(-hexagonWidth / 4, hexagonHeight / 8)
         )
+
+        val gemList = mutableListOf<TokenView>()
 
         for(i in 0 until tile.availableGems.size - 1) {
             var gemX = hexagonWidth / 2
@@ -426,6 +435,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 ImageVisual(Constants.emeraldImage)
             )
             area.add(gemView)
+            gemList.add(gemView)
         }
 
         if(tile.availableGems.size >= 1) {
@@ -437,7 +447,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 ImageVisual(Constants.sapphireImage)
             )
             area.add(gemView)
+            gemList.add(gemView)
         }
+
+        gemMap.add(area, gemList)
     }
 
     private fun visualFromColorInt(number: Int): ImageVisual {
@@ -524,22 +537,27 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "Game is null" }
 
         game.playerList.forEachIndexed {index, player ->
-            val playersGemList = mutableListOf<GemType>()
+            renderCollectedGemsForPlayer(player, index)
+        }
+    }
 
-            for(gate in player.gateList) {
-                playersGemList.addAll(gate.gemsCollected)
-            }
+    private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
+        val playersGemList = mutableListOf<GemType>()
 
-            for(gem in playersGemList) {
-                val gemVisual = when(gem) {
-                    GemType.AMBER -> ImageVisual(Constants.amberImage)
-                    GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
-                    GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
-                    GemType.NONE -> Visual.EMPTY
-                }
-                val gemView = TokenView( -gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
-                playerGemLayoutList[index].add(gemView)
+        for(gate in player.gateList) {
+            playersGemList.addAll(gate.gemsCollected)
+        }
+
+        playerGemLayoutList[playerIndex].clear()
+        for(gem in playersGemList) {
+            val gemVisual = when(gem) {
+                GemType.AMBER -> ImageVisual(Constants.amberImage)
+                GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                GemType.NONE -> Visual.EMPTY
             }
+            val gemView = TokenView( -gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
+            playerGemLayoutList[playerIndex].add(gemView)
         }
     }
 
@@ -634,12 +652,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun resetAllComponents() {
+        outerArea.removeAll { true }
+
         for(label in playerLabelList) label.isVisible = false
         for(color in playerColorList) color.isVisible = false
         for(aiIcon in playerAIIconList) aiIcon.isVisible = false
         for(hand in playerHandList) hand.isVisible = false
         for(gemLayout in playerGemLayoutList) gemLayout.isVisible = false
+        for(gemLayout in playerGemLayoutList) gemLayout.removeAll { true }
         tileMap.clear()
+        gemMap.clear()
     }
 
     override fun refreshAfterSimulationSpeedChange(speed: Double) {
@@ -668,11 +690,85 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         setRotateButtonHeight()
     }
 
-    // TODO override fun refreshAfterGemMoved(movement: GemMovement) {}
+    override fun refreshAfterGemMoved(movement: GemMovement) {
+        val startX = movement.startTile.xCoordinate
+        val startY = movement.startTile.yCoordinate
 
-    // TODO override fun refreshAfterUndo(turn: Turn) {}
+        val tileView = tileMap.forward(Pair(startX, startY))
+        val gemViews = gemMap.forward(tileView)
+        val gemView = gemViews[movement.positionOnStartTile]
 
-    // TODO override fun refreshAfterRedo(turn: Turn) {}
+        gemView.visual = Visual.EMPTY
 
-    // TODO override fun refreshAfterLoadGame() {}
+        if(!movement.didCollide) {
+            val endX = movement.endTile.xCoordinate
+            val endY = movement.endTile.yCoordinate
+
+            val endTileView = tileMap.forward(Pair(endX, endY))
+            val endGemViews = gemMap.forward(endTileView)
+            val endGemView = endGemViews[movement.positionOnEndTile]
+
+            val gemVisual = when(movement.gemType) {
+                GemType.AMBER -> ImageVisual(Constants.amberImage)
+                GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                GemType.NONE -> Visual.EMPTY
+            }
+
+            endGemView.visual = gemVisual
+        }
+    }
+
+    override fun refreshAfterUndo(turn: Turn) {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        // render reverted scores
+        updatePlayerScores()
+
+        // render old tile in hand
+        val player = game.playerList[turn.playerID]
+        val tileType = player.playHand[0].type
+        playerHandList[turn.playerID].visual = ImageVisual(Constants.pathTileImageList[tileType])
+        playerHandList[turn.playerID].rotation = player.playHand[0].rotationOffset * 60.0
+
+        // remove placed tile from board
+        val tileX = turn.placedTile.xCoordinate
+        val tileY = turn.placedTile.yCoordinate
+        val tileView = tileMap.forward(Pair(tileX, tileY))
+        tileView.visual = ImageVisual(Constants.emptyTileImage)
+
+        // update whose turn it is
+        setRotateButtonHeight()
+
+        // update collected gems list under players name
+        renderCollectedGemsForPlayer(player, turn.playerID)
+
+        // update gem positions
+        for(movement in turn.gemMovements) {
+
+            // put gem back on start tile
+            val startX = movement.startTile.xCoordinate
+            val startY = movement.startTile.yCoordinate
+
+            val startView = tileMap.forward(Pair(startX, startY))
+            val gemView = gemMap.forward(startView)[movement.positionOnStartTile]
+            val gemVisual = when(movement.gemType) {
+                GemType.AMBER -> ImageVisual(Constants.amberImage)
+                GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                GemType.NONE -> Visual.EMPTY
+            }
+            gemView.visual = gemVisual
+
+            // remove gem from endTile
+            if(!movement.didCollide && movement.endTile !is GateTile) {
+                val endX = movement.endTile.xCoordinate
+                val endY = movement.endTile.yCoordinate
+                val endView = tileMap.forward(Pair(endX, endY))
+                val endGemView = gemMap.forward(endView)[movement.positionOnEndTile]
+                endGemView.visual = Visual.EMPTY
+            }
+        }
+    }
 }
