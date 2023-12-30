@@ -29,6 +29,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     // Constants / Measurements
     private val sceneWidth = Constants.SCENE_WIDTH
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
 
     private val hexagonWidth = (360 / 3 / 1.05).toInt()
@@ -43,11 +44,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private val menuAreaOffsetY = -200
     private var simulationSpeedBinary = ""
 
-
-    // Data holders
+    // Maps
 	private val tileMap: BidirectionalMap<Pair<Int, Int>, Area<TokenView>> = BidirectionalMap()
     private val gemMap: BidirectionalMap<Area<TokenView>, MutableList<TokenView>> = BidirectionalMap()
 
+    // Components
     private val outerArea = Pane<Area<TokenView>>(
         width = hexagonWidth * 9, height = hexagonHeight * 5 + (hexagonHeight / 2) * 4,
         posX = halfWidth - hexagonWidth * 9 / 2, posY = 85,
@@ -151,7 +152,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
 
     private val menuArea = Pane<ComponentView>(
-        width = 425, height = Constants.SCENE_HEIGHT,
+        width = 425, height = sceneHeight,
         posX = sceneWidth - 75, posY = 0,
         visual = ColorVisual(0, 0, 0, 60)
     ).apply {
@@ -282,8 +283,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val menuAreaArrow = TokenView(
-        width = 96, height = Constants.SCENE_HEIGHT,
-        posX = -57, posY = Constants.SCENE_HEIGHT / 2 - (Constants.SCENE_HEIGHT / 2),
+        width = 96, height = sceneHeight,
+        posX = -57, posY = 0,
         visual = ImageVisual(Constants.menuAreaArrow)
     )
 
@@ -652,14 +653,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun resetAllComponents() {
-        outerArea.removeAll { true }
+        outerArea.clear()
 
         for(label in playerLabelList) label.isVisible = false
         for(color in playerColorList) color.isVisible = false
         for(aiIcon in playerAIIconList) aiIcon.isVisible = false
         for(hand in playerHandList) hand.isVisible = false
         for(gemLayout in playerGemLayoutList) gemLayout.isVisible = false
-        for(gemLayout in playerGemLayoutList) gemLayout.removeAll { true }
+        for(gemLayout in playerGemLayoutList) gemLayout.clear()
         tileMap.clear()
         gemMap.clear()
     }
