@@ -5,7 +5,6 @@ import java.io.File
 import java.io.InputStreamReader
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.lang.IllegalStateException
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
 
@@ -552,13 +551,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     /**
      * Function to initialize all gem Movements needed,
      * after a new tile is placed. Checks for collisions and
-     * moves gems until of the path the gem is on.
+     * moves gems until the gem is at the end of its path.
      *
      * @param[turn] The turn in which the movement occurs
      * @param[tile] The tile that is placed in the turn
      *
      * @return A turn modified so that the movement of the gems
-     * and collisions, if any happened, are represented by the turn
+     * and collisions, if any happened, are represented by the [GemMovement]
+     * objects in [Turn.gemMovements]
      */
 
     fun moveGems(turn: Turn, tile: PathTile): Turn{
@@ -581,9 +581,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             if(currentNeighbour == null){
                 continue
             }
-            //Still need to consider collision handling, mb giving each movegemTo method the
-            //stone movement entity and letting them add collision handling
-            //For each
+
             when(currentNeighbour){
                 is PathTile ->  collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
                 is CenterTile -> collisionCheck(tile, i, currentNeighbour, turn)
@@ -602,7 +600,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 checkNotNull(originConnection)
                 checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
 
-                val endPos = findNextPosition(tile, i)
+                val endPos = findEndPosition(tile, i)
                 if(endPos.first is GateTile){
                     scoringAction(
                         originTile,
@@ -630,85 +628,66 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Function to find the next position, of a gem,
-     * on the correct neighbour according to the current connection
-     * of the gem. If no next Tile is found the function end
+     * Function to recursively search for the end position
+     * of a gem.
+     *
+     * The Function recursively searches for the next neighbour to
+     * traverse, if there is no next neighbour it returns current [tile]
      *
      * @param[tile] current position of gem
-     * @param[startConnection] Starting connection on [tile]
+     * @param[currentConnection] current position of the gem on [tile]
      *
-     * @return The tile where the stone ends up. If no next is found
-     * returns [tile] itself
+     * @return The tile where the gem ends up.
      */
-    private fun findNextPosition(tile: Tile, startConnection: Int): Pair<Tile, Int>{
-        val nextTile = getAdjacentTileByConnection(tile, startConnection)
-
+    private fun findEndPosition(tile: Tile, currentConnection: Int): Pair<Tile, Int>{
+        val nextTile = getAdjacentTileByConnection(tile, currentConnection)
         //Both large blocks do basically the same but cant access gemPositions if I just check for both
-        if(tile is PathTile){
+        if(tile is TraverseAbleTile){
             when(nextTile){
                 //Increase score action
-                is GateTile -> nextTile.gemsCollected.add(tile.gemPositions.removeAt(startConnection))
-                is PathTile -> {
-                    val gem: GemType = tile.gemPositions[startConnection]
-                    tile.gemPositions[startConnection] = GemType.NONE
-                    val nextConnection = nextTile.connections[(startConnection + 3) % 6]
+                is GateTile -> nextTile.gemsCollected.add(tile.gemPositions.removeAt(currentConnection))
+                is TraverseAbleTile -> {
+                    val gem: GemType = tile.gemPositions[currentConnection]
+                    tile.gemPositions[currentConnection] = GemType.NONE
+
+                    val nextConnection = nextTile.connections[(currentConnection + 3) % 6]
                     checkNotNull(nextConnection)
+
                     nextTile.gemPositions[nextConnection] = gem
 
-                    return findNextPosition(nextTile, nextConnection)
+                    return findEndPosition(nextTile, nextConnection)
                 }
-                is TreasureTile -> {
-                    val gem: GemType = tile.gemPositions[startConnection]
-                    tile.gemPositions[startConnection] = GemType.NONE
-                    val nextConnection = nextTile.connections[(startConnection + 3) % 6]
-                    checkNotNull(nextConnection)
-                    nextTile.gemPositions[nextConnection] = gem
-
-                    return findNextPosition(nextTile, nextConnection)
-                }
-                else -> return Pair(tile, startConnection)
+                else -> return Pair(tile, currentConnection)
             }
         }
-
-        if(tile is TreasureTile){
-            when(nextTile){
-                //Increase score action
-                is GateTile -> throw IllegalStateException("There is no direct connection possible")
-                is PathTile -> {
-                    val gem = tile.gemPositions[startConnection]
-                    tile.gemPositions[startConnection] = GemType.NONE
-                    val nextConnection = nextTile.connections[(startConnection + 3) % 6]
-                    checkNotNull(nextConnection)
-                    nextTile.gemPositions[nextConnection] = gem
-
-                    return findNextPosition(nextTile, nextConnection)
-                }
-                is TreasureTile -> {
-                    throw IllegalStateException("There is no direct connection possible")
-                }
-                else -> return Pair(tile, startConnection)
-            }
-        }
-        return Pair<Tile, Int>(tile, startConnection)
+        return Pair<Tile, Int>(tile, currentConnection)
     }
 
     /**
-     * Moves a gem from [placedTile] to [neighbourTile] or the other way around and
-     * checks for collisions
+     * Function which focuses on checking whether there are collisions between
+     * two [PathTile]'s, if there is no collision detected it moves the gem to the [placedTile].
+     *
+     * @param [placedTile] The tile which was placed in the current [turn]
+     * @param [currentConnection] The connection on the [placedTile], at which the
+     * [neighbourTile] sits
+     * @param [neighbourTile] The neighbouring tile which sits at [currentConnection]
+     * @param [neighbourConnection] The connection at which [placedTile] sits, from the
+     * perspective of [neighbourTile]
+     * @param [turn] The currently active [Turn]
      */
     private fun collisionCheck(placedTile: PathTile
-                               , startConnection: Int
+                               , currentConnection: Int
                                , neighbourTile: PathTile
-                               , endConnection: Int
+                               , neighbourConnection: Int
                                , turn: Turn )
     {
-        val gemAtStart = placedTile.gemPositions[startConnection]
-        val gemAtEnd = neighbourTile.gemPositions[endConnection]
+        val gemAtStart = placedTile.gemPositions[currentConnection]
+        val gemAtEnd = neighbourTile.gemPositions[neighbourConnection]
 
         //Create GemMovements for colliding gems
         if(gemAtStart != GemType.NONE && gemAtEnd != GemType.NONE){
             //Get origin tile of the gem on the placedTile
-            val originConnection = placedTile.connections[startConnection]
+            val originConnection = placedTile.connections[currentConnection]
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
@@ -719,42 +698,49 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 originTile,
                 (originConnection+3)%6,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
             val collisionMoveEndTile = GemMovement(
                 gemAtEnd,
                 neighbourTile,
-                endConnection,
+                neighbourConnection,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
 
             turn.gemMovements.add(collisionMovePlacedTile)
             turn.gemMovements.add(collisionMoveEndTile)
 
-            placedTile.gemPositions[startConnection] = GemType.NONE
-            neighbourTile.gemPositions[endConnection] = GemType.NONE
+            placedTile.gemPositions[currentConnection] = GemType.NONE
+            neighbourTile.gemPositions[neighbourConnection] = GemType.NONE
         }
         else if(gemAtEnd != GemType.NONE){
-            neighbourTile.gemPositions[endConnection] = GemType.NONE
+            neighbourTile.gemPositions[neighbourConnection] = GemType.NONE
 
-            val destination = placedTile.connections[startConnection]
+            val destination = placedTile.connections[currentConnection]
             checkNotNull(destination)
             placedTile.gemPositions[destination] = gemAtEnd
         }
     }
 
     /**
-     * In the case of center tile and pathtile either there is a stone on the pathtile
-     * which means a collision will happen or the stone needs to be moved to the pathtile destination
+     * Function which focuses on checking whether there are collisions between
+     * a [PathTile] and a [CenterTile], if there is no collision detected it moves the gem to the [placedTile].
+     * It is important to note, that a [CenterTile] has a Gem for every [Tile] that is placed at a connection
+     *
+     * @param [placedTile] The tile which was placed in the current [turn]
+     * @param [currentConnection] The connection on the [placedTile], at which the
+     * [centerTile] sits
+     * @param [centerTile] The neighbouring tile which sits at [currentConnection]
+     * @param [turn] The currently active [Turn]
      */
-    private fun collisionCheck(placedTile: PathTile, startConnection: Int, centerTile: CenterTile, turn: Turn ){
-        val gemOnPlacedTile = placedTile.gemPositions[startConnection]
+    private fun collisionCheck(placedTile: PathTile, currentConnection: Int, centerTile: CenterTile, turn: Turn ){
+        val gemOnPlacedTile = placedTile.gemPositions[currentConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
-            val originConnection = placedTile.connections[startConnection]
+            val originConnection = placedTile.connections[currentConnection]
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
@@ -765,44 +751,57 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 originTile,
                 (originConnection + 3) % 6,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
 
             val collisionCenterTile = GemMovement(
                 centerTile.availableGems.last(),
                 centerTile,
-                (startConnection + 3) % 6,
+                (currentConnection + 3) % 6,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
 
             turn.gemMovements.add(collisionPathTile)
             turn.gemMovements.add(collisionCenterTile)
 
-            placedTile.gemPositions[startConnection] = GemType.NONE
+            placedTile.gemPositions[currentConnection] = GemType.NONE
             centerTile.availableGems.removeLast()
         }
         else{
-            val destination = placedTile.connections[startConnection]
+            val destination = placedTile.connections[currentConnection]
             checkNotNull(destination)
             placedTile.gemPositions[destination] = centerTile.availableGems.removeLast()
         }
     }
 
+    /**
+     * Function which focuses on checking whether there are collisions between
+     * a [PathTile] and a [TreasureTile], if there is no collision detected it moves the gem to the [placedTile].
+     *
+     * @param [placedTile] The tile which was placed in the current [turn]
+     * @param [currentConnection] The connection on the [placedTile], at which the
+     * [treasureTile] sits
+     * @param [treasureTile] The neighbouring tile which sits at [currentConnection]
+     * @param [treasureTileConnection] The corresponding connection on the [treasureTile]
+     * @param [turn] The currently active [Turn]
+     */
+
     private fun collisionCheck(placedTile: PathTile
-                               , startConnection: Int
+                               , currentConnection: Int
                                , treasureTile: TreasureTile
-                               , endConnection: Int
+                               , treasureTileConnection: Int
                                , turn: Turn )
     {
-        val gemAtTreasureTile = treasureTile.gemPositions[endConnection]
-        val gemAtPlacedTile = placedTile.gemPositions[startConnection]
+        val gemAtTreasureTile = treasureTile.gemPositions[treasureTileConnection]
+        val gemAtPlacedTile = placedTile.gemPositions[currentConnection]
 
+        //Create collision report
         if(gemAtTreasureTile != GemType.NONE && gemAtPlacedTile != GemType.NONE){
             //Find origin of gem on placedTile
-            val originConnection = placedTile.connections[startConnection]
+            val originConnection = placedTile.connections[currentConnection]
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
@@ -813,39 +812,49 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 originTile,
                 (originConnection + 3) % 6,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
 
             val collisionTreasureTile = GemMovement(
                 gemAtPlacedTile,
                 treasureTile,
-                endConnection,
+                treasureTileConnection,
                 placedTile,
-                startConnection,
+                currentConnection,
                 true
             )
 
             turn.gemMovements.add(collisionPathTile)
             turn.gemMovements.add(collisionTreasureTile)
 
-            placedTile.gemPositions[startConnection] = GemType.NONE
-            treasureTile.gemPositions[endConnection] = GemType.NONE
+            placedTile.gemPositions[currentConnection] = GemType.NONE
+            treasureTile.gemPositions[treasureTileConnection] = GemType.NONE
         }
-        else if(gemAtTreasureTile != GemType.NONE){
-            treasureTile.gemPositions[endConnection] = GemType.NONE
 
-            val destination = placedTile.connections[startConnection]
+        else if(gemAtTreasureTile != GemType.NONE){
+            treasureTile.gemPositions[treasureTileConnection] = GemType.NONE
+
+            val destination = placedTile.connections[currentConnection]
             checkNotNull(destination)
             placedTile.gemPositions[destination] = gemAtTreasureTile
         }
     }
 
-    private fun collisionCheck(placedTile: PathTile, startConnection: Int, gateTile: GateTile, turn: Turn ){
-        val gemOnPlacedTile = placedTile.gemPositions[startConnection]
+    /**
+     * Function to check if there was a scoring move directly after a tile is placed
+     *
+     * @param[placedTile] The tile which was placed in the current [Turn]
+     * @param [currentConnection] The connection on the [placedTile], at which the
+     * [gateTile] sits
+     * @param[gateTile] The Tile at the corresponding connection
+     * @param[turn] The current [Turn]
+     */
+    private fun collisionCheck(placedTile: PathTile, currentConnection: Int, gateTile: GateTile, turn: Turn ){
+        val gemOnPlacedTile = placedTile.gemPositions[currentConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
-            val originConnection = placedTile.connections[startConnection]
+            val originConnection = placedTile.connections[currentConnection]
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
@@ -855,19 +864,27 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 originTile,
                 (originConnection+3)%6,
                 gateTile,
-                (startConnection+3)%6,
+                (currentConnection+3)%6,
                 gemOnPlacedTile,
                 turn
             )
 
-            placedTile.gemPositions[startConnection] = GemType.NONE
+            placedTile.gemPositions[currentConnection] = GemType.NONE
             gateTile.gemsCollected.add(gemOnPlacedTile)
         }
     }
 
     /**
      * Function which creates a Gem movement representing the scoring move,
-     * and adds the points according to the move
+     * and adds the points according to the move and [gem]
+     *
+     * @param[startTile] The Tile where the scoring move started
+     * @param[startConnection] The connection where the scoring move started
+     * @param[endTile] The Tile where the scoring move ended
+     * @param[endConnection] The connection where the scoring move ended
+     * @param[gem] The gem which moved to a gate tile and thus scored points
+     * according to [GemType.toInt]
+     * @param[turn] The current [Turn]
      */
     private fun scoringAction(startTile: Tile,
                               startConnection: Int,
@@ -900,7 +917,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Helper function to calculate the neighbour of a given connection
+     * Function to get the neighbour according to the [connection]
+     *
+     * @param [tile] Represents current tile
+     * @param [connection] Represents the connection at which the required
+     * neighbour sits
+     *
+     * @return's [Tile]? which sits at the [connection] of [tile]. Return's null
+     * if [connection] is invalid or there is no neighbour to be found
      */
     private fun getAdjacentTileByConnection(tile: Tile, connection: Int): Tile? {
         val neighbourCoordinate: Pair<Int, Int> = when(connection){
@@ -910,7 +934,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             3 -> Pair(tile.xCoordinate-1, tile.yCoordinate+1)
             4 -> Pair(tile.xCoordinate-1, tile.yCoordinate)
             5 -> Pair(tile.xCoordinate, tile.yCoordinate-1)
-            else -> Pair(5,5) //Doesnt pass valid Coordinates check
+            else -> return null
         }
 
         if(!checkIfValidAxialCoordinates(neighbourCoordinate.first, neighbourCoordinate.second)){

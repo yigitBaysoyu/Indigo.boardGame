@@ -9,10 +9,10 @@ import kotlinx.serialization.Serializable
  * on which side of the tile.
  */
 @Serializable
-class PathTile(
+open class PathTile(
     override var connections: Map<Int, Int> = mutableMapOf(),
-    override  var rotationOffset: Int = 0,
+    override var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
-    override  val yCoordinate: Int = 0,
-    val gemPositions: MutableList<GemType> = mutableListOf()
-) :Tile()
+    override val yCoordinate: Int = 0,
+    override val gemPositions: MutableList<GemType> = mutableListOf()
+) :Tile(), TraverseAbleTile
