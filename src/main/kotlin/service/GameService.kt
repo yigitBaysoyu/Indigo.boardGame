@@ -645,7 +645,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         if(tile is TraverseAbleTile){
             when(nextTile){
                 //Increase score action
-                is GateTile -> nextTile.gemsCollected.add(tile.gemPositions.removeAt(currentConnection))
+                is GateTile ->{
+                    nextTile.gemsCollected.add(tile.gemPositions[currentConnection])
+                    tile.gemPositions[currentConnection] = GemType.NONE
+                    return Pair(nextTile, (currentConnection+3)%6)
+                }
                 is TraverseAbleTile -> {
                     val gem: GemType = tile.gemPositions[currentConnection]
                     tile.gemPositions[currentConnection] = GemType.NONE
@@ -691,7 +695,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
-            checkNotNull(originTile)
+            checkNotNull(originTile){"PlacedTile Gem: ${placedTile.gemPositions[currentConnection]} and neighbourTile: ${neighbourTile.yCoordinate} with gem ${neighbourTile.gemPositions[neighbourConnection]}"}
 
             val collisionMovePlacedTile = GemMovement(
                 gemAtStart,
