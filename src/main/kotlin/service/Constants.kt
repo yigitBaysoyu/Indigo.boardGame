@@ -4,7 +4,9 @@ import tools.aqua.bgw.visual.ColorVisual
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-
+/**
+ * Class that holds Constant values which are used in different other classes.
+ */
 class Constants {
     companion object {
         // COLORS
