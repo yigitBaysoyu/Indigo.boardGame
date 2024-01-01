@@ -11,14 +11,16 @@ import entity.*
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
     /**
-     * Function to rotate a tile.
+     * Function to rotate the tile in the current players hand.
      *
      * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
-     *
-     * @param tile the PathTIle to be rotated
      */
-    fun rotateTile(tile: PathTile) {
+    fun rotateTile() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        val tile = game.playerList[game.activePlayerID].playHand[0]
 
         // map to store the new Connections
         val newConnections = mutableMapOf<Int, Int>()
@@ -37,6 +39,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // set the connections to the tile connections
         tile.connections = newConnections
 
+        onAllRefreshables { refreshAfterTileRotated() }
     }
 
     /**
