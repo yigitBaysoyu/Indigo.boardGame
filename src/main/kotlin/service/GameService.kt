@@ -11,7 +11,7 @@ import kotlin.IllegalArgumentException
 
 
 /**
- * A service responsible for the game logic of a Indigo game. It manages the state
+ * A service responsible for the game logic of an Indigo game. It manages the state
  * and progression of the game, including starting new games, ending games.
  *
  * @param rootService The root service that holds the current state of the game.
@@ -337,7 +337,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Private Funktion that helps to assign gates to each player.
+     * Private function that helps to assign gates to each player.
      *
      * @param threePlayerVariant if false gates are alternated between players,
      * else each player has one exclusive gate and shares two with others.
@@ -388,7 +388,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Private Funktion that helps to assign gates to three players.
+     * Private function that helps to assign gates to three players.
      *
      * @param threeVariant if false gates are alternated between players,
      * else each player has one exclusive gate and shares two with others.
