@@ -54,7 +54,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
     fun undo() {
         val game = rootService.currentGame
         checkNotNull(game)
-        check(game.undoStack.isNotEmpty()) {"undoStack is empty"}
+        if(game.undoStack.isEmpty()) return
 
         val lastTurn = game.undoStack.removeLast()
 
