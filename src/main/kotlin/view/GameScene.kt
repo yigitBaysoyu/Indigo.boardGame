@@ -620,6 +620,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             playerHandList[index].isVisible = true
             playerGemLayoutList[index].isVisible = true
+            playerScoreList[index].isVisible = true
         }
     }
 
@@ -661,6 +662,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         for(hand in playerHandList) hand.isVisible = false
         for(gemLayout in playerGemLayoutList) gemLayout.isVisible = false
         for(gemLayout in playerGemLayoutList) gemLayout.clear()
+        for(playerScore in playerScoreList) playerScore.isVisible = false
         tileMap.clear()
         gemMap.clear()
     }
