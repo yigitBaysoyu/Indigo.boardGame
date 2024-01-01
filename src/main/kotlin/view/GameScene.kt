@@ -142,6 +142,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.rotateIcon)
     ).apply {
         componentStyle = "-fx-background-radius: 25px;"
+        onMouseClicked = { rootService.playerService.rotateTile() }
     }
 
 
@@ -240,6 +241,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = { rootService.playerService.undo() }
     }
 
     private val redoButton = Button(
@@ -250,6 +252,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        // TODO uncomment: onMouseClicked = { rootService.playerService.redo() }
     }
 
     private val saveGameButton = Button(
@@ -260,6 +263,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = { rootService.gameService.saveGame() }
     }
 
     private val loadGameButton = Button(
@@ -270,9 +274,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = { rootService.gameService.loadGame() }
     }
 
-    private val quitGameButton = Button(
+    val quitGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 1150 + menuAreaOffsetY,
         text = "Quit Game",
@@ -589,10 +594,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     width = hexagonWidth, height = hexagonHeight,
                     visual = tileVisual
                 )
-                area.onMouseClicked = {
-                    val clickedCoords = tileMap.backward(area)
-                    println("${clickedCoords.first}, ${clickedCoords.second}")
+
+                if(tile is EmptyTile) {
+                    area.onMouseClicked = {
+                        val clickedCoords = tileMap.backward(area)
+                        // TODO uncomment: rootService.playerService.placeTile(clickedCoords.first, clickedCoords.second)
+                    }
                 }
+
                 area.rotate(tile.rotationOffset * 60)
 
                 if(tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
