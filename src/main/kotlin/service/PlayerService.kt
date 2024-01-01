@@ -83,6 +83,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
                     else startTile.availableGems.add(gemType)
                 }
                 is TreasureTile -> startTile.gemPositions[positionOnStartTile] = gemType
+                else -> 1+1 // Placeholder, do nothing
             }
 
             if(!movement.didCollide) {
@@ -90,6 +91,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
                     is PathTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
                     is GateTile -> endTile.gemsCollected.remove(movement.gemType)
                     is TreasureTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+                    else -> 1+1 // Placeholder, do nothing
                 }
             }
         }
