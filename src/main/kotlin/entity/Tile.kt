@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * @property connections holds the paths on a tile. Maps two ends of a Tile to one another.
  */
 @Serializable
-abstract class Tile {
+sealed class Tile {
     abstract var connections: Map<Int, Int>
     abstract var rotationOffset: Int
     abstract val xCoordinate: Int

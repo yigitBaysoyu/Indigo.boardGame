@@ -11,14 +11,16 @@ import entity.*
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
     /**
-     * Funktion to rotate a tile.
+     * Function to rotate the tile in the current players hand.
      *
-     * This funktion updates the rotationOffset and connections of the provided PathTile.
+     * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
-     *
-     * @param tile the PathTIle to be rotated
      */
-    fun rotateTile(tile: PathTile) {
+    fun rotateTile() {
+        val game = rootService.currentGame
+        checkNotNull(game) {"game is null"}
+
+        val tile = game.playerList[game.activePlayerID].playHand[0]
 
         // map to store the new Connections
         val newConnections = mutableMapOf<Int, Int>()
@@ -37,6 +39,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // set the connections to the tile connections
         tile.connections = newConnections
 
+        onAllRefreshables { refreshAfterTileRotated() }
     }
 
     /**
@@ -51,7 +54,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
     fun undo() {
         val game = rootService.currentGame
         checkNotNull(game)
-        check(game.undoStack.isNotEmpty()) {"undoStack is empty"}
+        if(game.undoStack.isEmpty()) return
 
         val lastTurn = game.undoStack.removeLast()
 
@@ -80,6 +83,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
                     else startTile.availableGems.add(gemType)
                 }
                 is TreasureTile -> startTile.gemPositions[positionOnStartTile] = gemType
+                else -> 1+1 // Placeholder, do nothing
             }
 
             if(!movement.didCollide) {
@@ -87,6 +91,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
                     is PathTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
                     is GateTile -> endTile.gemsCollected.remove(movement.gemType)
                     is TreasureTile -> endTile.gemPositions[positionOnEndTile] = GemType.NONE
+                    else -> 1+1 // Placeholder, do nothing
                 }
             }
         }

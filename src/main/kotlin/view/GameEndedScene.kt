@@ -1,6 +1,5 @@
 package view
 
-import entity.IndigoGame
 import entity.Player
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
@@ -12,7 +11,6 @@ import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.File
 import javax.imageio.ImageIO
 
 /**
@@ -116,7 +114,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
     init {
         background = ColorVisual(44, 70, 127)
-        val winnerPNG : BufferedImage = ImageIO.read(GameEndedScene::class.java.getResource("/GUIAssets/EndGameScene/winnerSymbol.png"))
+        val winnerPNG : BufferedImage = ImageIO.read(GameEndedScene::class.java.getResource("/winnerSymbol.png"))
         firstPlaceWinnerSymbol.visual = ImageVisual(winnerPNG)
         addComponents(
             gameOverLabel,
@@ -147,10 +145,9 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
         val labels = mutableListOf<Label>(firstPlaceNameLabel, secondPlaceNameLabel,
             thirdPlaceNumberLabel, fourthPlaceNumberLabel)
-        var i = 0
-        players.forEach { player ->
+
+        players.forEachIndexed { i, player ->
             labels[i].text = player.name
-            i++
         }
     }
 

@@ -20,10 +20,8 @@ interface Refreshable {
 
     /**
      * perform refreshes that are necessary after a tile rotated.
-     *
-     * @param tile The tile that is being rotated.
      */
-    fun refreshAfterTileRotated(tile: PathTile) {}
+    fun refreshAfterTileRotated() {}
 
     /**
      * perform refreshes that are necessary after a tile placed.
