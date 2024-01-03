@@ -119,6 +119,12 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Return placed tile to players hand
         playerWhoPlacedTile.playHand.add(lastTurn.placedTile)
 
+        // Rotate the placed tile to the original form
+        if (lastTurn.placedTile.rotationOffset != 0) {
+            repeat(6 - lastTurn.placedTile.rotationOffset) {
+                rotateTile()
+            }
+        }
         // Set active player
         game.activePlayerID = lastTurn.playerID
 

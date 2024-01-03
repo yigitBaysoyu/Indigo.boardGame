@@ -145,10 +145,9 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
         val labels = mutableListOf<Label>(firstPlaceNameLabel, secondPlaceNameLabel,
             thirdPlaceNumberLabel, fourthPlaceNumberLabel)
-        var i = 0
-        players.forEach { player ->
+
+        players.forEachIndexed { i, player ->
             labels[i].text = player.name
-            i++
         }
     }
 
