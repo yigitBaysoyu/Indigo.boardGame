@@ -122,7 +122,24 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(lastTurn)
+        game.redoStack.add(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
+    }
+
+    /**
+     * Reverts the last undo action
+     *
+     * takes the last element from the redo Stack which is a Pair<Int,Int>
+     * these are the x and y Coordinates from the move which has been reverted with undo
+     */
+    fun redo(){
+        val game= rootService.currentGame
+        checkNotNull(game)
+
+        if(game.redoStack.isEmpty())return
+
+        val cords=game.redoStack.removeLast()
+        //placeTile(cords.first,cords.second)
+
     }
 }
