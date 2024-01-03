@@ -91,7 +91,7 @@ class MoveGemTest {
         val tile4 = PathTile(c4, xCoordinate = 2, yCoordinate = -1)
         val tile5 = PathTile(c5, xCoordinate = 3, yCoordinate = -1)
         val tile6 = PathTile(c6, xCoordinate = 4, yCoordinate = -2)
-        val tile7 = PathTile(c7, xCoordinate = -1, yCoordinate = 3)
+        val tile7 = PathTile(c7, xCoordinate = 3, yCoordinate = 0)
 
         //Filling gem list of each tile
         for(i in 0..5){
