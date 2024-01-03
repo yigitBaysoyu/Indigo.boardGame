@@ -115,12 +115,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
             lastTurn.placedTile.yCoordinate,
             newEmptyTile
         )
-        // Rotate the placed tile to the original form, before returning it to players hand
-        if (lastTurn.placedTile.rotationOffset != 0) {
-            repeat(6 - lastTurn.placedTile.rotationOffset) {
-                rotateTile(lastTurn.placedTile)
-            }
-        }
+
         // Return placed tile to players hand
         playerWhoPlacedTile.playHand.add(lastTurn.placedTile)
 
