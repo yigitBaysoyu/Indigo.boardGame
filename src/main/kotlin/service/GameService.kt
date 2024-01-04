@@ -611,17 +611,18 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         turn
                     )
                 }
+                else {
+                    val gemMovement = GemMovement(
+                        currentGem,
+                        originTile,
+                        (originConnection + 3) % 6,
+                        endPos.first,
+                        endPos.second,
+                        false
+                    )
 
-                val gemMovement = GemMovement(
-                    currentGem,
-                    originTile,
-                    (originConnection + 3) % 6,
-                    endPos.first,
-                    endPos.second,
-                    false
-                )
-
-                turn.gemMovements.add(gemMovement)
+                    turn.gemMovements.add(gemMovement)
+                }
             }
         }
         return turn
