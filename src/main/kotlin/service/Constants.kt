@@ -46,4 +46,10 @@ object Constants {
     val rotateIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RotateIcon.png"))
     val aiIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/AIIcon.png"))
     val menuAreaArrow: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MenuAreaArrow.png"))
+
+    val modeIconPlayer: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconPlayer.png"))
+    val modeIconRandom: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconRandom.png"))
+    val modeIconAI: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconAI.png"))
+
+    val plusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlusIcon.png"))
 }
