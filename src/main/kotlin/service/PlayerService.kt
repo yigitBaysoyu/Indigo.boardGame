@@ -136,10 +136,13 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val game= rootService.currentGame
         checkNotNull(game)
 
-        if(game.redoStack.isEmpty())return
+        if(!game.redoStack.isEmpty())
+        {
+            val cords=game.redoStack.removeLast()
+            //placeTile(cords.first,cords.second)
+        }
 
-        val cords=game.redoStack.removeLast()
-        //placeTile(cords.first,cords.second)
+
 
     }
 }
