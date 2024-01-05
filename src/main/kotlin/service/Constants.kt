@@ -50,6 +50,8 @@ object Constants {
     val modeIconPlayer: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconPlayer.png"))
     val modeIconRandom: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconRandom.png"))
     val modeIconAI: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconAI.png"))
+    val modeIconNetwork: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconNetwork.png"))
 
     val plusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlusIcon.png"))
+    val minusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MinusIcon.png"))
 }
