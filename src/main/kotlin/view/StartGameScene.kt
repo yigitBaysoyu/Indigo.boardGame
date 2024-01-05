@@ -2,16 +2,12 @@ package view
 
 import service.Constants
 import service.RootService
-import tools.aqua.bgw.components.container.Area
-import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
-import tools.aqua.bgw.visual.CompoundVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
@@ -26,6 +22,23 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
     private val halfWidth = sceneWidth / 2
     private val offsetY = 250
     private val offsetX = 50
+
+    // 0 = Local, 1 = RandomAI, 2 = SmartAI
+    private val selectedModes = mutableListOf(0, 0, 0, 0)
+    private val selectedColors = mutableListOf(0, 1, 2, 3)
+
+    private val modeImageList = listOf(
+        ImageVisual(Constants.modeIconPlayer),
+        ImageVisual(Constants.modeIconRandom),
+        ImageVisual(Constants.modeIconAI)
+    )
+
+    private val colorImageList = mutableListOf(
+        ImageVisual(Constants.whiteGate),
+        ImageVisual(Constants.redGate),
+        ImageVisual(Constants.blueGate),
+        ImageVisual(Constants.purpleGate)
+    )
 
     private val cornersBackground = Button(
         posX = 0, posY = 0,
@@ -83,16 +96,16 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             pane.add(playerModeIconBackground)
             pane.add(playerModeIcon)
             add(pane)
+
+            playerModeIconBackground.onMouseClicked = {
+                selectedModes[i] = (selectedModes[i] + 1) % 3
+                playerModeIcon.visual = modeImageList[selectedModes[i]]
+            }
         }
     }
 
     private val playerColorIconList = mutableListOf<Pane<Button>>().apply {
-        val colorIconList = mutableListOf(
-            ImageVisual(Constants.redGate),
-            ImageVisual(Constants.blueGate),
-            ImageVisual(Constants.purpleGate),
-            ImageVisual(Constants.whiteGate)
-        )
+
         for (i in 0 until 4) {
             val pane = Pane<Button>(
                 posX = halfWidth - 350 + offsetX, posY = i*150 + offsetY + 2,
@@ -105,52 +118,53 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
                 posX = 0, posY = 0,
                 visual = Visual.EMPTY
             ).apply {
-                componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
+                componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
             }
 
             val playerColorIcon = Button(
                 width = 60, height = 60,
                 posX = 8, posY = 8,
-                visual = colorIconList[i]
+                visual = colorImageList[i]
             ).apply {
                 isDisabled = true
             }
             pane.add(playerColorIconBackground)
             pane.add(playerColorIcon)
             add(pane)
+
+            playerColorIconBackground.onMouseClicked = {
+                selectedColors[i] = (selectedColors[i] + 1) % 4
+                playerColorIcon.visual = colorImageList[selectedColors[i]]
+                handleSamePlayerColors()
+            }
         }
     }
 
-    private val playerRemoveIconList = mutableListOf<Pane<Button>>().apply {
-        for (i in 0 until 4) {
-            val pane = Pane<Button>(
-                posX = halfWidth + 275 + offsetX, posY = i*150 + offsetY + 2,
-                width = 75, height = 75,
-                visual = Visual.EMPTY
-            )
-
-            val playerRemoveIconBackground = Button(
-                width = 75, height = 75,
-                posX = 0, posY = 0,
-                visual = Visual.EMPTY
-            ).apply {
-                componentStyle = "-fx-background-color: #ff999900; -fx-background-radius: 25px;"
-            }
-
-            val playerRemoveIcon = Button(
-                width = 60, height = 60,
-                posX = 8, posY = 8,
-                visual = ImageVisual(Constants.minusIcon)
-            ).apply {
-                isDisabled = true
-            }
-            pane.add(playerRemoveIconBackground)
-            pane.add(playerRemoveIcon)
-            add(pane)
+    private val playerRemoveIcon = Pane<Button>(
+        posX = halfWidth + 275 + offsetX, posY = 1*150 + offsetY,
+        width = 75, height = 75,
+        visual = Visual.EMPTY
+    ).apply {
+        val playerRemoveBackground = Button(
+            width = 75, height = 75,
+            posX = 0, posY = 0,
+            visual = Visual.EMPTY
+        ).apply {
+            componentStyle = "-fx-background-color: #ff999900; -fx-background-radius: 25px;"
+            onMouseClicked = { handleRemovePlayerClick() }
         }
+
+        val playerRemoveButton = Button(
+            width = 60, height = 60,
+            posX = 8, posY = 8,
+            visual = ImageVisual(Constants.minusIcon)
+        ).apply {
+            isDisabled = true
+        }
+
+        this.add(playerRemoveBackground)
+        this.add(playerRemoveButton)
     }
-
-
 
     private val addPlayerButton = Button(
         width = 50, height = 50,
@@ -159,6 +173,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         visual = ImageVisual(Constants.plusIcon)
     ).apply {
         componentStyle = "-fx-background-radius: 18px;"
+        onMouseClicked = { handleAddPlayerClick() }
     }
 
     private val startButton = Button(
@@ -184,6 +199,13 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
     init {
         background = Constants.sceneBackgroundColorVisual
 
+        for(i in 2 until 4) {
+            playerNameInputList[i].isVisible = false
+            playerModeIconList[i].isVisible = false
+            playerColorIconList[i].isVisible = false
+        }
+        playerRemoveIcon.isVisible = false
+
         addComponents(
             cornersBackground,
             headerLabel,
@@ -199,13 +221,65 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerColorIconList[1],
             playerColorIconList[2],
             playerColorIconList[3],
-            playerRemoveIconList[0],
-            playerRemoveIconList[1],
-            playerRemoveIconList[2],
-            playerRemoveIconList[3],
+            playerRemoveIcon,
             addPlayerButton,
             backButton,
             startButton
         )
+    }
+
+    private fun handleSamePlayerColors() {
+        startButton.isDisabled = false
+        for(i in 0 until 4) {
+            playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
+        }
+
+        val copiedSelectColors = mutableListOf<Int>()
+        for(i in 0 until 4) {
+            if(!playerNameInputList[i].isVisible) break
+            copiedSelectColors.add(selectedColors[i])
+        }
+
+        for(i in 0 until copiedSelectColors.size) {
+            for(j in 0 until copiedSelectColors.size) {
+                if(copiedSelectColors[i] == copiedSelectColors[j] && i != j) {
+                    playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+                    startButton.isDisabled = true
+                }
+            }
+        }
+    }
+
+    private fun handleAddPlayerClick() {
+        if(playerNameInputList[3].isVisible) return
+        var indexToBeAdded = 2
+        if(playerNameInputList[2].isVisible) indexToBeAdded = 3
+
+        playerNameInputList[indexToBeAdded].isVisible = true
+        playerColorIconList[indexToBeAdded].isVisible = true
+        playerModeIconList[indexToBeAdded].isVisible = true
+
+        playerRemoveIcon.isVisible = true
+        playerRemoveIcon.posY = indexToBeAdded*150.0 + offsetY
+
+        if(indexToBeAdded == 3) addPlayerButton.posY = 2000.0
+        else addPlayerButton.posY = 3*150.0 + offsetY
+    }
+
+    private fun handleRemovePlayerClick() {
+        var indexToBeDeleted = 2
+        if(playerNameInputList[3].isVisible) indexToBeDeleted = 3
+
+        playerNameInputList[indexToBeDeleted].isVisible = false
+        playerColorIconList[indexToBeDeleted].isVisible = false
+        playerModeIconList[indexToBeDeleted].isVisible = false
+
+        addPlayerButton.isVisible = true
+        addPlayerButton.posY = indexToBeDeleted*150.0 + offsetY
+
+        if(indexToBeDeleted == 2) playerRemoveIcon.posY = 2000.0
+        else playerRemoveIcon.posY = 2*150.0 + offsetY
+
+        playerNameInputList[indexToBeDeleted].text = ""
     }
 }
