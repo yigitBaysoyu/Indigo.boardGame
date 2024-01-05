@@ -1,5 +1,7 @@
 package view
 
+import entity.Player
+import entity.PlayerType
 import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
@@ -184,9 +186,10 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = { handleStartClick() }
     }
 
-    private val backButton = Button(
+    val backButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 350 - 15, posY = 900,
         text = "Back",
@@ -282,4 +285,28 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
 
         playerNameInputList[indexToBeDeleted].text = ""
     }
+
+    private fun handleStartClick() {
+        val playerList = mutableListOf<Player>()
+        for(i in 0 until 4) {
+            if(!playerNameInputList[i].isVisible) continue
+
+            val player = Player(
+                name = playerNameInputList[i].text,
+                color = selectedColors[i],
+                playerType = PlayerType.values()[selectedModes[i]]
+            )
+            playerList.add(player)
+        }
+
+        rootService.gameService.startNewGame(
+            players = playerList,
+            threePlayerVariant = false,
+            simulationSpeed = 10.0,
+            isNetworkGame = false
+        )
+    }
+
+    // TODO RANDOM PLAYER ORDER CHECKBOX
+    // TODO SELECT THREE PLAYER VARIANT
 }
