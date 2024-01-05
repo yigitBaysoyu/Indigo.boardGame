@@ -80,7 +80,7 @@ class MoveGemTest {
         centerTileGems.add(GemType.SAPPHIRE)
         for (i in 0..4) centerTileGems.add(GemType.EMERALD)
 
-        //Creating 5 tiles
+        //Creating tiles
         val centerTile = CenterTile(centerConnections, 0, 0, 0, centerTileGems)
         val placedTile = PathTile(placedTileConnections, 0, 1, 0, mutableListOf<GemType>())
         val treasureTile = TreasureTile(treasureTileConn, 0, 4, 0, mutableListOf<GemType>())
@@ -131,7 +131,140 @@ class MoveGemTest {
         assert(turn.gemMovements[0].didCollide && turn.gemMovements[1].didCollide) //Check if collision report is made
         //Check that the score is updated
         assert(player.score == 2)
+
+        //Test gem movement's
+        for(move in turn.gemMovements){
+            assert(move.startTile != placedTile)
+        }
+
+        val collisionMove1 = turn.gemMovements[0]
+        val collisionMove2 = turn.gemMovements[1]
+        assert(collisionMove1.didCollide && collisionMove2.didCollide)
+        assert(collisionMove1.endTile == collisionMove2.endTile)
+
+        val scoringMove = turn.gemMovements[2]
+        assert(scoringMove.endTile is GateTile)
+        assert(!scoringMove.didCollide)
+
+        val gemMove = turn.gemMovements[3]
+        assert(placedTile.gemPositions[gemMove.positionOnEndTile] == gemMove.gemType)
+        assert(!gemMove.didCollide)
+
         //Check for the gem in the correct gate
         assert(gate.gemsCollected.first() == GemType.EMERALD)
+
+        //Test interaction of a placed Tile next to a treasureTile
+        val placedConnections2 = mutableMapOf<Int,Int>()
+        placedConnections2[0] = 2
+        placedConnections2[2] = 0
+        placedConnections2[4] = 5
+        placedConnections2[5] = 4
+
+        val placedTile2 = PathTile(placedConnections2, xCoordinate = -3, yCoordinate = 4)
+
+        val treasureTile2Connections = mutableMapOf<Int, Int>()
+        treasureTile2Connections[0] = 0
+        treasureTile2Connections[1] = 5
+        treasureTile2Connections[5] = 1
+
+        val treasureTile2 = TreasureTile(treasureTile2Connections, xCoordinate = -4, yCoordinate = 4)
+
+        val c8 = mutableMapOf<Int, Int>()
+        c8[1] = 3
+        c8[3] = 1
+
+        val tile8 = PathTile(c8, xCoordinate = -2, yCoordinate = 3)
+
+        val c9 = mutableMapOf<Int, Int>()
+        c9[2] = 3
+        c9[3] = 2
+
+        val tile9 = PathTile(c9, xCoordinate = -3, yCoordinate = 3)
+
+        for(i in 0..5){
+            placedTile2.gemPositions.add(GemType.NONE)
+            tile8.gemPositions.add(GemType.NONE)
+            tile9.gemPositions.add(GemType.NONE)
+            treasureTile2.gemPositions.add(GemType.NONE)
+        }
+
+        //Add distinct gems
+        tile8.gemPositions[3] = GemType.EMERALD
+        tile9.gemPositions[2] = GemType.AMBER
+
+        gameService.setTileFromAxialCoordinates(placedTile2.xCoordinate, placedTile2.yCoordinate, placedTile2)
+        gameService.setTileFromAxialCoordinates(tile8.xCoordinate, tile8.yCoordinate, tile8)
+        gameService.setTileFromAxialCoordinates(tile9.xCoordinate, tile9.yCoordinate, tile9)
+        gameService.setTileFromAxialCoordinates(treasureTile2.xCoordinate, treasureTile2.yCoordinate, treasureTile2)
+
+        //Create player and turn
+        val player2 = game.playerList[1]
+        val turn2 = Turn(1,mutableListOf(0,0,0), placedTile2)
+
+        //Get gate tile and add to player
+        val gate2 = gameService.getTileFromAxialCoordinates(-3, 5)
+        if(gate2 !is GateTile){
+            throw Error("Error getting the gate assigned to the player")
+        }
+        player2.gateList.add(gate2)
+
+        gameService.moveGems(turn2, placedTile2)
+
+        //Check for gems at correct positions
+        assert(treasureTile2.gemPositions[5] == GemType.AMBER)
+        assert(gate2.gemsCollected.first() == GemType.EMERALD)
+
+        //assert scoring move happened
+        assert(player2.score == 2)
+
+        //asserting turn validity
+        assert(turn2.gemMovements[0].endTile == gate2)
+        assert(!turn2.gemMovements[0].didCollide)
+        assert(turn2.gemMovements[0].startTile == tile8)
+        assert(turn2.scoreChanges[1] == 2)
+
+        //Testing for collision of a gem coming from a treasure tile
+        val placedTile3Connections = mutableMapOf<Int, Int>()
+        placedTile3Connections[2] = 5
+        placedTile3Connections[5] = 2
+
+        val placedTile3 = PathTile(placedTile3Connections, xCoordinate = 0, yCoordinate = 3)
+
+        val treasureTile3Connections = mutableMapOf<Int, Int>()
+        treasureTile3Connections[0] = 4
+        treasureTile3Connections[4] = 0
+        treasureTile3Connections[5] = 5
+
+        val treasureTile3 = TreasureTile(treasureTile3Connections, xCoordinate = 0, yCoordinate = 4)
+
+        val c10 = mutableMapOf<Int, Int>()
+        c10[2] = 3
+        c10[3] = 2
+
+        val tile10 = PathTile(c10, xCoordinate = 0, yCoordinate = 2)
+
+        for (i in 0..5){
+            placedTile3.gemPositions.add(GemType.NONE)
+            treasureTile3.gemPositions.add(GemType.NONE)
+            tile10.gemPositions.add(GemType.NONE)
+        }
+
+        tile10.gemPositions[2] = GemType.SAPPHIRE
+        treasureTile3.gemPositions[5] = GemType.AMBER
+
+        gameService.setTileFromAxialCoordinates(placedTile3.xCoordinate, placedTile3.yCoordinate, placedTile3)
+        gameService.setTileFromAxialCoordinates(treasureTile3.xCoordinate, treasureTile3.yCoordinate, treasureTile3)
+        gameService.setTileFromAxialCoordinates(tile10.xCoordinate, tile10.yCoordinate, tile10)
+
+        val turn3 = Turn(2, mutableListOf(0,0,0), placedTile3)
+        gameService.moveGems(turn3, placedTile3)
+
+        //Check validity of collision report
+        assert(turn3.gemMovements[0].didCollide && turn3.gemMovements[1].didCollide)
+
+        assert(turn3.gemMovements[0].startTile == treasureTile3)
+        assert(turn3.gemMovements[1].startTile == tile10)
+        assert(turn3.gemMovements[0].endTile == turn3.gemMovements[1].endTile)
+
     }
 }
