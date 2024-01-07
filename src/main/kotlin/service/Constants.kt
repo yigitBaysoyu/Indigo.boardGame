@@ -54,4 +54,5 @@ object Constants {
 
     val plusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlusIcon.png"))
     val minusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MinusIcon.png"))
+    val warningIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/WarningIcon.png"))
 }
