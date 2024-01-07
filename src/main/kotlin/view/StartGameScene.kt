@@ -6,8 +6,10 @@ import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
+import tools.aqua.bgw.components.uicomponents.CheckBox
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.components.uicomponents.TextField
+import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ImageVisual
@@ -67,8 +69,27 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
                 visual = Visual.EMPTY
             ).apply {
                 componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+                onKeyTyped = {
+                    setWarningIcons()
+                    setStartButtonState()
+                }
+                text = "Player ${i + 1}"
             }
             add(playerNameInput)
+        }
+    }
+
+    private val warningIconList = mutableListOf<Button>().apply {
+        for(i in 0 until 4) {
+            val warningIcon = Button(
+                width = 50, height = 50,
+                posX = halfWidth + 500 / 2 + offsetX - 75, posY = 150*i + offsetY + 25/2,
+                visual = ImageVisual(Constants.warningIcon)
+            ).apply {
+                isDisabled = true
+                isVisible = false
+            }
+            add(warningIcon)
         }
     }
 
@@ -137,7 +158,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerColorIconBackground.onMouseClicked = {
                 selectedColors[i] = (selectedColors[i] + 1) % 4
                 playerColorIcon.visual = colorImageList[selectedColors[i]]
-                handleSamePlayerColors()
+                setStartButtonState()
             }
         }
     }
@@ -199,15 +220,33 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
     }
 
+    private val randomOrderCheckbox = CheckBox(
+        posX = halfWidth + 275 + offsetX + 150, posY = offsetY,
+        width = 300, height = 75,
+        text = "Randomize Player Order",
+        alignment = Alignment.CENTER_LEFT,
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+    ).apply {
+        isIndeterminateAllowed = false
+    }
+
+    private val threePlayerVariantCheckBox = CheckBox(
+        posX = halfWidth + 275 + offsetX + 150, posY = 2*150 + offsetY,
+        width = 300, height = 75,
+        text = "Share Gates",
+        alignment = Alignment.CENTER_LEFT,
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+    ).apply {
+        isIndeterminateAllowed = false
+        isVisible = false
+    }
+
+
+
     init {
         background = Constants.sceneBackgroundColorVisual
 
-        for(i in 2 until 4) {
-            playerNameInputList[i].isVisible = false
-            playerModeIconList[i].isVisible = false
-            playerColorIconList[i].isVisible = false
-        }
-        playerRemoveIcon.isVisible = false
+        resetAllComponents()
 
         addComponents(
             cornersBackground,
@@ -216,6 +255,10 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerNameInputList[1],
             playerNameInputList[2],
             playerNameInputList[3],
+            warningIconList[0],
+            warningIconList[1],
+            warningIconList[2],
+            warningIconList[3],
             playerModeIconList[0],
             playerModeIconList[1],
             playerModeIconList[2],
@@ -227,12 +270,13 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerRemoveIcon,
             addPlayerButton,
             backButton,
-            startButton
+            startButton,
+            randomOrderCheckbox,
+            threePlayerVariantCheckBox
         )
     }
 
-    private fun handleSamePlayerColors() {
-        startButton.isDisabled = false
+    private fun checkForSamePlayerColors(): Boolean {
         for(i in 0 until 4) {
             playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
         }
@@ -243,12 +287,49 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             copiedSelectColors.add(selectedColors[i])
         }
 
+        var returnValue = false
         for(i in 0 until copiedSelectColors.size) {
             for(j in 0 until copiedSelectColors.size) {
                 if(copiedSelectColors[i] == copiedSelectColors[j] && i != j) {
                     playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
-                    startButton.isDisabled = true
+                    returnValue = true
                 }
+            }
+        }
+        return returnValue
+    }
+
+    private fun setStartButtonState() {
+        val validColor = !checkForSamePlayerColors()
+        if(!validColor) {
+            startButton.isDisabled = true
+            return
+        }
+
+        for(i in 0 until 4) {
+            val validLength = isPlayerNameLengthValid(i)
+            if(!validLength) {
+                startButton.isDisabled = true
+                return
+            }
+        }
+
+        startButton.isDisabled = false
+    }
+
+    private fun isPlayerNameLengthValid(index: Int): Boolean {
+        if(!playerNameInputList[index].isVisible) return true
+        val name = playerNameInputList[index].text
+        return (name.length in 3..16)
+    }
+
+    private fun setWarningIcons() {
+        for(i in 0 until 4) {
+            if(!playerNameInputList[i].isVisible) {
+                warningIconList[i].isVisible = false
+            } else {
+                val validLength = isPlayerNameLengthValid(i)
+                warningIconList[i].isVisible = !validLength
             }
         }
     }
@@ -267,6 +348,12 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
 
         if(indexToBeAdded == 3) addPlayerButton.posY = 2000.0
         else addPlayerButton.posY = 3*150.0 + offsetY
+
+        if(indexToBeAdded == 2) threePlayerVariantCheckBox.isVisible = true
+        else threePlayerVariantCheckBox.isVisible = false
+
+        setWarningIcons()
+        setStartButtonState()
     }
 
     private fun handleRemovePlayerClick() {
@@ -283,7 +370,13 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         if(indexToBeDeleted == 2) playerRemoveIcon.posY = 2000.0
         else playerRemoveIcon.posY = 2*150.0 + offsetY
 
-        playerNameInputList[indexToBeDeleted].text = ""
+        playerNameInputList[indexToBeDeleted].text = "Player ${indexToBeDeleted + 1}"
+
+        if(indexToBeDeleted == 2) threePlayerVariantCheckBox.isVisible = false
+        else threePlayerVariantCheckBox.isVisible = true
+
+        setWarningIcons()
+        setStartButtonState()
     }
 
     private fun handleStartClick() {
@@ -299,14 +392,48 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerList.add(player)
         }
 
+        if(randomOrderCheckbox.isChecked) playerList.shuffle()
+
         rootService.gameService.startNewGame(
             players = playerList,
-            threePlayerVariant = false,
+            threePlayerVariant = threePlayerVariantCheckBox.isChecked && playerList.size == 3,
             simulationSpeed = 10.0,
             isNetworkGame = false
         )
+
+        resetAllComponents()
     }
 
-    // TODO RANDOM PLAYER ORDER CHECKBOX
-    // TODO SELECT THREE PLAYER VARIANT
+    private fun resetAllComponents() {
+        for(i in 0 until 4) {
+            selectedModes[i] = 0
+            selectedColors[i] = i
+        }
+
+        for(i in 0 until 4) {
+            playerNameInputList[i].isVisible = true
+            playerNameInputList[i].text = "Player ${i + 1}"
+            warningIconList[i].isVisible = false
+            playerModeIconList[i].components[1].visual = ImageVisual(Constants.modeIconPlayer)
+            playerColorIconList[i].components[1].visual = colorImageList[selectedColors[i]]
+        }
+
+        for(i in 2 until 4) {
+            playerNameInputList[i].isVisible = false
+            playerModeIconList[i].isVisible = false
+            playerColorIconList[i].isVisible = false
+        }
+
+        playerRemoveIcon.isVisible = false
+        playerRemoveIcon.posY = 150.0 + offsetY
+
+        addPlayerButton.isVisible = true
+        addPlayerButton.posY = 2*150.0 + offsetY
+
+        randomOrderCheckbox.isChecked = false
+        threePlayerVariantCheckBox.isChecked = false
+        threePlayerVariantCheckBox.isVisible = false
+
+        startButton.isDisabled = false
+    }
 }
