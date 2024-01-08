@@ -6,12 +6,11 @@ import entity.*
 class MoveGemTest {
 
     /**
-     * Currently only testing if search for end of path succeeds
-     * on a simple test domain containing 5 tiles with one connection
-     * each
+     * Testing [GameService.moveGems] and all methods used by it to check
+     * whether gems are moved correctly across the board after a tile is placed
      *
-     * Tile2 is "placed" and the gem should be moved from tile1 connection 3
-     * to tile5 connection 1
+     * Testing collisions on all tile types, movement of gems from all tile types,
+     * scoring movements and creation of [Turn.gemMovements]
      */
     @Test
     fun testMoveGems(){
@@ -223,10 +222,10 @@ class MoveGemTest {
         assert(turn2.gemMovements[0].startTile == tile8)
         assert(turn2.scoreChanges[1] == 2)
 
-        //Testing for collision of a gem coming from a treasure tile
+        //Testing for collision of a gem coming from a treasure tile and center tile
         val placedTile3Connections = mutableMapOf<Int, Int>()
-        placedTile3Connections[2] = 5
-        placedTile3Connections[5] = 2
+        placedTile3Connections[0] = 2
+        placedTile3Connections[2] = 0
 
         val placedTile3 = PathTile(placedTile3Connections, xCoordinate = 0, yCoordinate = 3)
 
@@ -241,7 +240,7 @@ class MoveGemTest {
         c10[2] = 3
         c10[3] = 2
 
-        val tile10 = PathTile(c10, xCoordinate = 0, yCoordinate = 2)
+        val tile10 = PathTile(c10, xCoordinate = 1, yCoordinate = 2)
 
         for (i in 0..5){
             placedTile3.gemPositions.add(GemType.NONE)
@@ -249,7 +248,7 @@ class MoveGemTest {
             tile10.gemPositions.add(GemType.NONE)
         }
 
-        tile10.gemPositions[2] = GemType.SAPPHIRE
+        tile10.gemPositions[3] = GemType.SAPPHIRE
         treasureTile3.gemPositions[5] = GemType.AMBER
 
         gameService.setTileFromAxialCoordinates(placedTile3.xCoordinate, placedTile3.yCoordinate, placedTile3)
@@ -262,9 +261,54 @@ class MoveGemTest {
         //Check validity of collision report
         assert(turn3.gemMovements[0].didCollide && turn3.gemMovements[1].didCollide)
 
-        assert(turn3.gemMovements[0].startTile == treasureTile3)
-        assert(turn3.gemMovements[1].startTile == tile10)
+        assert(turn3.gemMovements[1].startTile == treasureTile3)
+        assert(turn3.gemMovements[0].startTile == tile10)
         assert(turn3.gemMovements[0].endTile == turn3.gemMovements[1].endTile)
 
+        //Turn 4 test: Moving gems starting at treasure tile
+        val placedTile4Connections = mutableMapOf<Int, Int>()
+        placedTile4Connections[0] = 2
+        placedTile4Connections[2] = 0
+
+        val placedTile4 = PathTile(placedTile4Connections, xCoordinate = -4, yCoordinate = 3)
+        for(i in 0..5){
+            placedTile4.gemPositions.add(GemType.NONE)
+        }
+
+        gameService.setTileFromAxialCoordinates(-4, 3, placedTile4)
+
+        val turn4 = Turn(2, mutableListOf(0,0,0), placedTile4)
+        gameService.moveGems(turn4, placedTile4)
+
+        assert(placedTile4.gemPositions[0] == GemType.AMBER)
+        assert(turn4.gemMovements[0].endTile == placedTile4)
+        assert(!turn4.gemMovements[0].didCollide)
+
+        //Turn 5 test
+        val c11 = mutableMapOf<Int, Int>()
+        c11[0] = 3
+        c11[3] = 0
+
+        val tile11 = PathTile(c11, xCoordinate = 0, yCoordinate = -1)
+
+        val placedTile5Connections = mutableMapOf<Int,Int>()
+        placedTile5Connections[0] = 1
+        placedTile5Connections[1] = 0
+        val placedTile5 = PathTile(placedTile5Connections, xCoordinate = -1, yCoordinate = 0)
+
+        for(i in 0..5){
+            placedTile5.gemPositions.add(GemType.NONE)
+            tile11.gemPositions.add(GemType.NONE)
+        }
+        tile11.gemPositions[3] = GemType.EMERALD
+
+        gameService.setTileFromAxialCoordinates(-1, 0, placedTile5)
+        gameService.setTileFromAxialCoordinates(0, -1, tile11)
+
+        val turn5 = Turn(2, mutableListOf(0,0,0), placedTile5)
+
+        gameService.moveGems(turn5, placedTile5)
+        assert(turn5.gemMovements[0].didCollide && turn5.gemMovements[1].didCollide)
+        assert(!(GemType.EMERALD in placedTile5.gemPositions || GemType.EMERALD in tile11.gemPositions))
     }
 }
