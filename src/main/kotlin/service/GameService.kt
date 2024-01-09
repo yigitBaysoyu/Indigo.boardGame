@@ -696,7 +696,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             checkNotNull(originConnection)
 
             val originTile = getAdjacentTileByConnection(placedTile, originConnection)
-            checkNotNull(originTile){"PlacedTile Gem: ${placedTile.gemPositions[currentConnection]} and neighbourTile: ${neighbourTile.yCoordinate} with gem ${neighbourTile.gemPositions[neighbourConnection]}"}
+            checkNotNull(originTile)
 
             val collisionMovePlacedTile = GemMovement(
                 gemAtStart,
