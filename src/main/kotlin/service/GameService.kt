@@ -879,6 +879,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
+
     /**
      * Function which creates a Gem movement representing the scoring move,
      * and adds the points according to the move and [gem]
