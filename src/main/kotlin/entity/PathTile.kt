@@ -14,5 +14,6 @@ open class PathTile(
     override var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
     override val yCoordinate: Int = 0,
-    override val gemPositions: MutableList<GemType> = mutableListOf()
-) :Tile(), TraverseAbleTile
+    override val gemPositions: MutableList<GemType> = mutableListOf(),
+    val type: Int = 0
+): Tile(), TraverseAbleTile

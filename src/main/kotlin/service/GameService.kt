@@ -10,7 +10,7 @@ import kotlin.IllegalArgumentException
 
 
 /**
- * A service responsible for the game logic of a Indigo game. It manages the state
+ * A service responsible for the game logic of an Indigo game. It manages the state
  * and progression of the game, including starting new games, ending games.
  *
  * @param rootService The root service that holds the current state of the game.
@@ -35,6 +35,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val redoStack = ArrayDeque<Turn>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
+        drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
@@ -43,7 +44,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         )
         rootService.currentGame = game
 
+        for(player in players) {
+            player.playHand.clear()
+            player.playHand.add(drawPile.removeLast())
+        }
+
         setDefaultGameLayout()
+        setSimulationSpeed(simulationSpeed)
         setGates(threePlayerVariant)
         onAllRefreshables { refreshAfterStartNewGame() }
     }
@@ -126,7 +133,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
          val treasureTile2 = TreasureTile(
              connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 0, xCoordinate = 0, yCoordinate = 4,
+             rotationOffset = 1, xCoordinate = 0, yCoordinate = 4,
              gemPositions = mutableListOf(
                  GemType.NONE, GemType.NONE, GemType.NONE,
                  GemType.NONE, GemType.NONE, GemType.AMBER )
@@ -228,11 +235,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
 
         return false
-
     }
 
     /**
-     * Private funktion that can help to Find all tiles adjacent to a given position.
+     * Private function that can help to Find all tiles adjacent to a given position.
      *
      * @param x The X coordinate where the tile is to be placed.
      * @param y The Y coordinate where the tile is to be placed.
@@ -330,7 +336,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Private Funktion that helps to assign gates to each player.
+     * Private function that helps to assign gates to each player.
      *
      * @param threePlayerVariant if false gates are alternated between players,
      * else each player has one exclusive gate and shares two with others.
@@ -377,13 +383,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             else -> throw IllegalArgumentException(" The Number of Players can be only 2,3 or 4")
-
         }
-
     }
 
     /**
-     * Private Funktion that helps to assign gates to three players.
+     * Private function that helps to assign gates to three players.
      *
      * @param threeVariant if false gates are alternated between players,
      * else each player has one exclusive gate and shares two with others.
@@ -480,7 +484,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf(), splitLine[0].toInt()))
             }
         }
         return playingTiles
@@ -954,4 +958,18 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         return neighbourTile
     }
 
+    /**
+     * Setter for simulationSpeed which allows values between 1 and 100.
+     */
+    fun setSimulationSpeed(speed: Double) {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        var newSpeed = speed
+        if(newSpeed < 1) newSpeed = 1.0
+        if(newSpeed > 100) newSpeed = 100.0
+        game.simulationSpeed = newSpeed
+
+        onAllRefreshables { refreshAfterSimulationSpeedChange(newSpeed) }
+    }
 }

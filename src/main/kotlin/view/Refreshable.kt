@@ -20,10 +20,8 @@ interface Refreshable {
 
     /**
      * perform refreshes that are necessary after a tile rotated.
-     *
-     * @param tile The tile that is being rotated.
      */
-    fun refreshAfterTileRotated(tile: PathTile) {}
+    fun refreshAfterTileRotated() {}
 
     /**
      * perform refreshes that are necessary after a tile placed.
@@ -81,5 +79,5 @@ interface Refreshable {
     /**
      * perform refreshes that are necessary after the simulation speed changed.
      */
-    fun refreshAfterSimulationSpeedChange() {}
+    fun refreshAfterSimulationSpeedChange(speed: Double) {}
 }
