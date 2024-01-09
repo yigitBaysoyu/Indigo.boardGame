@@ -591,6 +591,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is CenterTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is GateTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is TreasureTile -> collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
+                is EmptyTile -> 1+1 // do nothing
+                is InvisibleTile -> 1+1 // do nothing
             }
         }
 
