@@ -1,16 +1,14 @@
 package entity
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents a space on the Board with no Tile on it.
  */
+@Serializable
 class EmptyTile (
-    connections: Map<Int, Int>,
-    rotationOffset: Int,
-    xCoordinate: Int,
-    yCoordinate: Int
-): Tile(
-    connections,
-    rotationOffset,
-    xCoordinate,
-    yCoordinate
-)
+   override var connections: Map<Int, Int>,
+   override var  rotationOffset: Int,
+   override val xCoordinate: Int,
+   override val yCoordinate: Int
+): Tile()

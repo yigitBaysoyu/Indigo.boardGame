@@ -14,29 +14,72 @@ import entity.Turn
  */
 interface Refreshable {
     /**
-     * perform refreshes that are necessary after a new game started
+     * perform refreshes that are necessary after a new game started.
      */
     fun refreshAfterStartNewGame() {}
 
+    /**
+     * perform refreshes that are necessary after a tile rotated.
+     *
+     * @param tile The tile that is being rotated.
+     */
     fun refreshAfterTileRotated(tile: PathTile) {}
 
+    /**
+     * perform refreshes that are necessary after a tile placed.
+     *
+     * @param tile The tile that is being placed.
+     */
     fun refreshAfterTilePlaced(tile: PathTile) {}
 
+    /**
+     * Performs the necessary refreshes after a gem move.
+     *
+     * @param movement Contains all the data related to a gem's movement.
+     */
     fun refreshAfterGemMoved(movement: GemMovement) {}
 
+    /**
+     * perform refreshes that are necessary after a game ended.
+     */
     fun refreshAfterEndGame() {}
 
+    /**
+     * perform refreshes that are necessary after undo has been called.
+     *
+     * @param turn Contains all the data related to undo.
+     */
     fun refreshAfterUndo(turn: Turn) {}
 
+    /**
+     * perform refreshes that are necessary after redo has been called.
+     *
+     * @param turn Contains all the data related to redo.
+     */
     fun refreshAfterRedo(turn: Turn) {}
 
+    /**
+     * perform refreshes that are necessary after an old game loaded.
+     */
     fun refreshAfterLoadGame() {}
 
+    /**
+     * perform refreshes that are necessary after a new game joined.
+     */
     fun refreshAfterGameJoined() {}
 
+    /**
+     * Performs necessary refreshes after a player joins a game.
+    */
     fun refreshAfterPlayerJoined() {}
 
+    /**
+     * perform refreshes that are necessary after a player lefts a game.
+     */
     fun refreshAfterPlayerLeft() {}
 
+    /**
+     * perform refreshes that are necessary after the simulation speed changed.
+     */
     fun refreshAfterSimulationSpeedChange() {}
 }
