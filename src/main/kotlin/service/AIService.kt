@@ -1,9 +1,6 @@
 package service
 
-import entity.EmptyTile
-import entity.PathTile
-import entity.PlayerType
-import entity.Tile
+import entity.*
 import kotlin.random.Random
 
 class AIService(private val rootService: RootService) {
@@ -25,7 +22,7 @@ class AIService(private val rootService: RootService) {
         //Rotate the tile by a random amount
         val randomRotation = Random.Default.nextInt(0, 6)
         for (i in 0 until randomRotation){
-            playerService.rotateTile(player.playHand)
+            playerService.rotateTile(player.playHand.first())
         }
 
         var selectedPos: Pair<Int,Int> ?= null
@@ -39,31 +36,32 @@ class AIService(private val rootService: RootService) {
                 placeableTiles.removeFirst()
                 continue
             }
-            else if(gameService.isPlaceable(selectedPos.first, selectedPos.second, player.playHand)){
+            else if(gameService.isPlaceable(selectedPos.first, selectedPos.second, player.playHand.first())){
                 break
             }
             //If isPlaceable returns false for an empty position it means that the tile blocks a exit
             //Then a rotation will always solve it given the existing tile types
             else if(selectedTile is EmptyTile){
-                playerService.rotateTile(player.playHand)
+                playerService.rotateTile(player.playHand.first())
                 continue
             }
         }
 
         //No possible move for the AI meaning game has ended
         if(placeableTiles.isEmpty()){
-            gameService.endGame()
+            //gameService.endGame()
             return
         }
 
         checkNotNull(selectedPos)
-        gameService.setTileFromAxialCoordinates(selectedPos.first, selectedPos.second, player.playHand)
+        gameService.setTileFromAxialCoordinates(selectedPos.first, selectedPos.second, player.playHand.first())
         placeableTiles.removeFirst()
 
         //TODO: Turn object is still missing, also no method which moves gems after move
         //TODO: Cant call gameService.placeTile() since private
         //TODO: Documentation and testing
         //
+
     }
 
     private fun initializePlaceableTiles(){
@@ -83,5 +81,20 @@ class AIService(private val rootService: RootService) {
 
     init {
         initializePlaceableTiles()
+    }
+
+    private fun evaluatePosition(turn: Turn, aiPlayerID: Int): Int{
+        val evaluation = 0
+        //Evaluate how good the score is for us
+        for(i in 0 until turn.scoreChanges.size){
+            if(i == aiPlayerID){
+                evaluation + turn.scoreChanges[i]
+            }
+            else{
+                evaluation - turn.scoreChanges[i]
+            }
+        }
+
+        //TODO: Distanz zu unseren Gate(Auch richtige Connection) optimal ist Maximale distanz für gegner minimale für uns
     }
 }
