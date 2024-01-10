@@ -218,6 +218,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         if (xCoordinate < -4 || xCoordinate > 4) return false
         if (yCoordinate < -4 || yCoordinate > 4) return false
+        if(!checkIfValidAxialCoordinates(xCoordinate, yCoordinate)) return false
 
         val adjacentTiles = findAdjacentTiles(xCoordinate, yCoordinate)
 
