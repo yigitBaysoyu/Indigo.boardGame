@@ -123,7 +123,7 @@ class MoveGemTest {
 
         val turn = Turn(0, mutableListOf(0,0,0), placedTile)
 
-        gameService.moveGems(turn, placedTile)
+        gameService.moveGems(turn)
 
         //Check for Gem in correct position
         assert(placedTile.gemPositions[3] ==GemType.AMBER)
@@ -207,7 +207,7 @@ class MoveGemTest {
         }
         player2.gateList.add(gate2)
 
-        gameService.moveGems(turn2, placedTile2)
+        gameService.moveGems(turn2,)
 
         //Check for gems at correct positions
         assert(treasureTile2.gemPositions[5] == GemType.AMBER)
@@ -256,7 +256,7 @@ class MoveGemTest {
         gameService.setTileFromAxialCoordinates(tile10.xCoordinate, tile10.yCoordinate, tile10)
 
         val turn3 = Turn(2, mutableListOf(0,0,0), placedTile3)
-        gameService.moveGems(turn3, placedTile3)
+        gameService.moveGems(turn3)
 
         //Check validity of collision report
         assert(turn3.gemMovements[0].didCollide && turn3.gemMovements[1].didCollide)
@@ -278,7 +278,7 @@ class MoveGemTest {
         gameService.setTileFromAxialCoordinates(-4, 3, placedTile4)
 
         val turn4 = Turn(2, mutableListOf(0,0,0), placedTile4)
-        gameService.moveGems(turn4, placedTile4)
+        gameService.moveGems(turn4)
 
         assert(placedTile4.gemPositions[0] == GemType.AMBER)
         assert(turn4.gemMovements[0].endTile == placedTile4)
@@ -307,7 +307,7 @@ class MoveGemTest {
 
         val turn5 = Turn(2, mutableListOf(0,0,0), placedTile5)
 
-        gameService.moveGems(turn5, placedTile5)
+        gameService.moveGems(turn5)
         assert(turn5.gemMovements[0].didCollide && turn5.gemMovements[1].didCollide)
         assert(!(GemType.EMERALD in placedTile5.gemPositions || GemType.EMERALD in tile11.gemPositions))
     }
