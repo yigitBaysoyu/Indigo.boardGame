@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * on which side of the tile.
  */
 @Serializable
-open class PathTile(
+class PathTile(
     override var connections: Map<Int, Int> = mutableMapOf(),
     override var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
