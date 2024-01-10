@@ -3,7 +3,6 @@ package view
 import entity.*
 import service.Constants
 import service.RootService
-import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.ComponentView
 import tools.aqua.bgw.components.container.Area
@@ -14,6 +13,7 @@ import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.BoardGameScene
+import tools.aqua.bgw.event.MouseEvent
 import tools.aqua.bgw.util.BidirectionalMap
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
@@ -596,60 +596,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     visual = tileVisual
                 )
 
-                if(tile is EmptyTile) {
-                    area.onMouseClicked = click@{
-                        val mouseX: Double = it.posX.toDouble()
-                        val mouseY: Double = it.posY.toDouble()
-                        val tileCoords = tileMap.backward(area)
-                        var tileX = tileCoords.first
-                        var tileY = tileCoords.second
-
-                        val maxPossibleWidth: Double = hexagonWidth / 2.0
-                        val maxPossibleHeight: Double = hexagonHeight / 4.0
-                        val maxAllowedWidth: Int = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
-
-                        if(mouseX.toInt() in 0 .. maxAllowedWidth) {
-                            if(mouseY.toInt() in 0 .. hexagonHeight / 4) {
-                                tileY -= 1
-                                try {
-                                    val newTile = rootService.gameService.getTileFromAxialCoordinates(tileX, tileY)
-                                    if(newTile !is EmptyTile) return@click
-                                } catch (e: IndexOutOfBoundsException) {
-                                    println(e.message)
-                                    return@click
-                                }
-                            }
-                        }
-
-                        val distanceFromMaxHeight: Int = (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
-                        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
-
-                        if(mouseX.toInt() in 0 .. hexagonWidth / 2) {
-                            if(mouseY.toInt() in minNeededHeight .. hexagonHeight) {
-                                tileX -= 1
-                                tileY += 1
-                                try {
-                                    val newTile = rootService.gameService.getTileFromAxialCoordinates(tileX, tileY)
-                                    if(newTile !is EmptyTile) return@click
-                                } catch (e: IndexOutOfBoundsException) {
-                                    println(e.message)
-                                    return@click
-                                }
-                            }
-                        }
-
-                        // println("${clickedCoords.first} ${clickedCoords.second}")
-                        val newArea = tileMap.forward(Pair(tileX, tileY))
-                        val oldVisual = newArea.visual
-                        newArea.visual = ColorVisual(Color.RED)
-                        playAnimation(DelayAnimation(duration = 100).apply {
-                            onFinished = {
-                                newArea.visual = oldVisual
-                            }
-                        })
-                        // TODO uncomment: rootService.playerService.placeTile(clickedCoords.first, clickedCoords.second)
-                    }
-                }
+                if(tile is EmptyTile) area.onMouseClicked = { handleTileClick(it, area) }
 
                 area.rotate(tile.rotationOffset * 60)
 
@@ -660,6 +607,39 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 tileMap.add(Pair(x,y), area)
             }
         }
+    }
+
+    private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
+        val mouseX: Double = mouseEvent.posX.toDouble()
+        val mouseY: Double = mouseEvent.posY.toDouble()
+        val tileCoords = tileMap.backward(area)
+        var tileX = tileCoords.first
+        var tileY = tileCoords.second
+
+        // Check if player clicked top left or bottom left area that is outside the
+        // hexagon but inside the area rectangle
+        val maxPossibleWidth: Double = hexagonWidth / 2.0
+        val maxPossibleHeight: Double = hexagonHeight / 4.0
+
+        // used for top left corner
+        val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+
+        // used for bottom left corner
+        val distanceFromMaxHeight = (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
+        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+
+        // check if top left corner was clicked
+        if(mouseX.toInt() in 0 .. maxAllowedWidth && mouseY.toInt() in 0 .. hexagonHeight / 4) {
+            tileY -= 1
+        }
+
+        // check if bottom left corner was clicked
+        if(mouseX.toInt() in 0 .. hexagonWidth / 2 && mouseY.toInt() in minNeededHeight .. hexagonHeight) {
+            tileX -= 1
+            tileY += 1
+        }
+
+        // TODO uncomment: rootService.playerService.placeTile(tileX, tileY)
     }
 
     private fun renderPlayerConfiguration() {
