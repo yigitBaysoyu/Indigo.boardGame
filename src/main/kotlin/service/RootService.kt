@@ -14,6 +14,7 @@ class RootService {
     val gameService = GameService(this)
     val playerService = PlayerService(this)
     val networkService = NetworkService(this)
+    val aiService = AIService(this)
 
     /**
      * The currently active game. Can be `null`, if no game has started yet.

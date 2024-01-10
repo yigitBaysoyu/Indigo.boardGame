@@ -13,13 +13,13 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
     // also holds the currently active game
     private val rootService = RootService()
 
-     private val mainMenuScene = MainMenuScene(rootService)
-     private val gameScene = GameScene(rootService)
-     private val startGameScene = StartGameScene(rootService)
-     private val loadGameScene = LoadGameScene(rootService)
-     private val hostGameScene = HostGameScene(rootService)
-     private val joinGameScene = JoinGameScene(rootService)
-     private val gameEndedScene = GameEndedScene(rootService)
+    private val mainMenuScene = MainMenuScene(rootService)
+    private val gameScene = GameScene(rootService)
+    private val startGameScene = StartGameScene(rootService)
+    private val loadGameScene = LoadGameScene(rootService)
+    private val hostGameScene = HostGameScene(rootService)
+    private val joinGameScene = JoinGameScene(rootService)
+    private val gameEndedScene = GameEndedScene(rootService)
 
     init {
         // all scenes and the application itself need to
@@ -60,4 +60,3 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         this.showMenuScene(gameEndedScene)
     }
 }
-
