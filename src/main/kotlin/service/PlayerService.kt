@@ -142,20 +142,28 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         for (i in 0 .. 5) gemsOnTile.add(GemType.NONE)
 
         // new Tile because Coordinates are values
-        val tileToBePlaced= PathTile(tileFromPlayer.connections,tileFromPlayer.rotationOffset,xCoordinate,yCoordinate,gemsOnTile)
+        val tileToBePlaced = PathTile(
+            connections = tileFromPlayer.connections,
+            rotationOffset = tileFromPlayer.rotationOffset,
+            xCoordinate = xCoordinate, yCoordinate = yCoordinate,
+            gemPositions = gemsOnTile,
+            type = tileFromPlayer.type
+        )
 
-        if(!rootService.gameService.isPlaceAble(xCoordinate,yCoordinate,tileToBePlaced)) return
+        if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
 
         onAllRefreshables { refreshAfterTilePlaced(tileToBePlaced) }
 
         // placing the Tile in the GameLayout and moving the Gems
-        game.gameLayout[xCoordinate+5][yCoordinate+5]=tileToBePlaced
-        val turn=Turn(game.activePlayerID,mutableListOf(0,0,0),tileToBePlaced)
+        rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
+
+        val scoreChanges = MutableList(game.playerList.size) {0}
+        val turn = Turn(game.activePlayerID, scoreChanges, tileToBePlaced)
         rootService.gameService.moveGems(turn)
 
         // Updates the PlayHand for the current Player and then switches the Player
         game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
-        game.activePlayerID= (game.activePlayerID +1) % game.playerList.size
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
 
         game.redoStack.clear()
         game.undoStack.add(turn)
