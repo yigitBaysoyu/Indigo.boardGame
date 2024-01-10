@@ -125,4 +125,49 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         game.redoStack.add(lastTurn)
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
+
+    /**
+     *  Places the Tile on the hexagon Grid if no rules are broken and the tile is Empty
+     *  puts the Turn from moveGems onto the undo Stack
+     *  @param xCoordinate the x Coordinate, in the Axial System
+     *  @param yCoordinate the y Coordinate, in the Axial System
+     */
+    fun placeTile(xCoordinate: Int, yCoordinate: Int){
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val tileFromPlayer = game.playerList[game.activePlayerID].playHand.first()
+        val gemsOnTile = mutableListOf<GemType>()
+
+        for (i in 0 .. 5) gemsOnTile.add(GemType.NONE)
+
+        // new Tile because Coordinates are values
+        val tileToBePlaced = PathTile(
+            connections = tileFromPlayer.connections,
+            rotationOffset = tileFromPlayer.rotationOffset,
+            xCoordinate = xCoordinate, yCoordinate = yCoordinate,
+            gemPositions = gemsOnTile,
+            type = tileFromPlayer.type
+        )
+
+        if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
+
+        onAllRefreshables { refreshAfterTilePlaced(tileToBePlaced) }
+
+        // placing the Tile in the GameLayout and moving the Gems
+        rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
+
+        val scoreChanges = MutableList(game.playerList.size) {0}
+        val turn = Turn(game.activePlayerID, scoreChanges, tileToBePlaced)
+        rootService.gameService.moveGems(turn)
+
+        // Updates the PlayHand for the current Player and then switches the Player
+        game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
+        game.redoStack.clear()
+        game.undoStack.add(turn)
+
+        rootService.gameService.checkIfGameEnded()
+    }
 }

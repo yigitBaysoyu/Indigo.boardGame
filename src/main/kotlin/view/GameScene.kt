@@ -728,6 +728,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
 
             endGemView.visual = gemVisual
+
+            updatePlayerScores()
         }
     }
 
