@@ -559,7 +559,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * moves gems until the gem is at the end of its path.
      *
      * @param[turn] The turn in which the movement occurs
-     * @param[tile] The tile that is placed in the turn
      *
      * @return A turn modified so that the movement of the gems
      * and collisions, if any happened, are represented by the [GemMovement]
