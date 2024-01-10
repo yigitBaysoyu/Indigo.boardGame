@@ -126,6 +126,12 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 
+    /**
+     *  Places the Tile on the hexagon Grid if no rules are broken and the tile is Empty
+     *  puts the Turn from moveGems onto the undo Stack
+     *  @param xCoordinate the x Coordinate, in the Axial System
+     *  @param yCoordinate the y Coordinate, in the Axial System
+     */
     fun placeTile(xCoordinate: Int, yCoordinate: Int){
         val game = rootService.currentGame
         checkNotNull(game)
