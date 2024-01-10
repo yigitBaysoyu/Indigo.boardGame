@@ -565,9 +565,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * objects in [Turn.gemMovements]
      */
 
-    fun moveGems(turn: Turn, tile: PathTile): Turn{
+    fun moveGems(turn: Turn): Turn{
         val currentGame = rootService.currentGame
         checkNotNull(currentGame){"No active Game"}
+        val tile = turn.placedTile
 
         //Getting neighbours according to connection
         val neighbours = mutableMapOf<Int, Tile>()
@@ -648,7 +649,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     private fun findEndPosition(tile: Tile, currentConnection: Int): Pair<Tile, Int>{
         val nextTile = getAdjacentTileByConnection(tile, currentConnection)
-        //Both large blocks do basically the same but cant access gemPositions if I just check for both
+
         if(tile is TraverseAbleTile){
             when(nextTile){
                 //Increase score action
@@ -671,7 +672,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 else -> return Pair(tile, currentConnection)
             }
         }
-        return Pair<Tile, Int>(tile, currentConnection)
+        return Pair(tile, currentConnection)
     }
 
     /**
