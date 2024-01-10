@@ -1,12 +1,12 @@
 package view
 
+import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 
@@ -131,7 +131,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     }
 
     init {
-        background = ColorVisual(44, 70, 127)
+        background = Constants.sceneBackgroundColorVisual
 
         addComponents(
             localLabel,
