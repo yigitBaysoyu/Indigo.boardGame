@@ -13,6 +13,7 @@ import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.BoardGameScene
+import tools.aqua.bgw.event.MouseEvent
 import tools.aqua.bgw.util.BidirectionalMap
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
@@ -595,12 +596,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     visual = tileVisual
                 )
 
-                if(tile is EmptyTile) {
-                    area.onMouseClicked = {
-                        val clickedCoords = tileMap.backward(area)
-                        // TODO uncomment: rootService.playerService.placeTile(clickedCoords.first, clickedCoords.second)
-                    }
-                }
+                if(tile is EmptyTile) area.onMouseClicked = { handleTileClick(it, area) }
 
                 area.rotate(tile.rotationOffset * 60)
 
@@ -611,6 +607,39 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 tileMap.add(Pair(x,y), area)
             }
         }
+    }
+
+    private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
+        val mouseX: Double = mouseEvent.posX.toDouble()
+        val mouseY: Double = mouseEvent.posY.toDouble()
+        val tileCoords = tileMap.backward(area)
+        var tileX = tileCoords.first
+        var tileY = tileCoords.second
+
+        // Check if player clicked top left or bottom left area that is outside the
+        // hexagon but inside the area rectangle
+        val maxPossibleWidth: Double = hexagonWidth / 2.0
+        val maxPossibleHeight: Double = hexagonHeight / 4.0
+
+        // used for top left corner
+        val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+
+        // used for bottom left corner
+        val distanceFromMaxHeight = (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
+        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+
+        // check if top left corner was clicked
+        if(mouseX.toInt() in 0 .. maxAllowedWidth && mouseY.toInt() in 0 .. hexagonHeight / 4) {
+            tileY -= 1
+        }
+
+        // check if bottom left corner was clicked
+        if(mouseX.toInt() in 0 .. hexagonWidth / 2 && mouseY.toInt() in minNeededHeight .. hexagonHeight) {
+            tileX -= 1
+            tileY += 1
+        }
+
+        // TODO uncomment: rootService.playerService.placeTile(tileX, tileY)
     }
 
     private fun renderPlayerConfiguration() {
