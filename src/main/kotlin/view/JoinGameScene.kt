@@ -132,12 +132,6 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
             pane.add(playerColorIconBackground)
             pane.add(playerColorIcon)
             add(pane)
-
-            playerColorIconBackground.onMouseClicked = {
-                selectedColors[i] = (selectedColors[i] + 1) % 4
-                playerColorIcon.visual = colorImageList[selectedColors[i]]
-                setStartButtonState()
-            }
         }
     }
 
@@ -205,7 +199,7 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
         return (name.length in 3..16)
     }
 
-    private fun handleAddPlayerClick() {
+    /*private fun handleAddPlayerClick() {
         if(playerNameInputList[3].isVisible) return
         var indexToBeAdded = 2
         if(playerNameInputList[2].isVisible) indexToBeAdded = 3
@@ -225,9 +219,9 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         setWarningIcons()
         setStartButtonState()
-    }
+    }*/
 
-    private fun handleRemovePlayerClick() {
+    /*private fun handleRemovePlayerClick() {
         var indexToBeDeleted = 2
         if(playerNameInputList[3].isVisible) indexToBeDeleted = 3
 
@@ -248,9 +242,9 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         setWarningIcons()
         setStartButtonState()
-    }
+    }*/
 
-    private fun handleStartClick() {
+    /*private fun handleStartClick() {
         val playerList = mutableListOf<Player>()
         for(i in 0 until 4) {
             if(!playerNameInputList[i].isVisible) continue
@@ -273,7 +267,7 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
         )
 
         resetAllComponents()
-    }
+    }*/
 
     private fun resetAllComponents() {
         for(i in 0 until 4) {
