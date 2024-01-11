@@ -152,7 +152,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
 
-        onAllRefreshables { refreshAfterTilePlaced(tileToBePlaced) }
 
         // placing the Tile in the GameLayout and moving the Gems
         rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
@@ -162,12 +161,17 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         rootService.gameService.moveGems(turn)
 
         // Updates the PlayHand for the current Player and then switches the Player
-        game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        if(game.drawPile.isNotEmpty()) {
+            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        } else {
+            game.playerList[game.activePlayerID].playHand.clear()
+        }
         game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
 
         game.redoStack.clear()
         game.undoStack.add(turn)
 
+        onAllRefreshables { refreshAfterTilePlaced(turn) }
         rootService.gameService.checkIfGameEnded()
     }
 }
