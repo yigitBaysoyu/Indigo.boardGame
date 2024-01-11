@@ -853,7 +853,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
-
     /**
      * Function to check if there was a scoring move directly after a tile is placed
      *

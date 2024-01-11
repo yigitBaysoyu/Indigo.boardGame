@@ -7,12 +7,20 @@ class AIService(private val rootService: RootService) {
 
     private val placeableTiles: MutableList<Pair<Int,Int>> = mutableListOf()
 
+    /**
+     * Function to decide on a random move for the [PlayerType.RANDOMAI]
+     * Also keeps track of the already placed tiles each time it is called,
+     * in [placeableTiles]
+     *
+     * @throws [IllegalArgumentException] if the active player is not of
+     * [PlayerType.RANDOMAI]
+     */
     fun randomNextTurn() {
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        //check(gameService.isGameEnded())
+        gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
         require(player.playerType == PlayerType.RANDOMAI)
@@ -22,7 +30,7 @@ class AIService(private val rootService: RootService) {
         //Rotate the tile by a random amount
         val randomRotation = Random.Default.nextInt(0, 6)
         for (i in 0 until randomRotation){
-            playerService.rotateTile(player.playHand.first())
+            playerService.rotateTile()
         }
 
         var selectedPos: Pair<Int,Int> ?= null
@@ -34,32 +42,28 @@ class AIService(private val rootService: RootService) {
 
             if(selectedTile is PathTile){
                 placeableTiles.removeFirst()
-                selectedPos = null
                 continue
             }
-            else if(gameService.isPlaceable(selectedPos.first, selectedPos.second, player.playHand.first())){
+            else if(gameService.isPlaceAble(selectedPos.first, selectedPos.second, player.playHand.first())){
                 break
             }
             //If isPlaceable returns false for an empty position it means that the tile blocks a exit
             //Then a rotation will always solve it given the existing tile types
             else if(selectedTile is EmptyTile){
-                playerService.rotateTile(player.playHand.first())
+                playerService.rotateTile()
                 continue
             }
         }
 
-        if(selectedPos == null){
-            //No possible pos to play
+        if(placeableTiles.isEmpty()){
+            gameService.checkIfGameEnded()
             return
         }
-
+        checkNotNull(selectedPos)
         placeableTiles.removeFirst()
 
-        //TODO: Turn object is still missing, also no method which moves gems after move
-        //TODO: Cant call gameService.placeTile() since private
-        //TODO: Documentation and testing
-        //TODO: CHECK IF GAME ENDED
-
+        //Turn object is created in placeTile
+        playerService.placeTile(selectedPos.first, selectedPos.second)
     }
 
     private fun initializePlaceableTiles(){
