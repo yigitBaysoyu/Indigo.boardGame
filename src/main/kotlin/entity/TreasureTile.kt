@@ -11,5 +11,5 @@ class TreasureTile (
     override  var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
     override  val yCoordinate: Int = 0,
-    val gemPositions: MutableList<GemType> = mutableListOf()
-): Tile()
+    override val gemPositions: MutableList<GemType> = mutableListOf()
+): Tile(), TraverseAbleTile
