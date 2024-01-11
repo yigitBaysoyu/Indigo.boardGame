@@ -143,8 +143,12 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
         //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
-        val labels = mutableListOf<Label>(firstPlaceNameLabel, secondPlaceNameLabel,
-            thirdPlaceNumberLabel, fourthPlaceNumberLabel)
+        val labels = mutableListOf(
+            firstPlaceNameLabel,
+            secondPlaceNameLabel,
+            thirdPlaceNumberLabel,
+            fourthPlaceNumberLabel
+        )
 
         players.forEachIndexed { i, player ->
             labels[i].text = player.name
