@@ -852,7 +852,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             placedTile.gemPositions[destination] = gemAtTreasureTile
         }
     }
-}
+
 
     /**
      * Function to check if there was a scoring move directly after a tile is placed

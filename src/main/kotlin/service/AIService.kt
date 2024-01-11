@@ -34,6 +34,7 @@ class AIService(private val rootService: RootService) {
 
             if(selectedTile is PathTile){
                 placeableTiles.removeFirst()
+                selectedPos = null
                 continue
             }
             else if(gameService.isPlaceable(selectedPos.first, selectedPos.second, player.playHand.first())){
@@ -47,20 +48,17 @@ class AIService(private val rootService: RootService) {
             }
         }
 
-        //No possible move for the AI meaning game has ended
-        if(placeableTiles.isEmpty()){
-            //gameService.endGame()
+        if(selectedPos == null){
+            //No possible pos to play
             return
         }
 
-        checkNotNull(selectedPos)
-        gameService.setTileFromAxialCoordinates(selectedPos.first, selectedPos.second, player.playHand.first())
         placeableTiles.removeFirst()
 
         //TODO: Turn object is still missing, also no method which moves gems after move
         //TODO: Cant call gameService.placeTile() since private
         //TODO: Documentation and testing
-        //
+        //TODO: CHECK IF GAME ENDED
 
     }
 
@@ -81,20 +79,5 @@ class AIService(private val rootService: RootService) {
 
     init {
         initializePlaceableTiles()
-    }
-
-    private fun evaluatePosition(turn: Turn, aiPlayerID: Int): Int{
-        val evaluation = 0
-        //Evaluate how good the score is for us
-        for(i in 0 until turn.scoreChanges.size){
-            if(i == aiPlayerID){
-                evaluation + turn.scoreChanges[i]
-            }
-            else{
-                evaluation - turn.scoreChanges[i]
-            }
-        }
-
-        //TODO: Distanz zu unseren Gate(Auch richtige Connection) optimal ist Maximale distanz für gegner minimale für uns
     }
 }
