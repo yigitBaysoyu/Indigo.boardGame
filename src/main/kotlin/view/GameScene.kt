@@ -252,7 +252,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        // TODO uncomment: onMouseClicked = { rootService.playerService.redo() }
+        onMouseClicked = { rootService.playerService.redo() }
     }
 
     private val saveGameButton = Button(
