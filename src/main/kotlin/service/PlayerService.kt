@@ -189,7 +189,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
             //rotates the Tile to the rotationOffset which is needed
             game.playerList[game.activePlayerID].playHand.first().rotationOffset=0
-            for(i in 0..rotationOffset)rotateTile()
+            for(i in 0..rotationOffset+(6-rotationOffset-1))rotateTile()
 
             placeTile(cords.first,cords.second)
         }
