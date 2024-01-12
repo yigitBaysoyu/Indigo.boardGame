@@ -994,7 +994,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                println("Add call for calculateNextTurn() when its merged")
+                println("Add call for calculateNextTurn() currently doing nothing")
+                switchPlayer()
             }
             else -> return
         }

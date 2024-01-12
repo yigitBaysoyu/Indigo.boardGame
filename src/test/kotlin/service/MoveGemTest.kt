@@ -3,6 +3,9 @@ package service
 import kotlin.test.*
 import entity.*
 
+/**
+ * Class to test the moveGem method
+ */
 class MoveGemTest {
 
     /**
