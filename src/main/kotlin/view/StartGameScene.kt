@@ -2,7 +2,6 @@ package view
 
 import entity.Player
 import entity.PlayerType
-import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
