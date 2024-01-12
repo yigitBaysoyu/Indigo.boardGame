@@ -975,4 +975,18 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         onAllRefreshables { refreshAfterSimulationSpeedChange(newSpeed) }
     }
+
+    /**
+     * Function which simply switches the player and allows
+     * for additional features to be added in between turns
+     * Also checks if the game has ended
+     */
+    fun switchPlayer(){
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        checkIfGameEnded()
+
+        currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
+    }
 }

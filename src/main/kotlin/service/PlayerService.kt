@@ -163,7 +163,9 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         // Updates the PlayHand for the current Player and then switches the Player
         game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
-        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
+        //call method instead of a line call to allow for additions when switching player
+        rootService.gameService.switchPlayer()
 
         game.redoStack.clear()
         game.undoStack.add(turn)
