@@ -22,7 +22,7 @@ import java.awt.Color
 class StartGameScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
-    private  val sceneHeight = Constants.SCENE_HEIGHT
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
     private val offsetY = 250
     private val offsetX = 50
