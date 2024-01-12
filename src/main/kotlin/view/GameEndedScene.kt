@@ -70,8 +70,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
                 visual = Visual.EMPTY
             ).apply {
                 componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
-
-                text = "${i + 1}"
             }
             add(playerPosInput)
         }
