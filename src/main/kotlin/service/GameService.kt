@@ -988,5 +988,17 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         checkIfGameEnded()
 
         currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
+        when(currentGame.getActivePlayer().playerType){
+            PlayerType.RANDOMAI -> {
+                val aiService = rootService.aiService
+                aiService.randomNextTurn()
+                switchPlayer()
+            }
+            PlayerType.SMARTAI -> {
+                println("Add call for calculateNextTurn() when its merged")
+                switchPlayer()
+            }
+            else -> return
+        }
     }
 }
