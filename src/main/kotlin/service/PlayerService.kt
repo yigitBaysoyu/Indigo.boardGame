@@ -152,8 +152,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
 
-        onAllRefreshables { refreshAfterTilePlaced(tileToBePlaced) }
-
         // placing the Tile in the GameLayout and moving the Gems
         rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
 
@@ -162,12 +160,27 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         rootService.gameService.moveGems(turn)
 
         // Updates the PlayHand for the current Player and then switches the Player
-        game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        if(game.drawPile.isNotEmpty()) {
+            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        } else {
+            game.playerList[game.activePlayerID].playHand.clear()
+        }
         game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
 
-        game.redoStack.clear()
+        // if placed tile has same properties as last on redoStack, remove one turn from redoStack
+        if(game.redoStack.isNotEmpty()) {
+            val lastFromRedoStack = game.redoStack.last()
+            if(xCoordinate == lastFromRedoStack.first.first && yCoordinate == lastFromRedoStack.first.second
+                && tileToBePlaced.rotationOffset == lastFromRedoStack.second) {
+                    game.redoStack.removeLast()
+            } else { // else remove everything from redoStack
+                game.redoStack.clear()
+            }
+        }
+
         game.undoStack.add(turn)
 
+        onAllRefreshables { refreshAfterTilePlaced(turn) }
         rootService.gameService.checkIfGameEnded()
     }
 
@@ -183,7 +196,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(game.redoStack.isEmpty()) return
 
-        val coordinatesAndRotation = game.redoStack.removeLast()
+        val coordinatesAndRotation = game.redoStack.last()
         val coords = coordinatesAndRotation.first
         val rotationOffset = coordinatesAndRotation.second
 

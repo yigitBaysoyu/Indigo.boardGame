@@ -76,7 +76,7 @@ class TestRefreshable : Refreshable {
 
     }
 
-    override fun refreshAfterTilePlaced(tile: PathTile) {
+    override fun refreshAfterTilePlaced(turn: Turn) {
         refreshAfterTilePlacedCalled = true
 
     }

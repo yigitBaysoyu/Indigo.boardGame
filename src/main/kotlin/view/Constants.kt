@@ -1,4 +1,4 @@
-package service
+package view
 
 import tools.aqua.bgw.visual.ColorVisual
 import java.awt.image.BufferedImage
