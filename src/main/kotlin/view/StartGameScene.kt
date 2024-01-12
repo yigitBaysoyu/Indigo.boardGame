@@ -402,6 +402,16 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         )
 
         resetAllComponents()
+
+        //If the first player is AI directly make according move
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        when(currentGame.playerList[0].playerType){
+            PlayerType.RANDOMAI -> rootService.aiService.randomNextTurn()
+            PlayerType.SMARTAI -> println("calculating next turn")
+            else -> return
+        }
     }
 
     private fun resetAllComponents() {
