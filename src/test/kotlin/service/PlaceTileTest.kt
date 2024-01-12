@@ -19,7 +19,6 @@ class PlaceTileTest {
         val players = mutableListOf( player1, player2)
         gameService.startNewGame(players, false, 1.0, false)
 
-
         val game = rootService.currentGame
         assertNotNull(game)
         val originalActivePlayerID = game.activePlayerID
