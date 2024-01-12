@@ -6,7 +6,7 @@ import entity.*
  * Handles the functionality of the player moves during the game.
  * Actions of the PlayerService influence the game and thus can end it.
  *
- * @param[rootService] Reference to the RootService to enable access to all layers of the programm
+ * @param[rootService] Reference to the RootService to enable access to all layers of the program
  */
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
@@ -15,8 +15,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      *
      * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
-     *
-     * @param tile the PathTIle to be rotated
      */
     fun rotateTile() {
         val game = rootService.currentGame
@@ -186,7 +184,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         if(!game.redoStack.isEmpty())
         {
             val cords=game.redoStack.removeLast()
-            //placeTile(cords.first,cords.second)
+
+            placeTile(cords.first,cords.second)
         }
 
 
