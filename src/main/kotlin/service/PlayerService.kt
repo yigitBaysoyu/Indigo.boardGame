@@ -122,7 +122,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate))
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 
@@ -183,7 +183,13 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(!game.redoStack.isEmpty())
         {
-            val cords=game.redoStack.removeLast()
+            val coordinatesAndRotation=game.redoStack.removeLast()
+            val cords=coordinatesAndRotation.first
+            val rotationOffset=coordinatesAndRotation.second
+
+            //rotates the Tile to the rotationOffset which is needed
+            game.playerList[game.activePlayerID].playHand.first().rotationOffset=0
+            for(i in 0..rotationOffset)rotateTile()
 
             placeTile(cords.first,cords.second)
         }

@@ -32,7 +32,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         isNetworkGame: Boolean
     ) {
         val undoStack = ArrayDeque<Turn>()
-        val redoStack = ArrayDeque<Pair<Int,Int>>()
+        val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
         drawPile.shuffle()

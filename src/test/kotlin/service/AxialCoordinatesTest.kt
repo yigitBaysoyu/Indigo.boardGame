@@ -108,7 +108,7 @@ class AxialCoordinatesTest {
 
         val testGame = IndigoGame(
             0, 1.0, false,
-            ArrayDeque<Turn>(), ArrayDeque<Pair<Int,Int>>(),
+            ArrayDeque<Turn>(), ArrayDeque<Pair<Pair<Int,Int>,Int>>(),
             mutableListOf(), mutableListOf(), mutableListOf(),
             testGameLayout
         )
@@ -154,7 +154,7 @@ class AxialCoordinatesTest {
 
         val testGame = IndigoGame(
             0, 1.0, false,
-            ArrayDeque<Turn>(), ArrayDeque<Pair<Int,Int>>(),
+            ArrayDeque<Turn>(), ArrayDeque<Pair<Pair<Int,Int>,Int>>(),
             mutableListOf(), mutableListOf(), mutableListOf(),
             testGameLayout
         )
