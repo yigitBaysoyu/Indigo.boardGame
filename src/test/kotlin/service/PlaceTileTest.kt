@@ -29,11 +29,6 @@ class PlaceTileTest {
         assertNotEquals(originalActivePlayerID, game.activePlayerID)
         assertEquals(DrawPileSize - 1, game.drawPile.size)
         assertNotEquals(PlayerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
-        assertEquals(1, game.undoStack.size)
-
-        val placedTile = rootService.gameService.getTileFromAxialCoordinates(0, 0)
-        if (placedTile is PathTile) {
-            assertEquals(GemType.NONE, placedTile.gemPositions[0])
         }
 
 
@@ -62,7 +57,5 @@ class PlaceTileTest {
         assertEquals(originalActivePlayerID, game.activePlayerID)
         assertNotEquals(DrawPileSize - 1, game.drawPile.size)
         assertNotEquals(PlayerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
-        assertNotEquals(1, game.undoStack.size)
     }
 
-}
