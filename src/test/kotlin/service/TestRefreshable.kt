@@ -71,7 +71,7 @@ class TestRefreshable : Refreshable {
         refreshAfterStartNewGameCalled = true
     }
 
-    override fun refreshAfterTileRotated(tile: PathTile) {
+    override fun refreshAfterTileRotated() {
         refreshAfterTileRotatedCalled = true
 
     }
