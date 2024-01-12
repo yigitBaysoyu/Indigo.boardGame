@@ -18,7 +18,8 @@ data class IndigoGame(
     val undoStack: ArrayDeque<Turn> = ArrayDeque(),
     @Serializable(with = ArrayDequeSerializer::class)
     val redoStack: ArrayDeque<Turn> = ArrayDeque(),
-    val playerList: MutableList<Player> = mutableListOf(),
+    // palyerList wieder zu val machen
+    var playerList: MutableList<Player> = mutableListOf(),
     val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
     val drawPile: MutableList<PathTile> = mutableListOf(),
     val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()

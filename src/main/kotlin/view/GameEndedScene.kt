@@ -1,12 +1,14 @@
 package view
 
+import entity.IndigoGame
 import entity.Player
+import entity.PlayerType
+import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
@@ -16,84 +18,74 @@ import javax.imageio.ImageIO
 /**
  * Is displayed after a game has ended. Shows scores and winner of the game.
  */
-class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 1080), Refreshable {
+class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
-    private val sceneWidth = 1920
+    private val sceneWidth = Constants.SCENE_WIDTH
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
-    private val offsetY = -50
+    private val offsetY = 250
+    private val offsetX = 50
 
-    private val gameOverLabel = Label(
-        width = 600, height = 75,
-        posX = halfWidth - 600 / 2, posY = offsetY + 150,
-        text = "GAME OVER",
-        font = Font(size = 80, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+    private val headerLabel = Label(
+        width = 500, height = 100,
+        posX = halfWidth - 500 / 2, posY = 75,
+        text = "Game Over",
+        font = Font(size = 75, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
     )
 
-    private val firstPlaceNumberLabel = Label(
+    val testButton = Button(
+        width = 350, height = 75,
+        posX = 100 - 185, posY = 200,
+        text = "test",
+        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+
+
+    }
+
+    private val playerNameInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerNameInput: Label = Label(
+                width = 400, height = 75,
+                posX = halfWidth - 500 / 2 + offsetX, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+
+                text = "Player ${i + 1}"
+            }
+            add(playerNameInput)
+        }
+    }
+
+    private val playerPosInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerPosInput: Label = Label(
+                width = 75, height = 75,
+                posX = halfWidth - 500 / 2 + offsetX, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+
+                text = "${i + 1}"
+            }
+            add(playerPosInput)
+        }
+    }
+
+    private val playerWonIcon = Label(
         width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 300,
-        text = "1.",
+        posX = halfWidth - 500 / 2 + offsetX + 450, posY = offsetY,
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val firstPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 300,
-        text = "David",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val firstPlaceWinnerSymbol = Label(
-        width = 50, height = 50,
-        posX = halfWidth + 180, posY = offsetY + 310,
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val secondPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 425,
-        text = "2.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val secondPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 425,
-        text = "Alex",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val thirdPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 550,
-        text = "3.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val thirdPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 550,
-        text = "Johannes",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val fourthPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 675,
-        text = "4.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val fourthPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 675,
-        text = "Nick",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
     )
 
     val newGameButton = Button(
         width = 350, height = 75,
-        posX = halfWidth - 350 / 2 - 185, posY = offsetY + 900,
+        posX = halfWidth - 375, posY = halfWidth - 50,
         text = "New Game",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -103,7 +95,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
     val quitButton = Button(
         width = 350, height = 75,
-        posX = halfWidth - 350 / 2 + 185, posY = offsetY + 900,
+        posX = halfWidth + 25, posY = halfWidth - 50,
         text = "Quit",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -113,46 +105,69 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
 
     init {
-        background = ColorVisual(44, 70, 127)
-        val winnerPNG : BufferedImage = ImageIO.read(GameEndedScene::class.java.getResource("/winnerSymbol.png"))
-        firstPlaceWinnerSymbol.visual = ImageVisual(winnerPNG)
+        //background = ColorVisual(44, 70, 127)
+        background = Constants.sceneBackgroundColorVisual
+
         addComponents(
-            gameOverLabel,
-            newGameButton,
+            headerLabel,
+            playerNameInputList[0],
+            playerNameInputList[1],
+            playerNameInputList[2],
+            playerNameInputList[3],
+            playerPosInputList[0],
+            playerPosInputList[1],
+            playerPosInputList[2],
+            playerPosInputList[3],
+            playerWonIcon,
             quitButton,
-            firstPlaceWinnerSymbol,
-            firstPlaceNumberLabel,
-            firstPlaceNameLabel,
-            secondPlaceNumberLabel,
-            secondPlaceNameLabel,
-            thirdPlaceNumberLabel,
-            thirdPlaceNameLabel,
-            fourthPlaceNumberLabel,
-            fourthPlaceNameLabel
+            newGameButton,
+            testButton
         )
     }
 
     override fun refreshAfterEndGame() {
+        resetAllComponents()
+
+        //fake game:
+        rootService.currentGame = IndigoGame()
+
+        val player = mutableListOf(
+            Player("Alex", 0, PlayerType.LOCALPLAYER, 10, 7, mutableListOf(), mutableListOf()),
+            Player("Nick", 0, PlayerType.LOCALPLAYER, 10, 5, mutableListOf(), mutableListOf())
+        )
+        rootService.currentGame!!.playerList = player
         val game = rootService.currentGame
         checkNotNull(game) { "No game found." }
 
         val players = game.playerList
+
+        print("players size: " + players.size)
 
         players.forEach { assignGemsToPlayer(it) }
 
         //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
-        val labels = mutableListOf(
-            firstPlaceNameLabel,
-            secondPlaceNameLabel,
-            thirdPlaceNumberLabel,
-            fourthPlaceNumberLabel
-        )
 
         players.forEachIndexed { i, player ->
-            labels[i].text = player.name
+            playerNameInputList[i].text = player.name
+            playerNameInputList[i].isVisible = true
+            playerPosInputList[i].text = "${i + 1}"
+            playerPosInputList[i].isVisible = true
         }
+
+
+    }
+
+    fun resetAllComponents(){
+        for(i in 0 until 4) {
+            playerNameInputList[i].isVisible = false
+            playerNameInputList[i].text = ""
+            playerPosInputList[i].isVisible = false
+            playerPosInputList[i].text = "1"
+        }
+
+        playerWonIcon.visual = ImageVisual(Constants.wonIcon)
     }
 
     private fun assignGemsToPlayer(player: Player) {
