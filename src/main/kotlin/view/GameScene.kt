@@ -639,7 +639,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             tileY += 1
         }
 
-        // TODO uncomment: rootService.playerService.placeTile(tileX, tileY)
+        rootService.playerService.placeTile(tileX, tileY)
     }
 
     private fun renderPlayerConfiguration() {
