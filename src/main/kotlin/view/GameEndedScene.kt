@@ -75,9 +75,23 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
     }
 
+    private val playerPointsInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerPosInput: Label = Label(
+                width = 75, height = 75,
+                posX = halfWidth - 500 / 2 + offsetX + 510, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+            }
+            add(playerPosInput)
+        }
+    }
+
     private val playerWonIcon = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 500 / 2 + offsetX + 450, posY = offsetY,
+        width = 60, height = 60,
+        posX = halfWidth - 500 / 2 + offsetX + 425, posY = offsetY + 5,
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
     )
 
@@ -116,6 +130,10 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPosInputList[1],
             playerPosInputList[2],
             playerPosInputList[3],
+            playerPointsInputList[0],
+            playerPointsInputList[1],
+            playerPointsInputList[2],
+            playerPointsInputList[3],
             playerWonIcon,
             quitButton,
             newGameButton,
@@ -131,7 +149,9 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
         val player = mutableListOf(
             Player("Alex", 0, PlayerType.LOCALPLAYER, 10, 7, mutableListOf(), mutableListOf()),
-            Player("Nick", 0, PlayerType.LOCALPLAYER, 10, 5, mutableListOf(), mutableListOf())
+            Player("Nick", 0, PlayerType.LOCALPLAYER, 10, 5, mutableListOf(), mutableListOf()),
+            Player("Kussay", 0, PlayerType.LOCALPLAYER, 8, 4, mutableListOf(), mutableListOf()),
+            Player("Johannes", 0, PlayerType.LOCALPLAYER, 3, 1, mutableListOf(), mutableListOf())
         )
         rootService.currentGame!!.playerList = player
         val game = rootService.currentGame
@@ -152,6 +172,8 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerNameInputList[i].isVisible = true
             playerPosInputList[i].text = "${i + 1}"
             playerPosInputList[i].isVisible = true
+            playerPointsInputList[i].text = "${player.score}"
+            playerPointsInputList[i].isVisible = true
         }
 
 
@@ -163,6 +185,8 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerNameInputList[i].text = ""
             playerPosInputList[i].isVisible = false
             playerPosInputList[i].text = "1"
+            playerPointsInputList[i].isVisible = false
+            playerPointsInputList[i].text = "0"
         }
 
         playerWonIcon.visual = ImageVisual(Constants.wonIcon)
@@ -171,9 +195,11 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     private fun assignGemsToPlayer(player: Player) {
         for(gate in player.gateList) {
             for(gem in gate.gemsCollected) {
+                player.gemsCollected.add(gem)
                 player.score += gem.toInt()
                 player.amountOfGems ++
             }
         }
+
     }
 }
