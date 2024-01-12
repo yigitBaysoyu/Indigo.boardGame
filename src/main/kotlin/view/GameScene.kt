@@ -1,7 +1,6 @@
 package view
 
 import entity.*
-import service.Constants
 import service.RootService
 import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.ComponentView

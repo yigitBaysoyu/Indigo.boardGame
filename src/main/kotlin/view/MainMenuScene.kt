@@ -1,6 +1,5 @@
 package view
 
-import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
