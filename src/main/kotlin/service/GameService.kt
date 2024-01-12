@@ -32,7 +32,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         isNetworkGame: Boolean
     ) {
         val undoStack = ArrayDeque<Turn>()
-        val redoStack = ArrayDeque<Turn>()
+        val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
         drawPile.shuffle()
@@ -278,10 +278,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
         // The tile with these conditions cannot be placed.
-        if (y == 4 && tile.connections[0] == 1 ) return false
-        if (x == 4 && tile.connections[2] == 3 ) return false
-        if (y == -4 && tile.connections[3] == 4 ) return false
-        if (x == -4 && tile.connections[5] == 0 ) return false
+        if (x == 4 && tile.connections[0] == 1 ) return false
+        if (y == 4 && tile.connections[2] == 3 ) return false
+        if (x == -4 && tile.connections[3] == 4 ) return false
+        if (y == -4 && tile.connections[5] == 0 ) return false
 
         val tilesPositions = listOf(
             //two Pairs that have a list of positions and a pair of connections

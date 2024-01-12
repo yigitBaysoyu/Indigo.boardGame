@@ -6,7 +6,7 @@ import entity.*
  * Handles the functionality of the player moves during the game.
  * Actions of the PlayerService influence the game and thus can end it.
  *
- * @param[rootService] Reference to the RootService to enable access to all layers of the programm
+ * @param[rootService] Reference to the RootService to enable access to all layers of the program
  */
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
@@ -122,7 +122,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(lastTurn)
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 
@@ -173,5 +173,28 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         onAllRefreshables { refreshAfterTilePlaced(turn) }
         rootService.gameService.checkIfGameEnded()
+    }
+
+    /**
+     * Reverts the last undo action
+     *
+     * takes the last element from the redo Stack which is a Pair<Int,Int>
+     * these are the x and y Coordinates from the move which has been reverted with undo
+     */
+    fun redo() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game" }
+
+        if(game.redoStack.isEmpty()) return
+
+        val coordinatesAndRotation = game.redoStack.removeLast()
+        val coords = coordinatesAndRotation.first
+        val rotationOffset = coordinatesAndRotation.second
+
+        // rotates the Tile to the rotationOffset which is needed
+        val tileInHand = game.playerList[game.activePlayerID].playHand.first()
+        for(i in 0 until (rotationOffset + 6 - tileInHand.rotationOffset) % 6) rotateTile()
+
+        placeTile(coords.first, coords.second)
     }
 }
