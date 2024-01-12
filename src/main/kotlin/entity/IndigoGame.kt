@@ -1,5 +1,7 @@
 package entity
 
+import kotlinx.serialization.Serializable
+
 /**
  * Main Entity. Holds all the data used during a Game.
  *
@@ -7,14 +9,17 @@ package entity
  * @property playerList holds the players in the order that they take turns in.
  * @property gameLayout 2d List which holds all the tiles on the board.
  */
-data class IndigoGame (
+@Serializable
+data class IndigoGame(
     var activePlayerID: Int = 0,
     var simulationSpeed: Double = 1.0,
     val isNetworkGame: Boolean = false,
+    @Serializable(with = ArrayDequeSerializer::class)
     val undoStack: ArrayDeque<Turn> = ArrayDeque(),
-    val redoStack: ArrayDeque<Turn> = ArrayDeque(),
+    @Serializable(with = ArrayDequeSerializer::class)
+    val redoStack: ArrayDeque<Pair<Pair<Int,Int>,Int>> = ArrayDeque(),
     val playerList: MutableList<Player> = mutableListOf(),
-    val gateList: MutableList<GateTile> = mutableListOf(),
+    val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
     val drawPile: MutableList<PathTile> = mutableListOf(),
     val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 ) {
