@@ -177,24 +177,20 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      * takes the last element from the redo Stack which is a Pair<Int,Int>
      * these are the x and y Coordinates from the move which has been reverted with undo
      */
-    fun redo(){
-        val game= rootService.currentGame
-        checkNotNull(game)
+    fun redo() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game" }
 
-        if(!game.redoStack.isEmpty())
-        {
-            val coordinatesAndRotation=game.redoStack.removeLast()
-            val cords=coordinatesAndRotation.first
-            val rotationOffset=coordinatesAndRotation.second
+        if(game.redoStack.isEmpty()) return
 
-            //rotates the Tile to the rotationOffset which is needed
-            game.playerList[game.activePlayerID].playHand.first().rotationOffset=0
-            for(i in 0..rotationOffset+(6-rotationOffset-1))rotateTile()
+        val coordinatesAndRotation = game.redoStack.removeLast()
+        val coords = coordinatesAndRotation.first
+        val rotationOffset = coordinatesAndRotation.second
 
-            placeTile(cords.first,cords.second)
-        }
+        // rotates the Tile to the rotationOffset which is needed
+        val tileInHand = game.playerList[game.activePlayerID].playHand.first()
+        for(i in 0 until (rotationOffset + 6 - tileInHand.rotationOffset) % 6) rotateTile()
 
-
-
+        placeTile(coords.first, coords.second)
     }
 }
