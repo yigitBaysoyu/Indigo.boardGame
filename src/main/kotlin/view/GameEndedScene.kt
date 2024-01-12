@@ -1,12 +1,16 @@
 package view
 
+import entity.GemType
 import entity.IndigoGame
 import entity.Player
 import entity.PlayerType
 import service.Constants
 import service.RootService
+import tools.aqua.bgw.components.container.LinearLayout
+import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
+import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ImageVisual
@@ -25,6 +29,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     private val halfWidth = sceneWidth / 2
     private val offsetY = 250
     private val offsetX = 50
+    private val gemSize = 25
 
     private val headerLabel = Label(
         width = 500, height = 100,
@@ -89,6 +94,20 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
     }
 
+    private val playerGemLayoutList = mutableListOf<LinearLayout<TokenView>>().apply {
+        for(i in 0 until 4) {
+            val playerGemLayout = LinearLayout<TokenView>(
+                width = 400, height = 75,
+                posX = halfWidth - 500 / 2 + offsetX + 560, posY = 150*i + offsetY,
+                visual = Visual.EMPTY,
+                alignment = Alignment.CENTER_LEFT
+            )
+            add(playerGemLayout)
+        }
+    }
+
+
+
     private val playerWonIcon = Label(
         width = 60, height = 60,
         posX = halfWidth - 500 / 2 + offsetX + 425, posY = offsetY + 5,
@@ -134,6 +153,10 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPointsInputList[1],
             playerPointsInputList[2],
             playerPointsInputList[3],
+            playerGemLayoutList[0],
+            playerGemLayoutList[1],
+            playerGemLayoutList[2],
+            playerGemLayoutList[3],
             playerWonIcon,
             quitButton,
             newGameButton,
@@ -193,13 +216,43 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     }
 
     private fun assignGemsToPlayer(player: Player) {
+        renderCollectedGemsLists()
         for(gate in player.gateList) {
             for(gem in gate.gemsCollected) {
-                player.gemsCollected.add(gem)
                 player.score += gem.toInt()
                 player.amountOfGems ++
             }
         }
 
+    }
+
+
+    private fun renderCollectedGemsLists() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        game.playerList.forEachIndexed {index, player ->
+            renderCollectedGemsForPlayer(player, index)
+        }
+    }
+
+    private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
+        val playersGemList = mutableListOf<GemType>()
+
+        for(gate in player.gateList) {
+            playersGemList.addAll(gate.gemsCollected)
+        }
+
+        playerGemLayoutList[playerIndex].clear()
+        for(gem in playersGemList) {
+            val gemVisual = when(gem) {
+                GemType.AMBER -> ImageVisual(Constants.amberImage)
+                GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                GemType.NONE -> Visual.EMPTY
+            }
+            val gemView = TokenView( -gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
+            playerGemLayoutList[playerIndex].add(gemView)
+        }
     }
 }
