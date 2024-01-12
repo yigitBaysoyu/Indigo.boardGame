@@ -2,6 +2,7 @@ package service
 
 import entity.*
 import kotlin.random.Random
+import kotlin.reflect.typeOf
 
 class AIService(private val rootService: RootService) {
 
@@ -19,6 +20,7 @@ class AIService(private val rootService: RootService) {
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
+
         checkNotNull(currentGame)
         gameService.checkIfGameEnded()
 
@@ -34,8 +36,7 @@ class AIService(private val rootService: RootService) {
         }
 
         var selectedPos: Pair<Int,Int> ?= null
-        var selectedTile: Tile
-
+        var selectedTile: Tile ?
         while (placeableTiles.isNotEmpty()){
             selectedPos = placeableTiles.first()
             selectedTile = gameService.getTileFromAxialCoordinates(selectedPos.first, selectedPos.second)
@@ -51,6 +52,11 @@ class AIService(private val rootService: RootService) {
             //Then a rotation will always solve it given the existing tile types
             else if(selectedTile is EmptyTile){
                 playerService.rotateTile()
+                continue
+            }
+            //Remove any positions which doesn't pass the other checks
+            else{
+                placeableTiles.removeFirst()
                 continue
             }
         }
