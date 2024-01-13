@@ -5,6 +5,26 @@ import kotlin.random.Random
 
 class AIService(private val rootService: RootService) {
 
+
+
+    fun calculateNextTurn() {
+        val gameService = rootService.gameService
+        val playerService = rootService.playerService
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        gameService.checkIfGameEnded()
+
+        val player = currentGame.getActivePlayer()
+        require(player.playerType == PlayerType.SMARTAI)
+
+
+    }
+
+
+
+
+    //---------------------------------------------------------------------
+
     private val placeableTiles: MutableList<Pair<Int,Int>> = mutableListOf()
 
     /**
