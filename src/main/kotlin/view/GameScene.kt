@@ -844,9 +844,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
-            var gemView = gemViews[movement.positionOnStartTile]
-            if(movement.startTile is CenterTile) {
-                gemView = gemViews[movement.startTile.availableGems.size - 1]
+            val gemView = if(movement.startTile is CenterTile) {
+                gemViews[movement.startTile.availableGems.size - 1]
+            } else {
+                gemViews[movement.positionOnStartTile]
             }
 
             val gemVisual = when(movement.gemType) {
