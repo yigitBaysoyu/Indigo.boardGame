@@ -1,4 +1,4 @@
-package service
+package view
 
 import tools.aqua.bgw.visual.ColorVisual
 import java.awt.image.BufferedImage
@@ -28,6 +28,7 @@ object Constants {
     val treasureTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileTreasure.png"))
     val centerTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileCenter.png"))
     val emptyTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileEmpty.png"))
+    val hoverTintImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/HoverTintImage.png"))
 
     val amberImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Amber.png"))
     val emeraldImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Emerald.png"))
