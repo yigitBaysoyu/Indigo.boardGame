@@ -440,6 +440,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         var allGemsRemoved = true
 
+        var allTilesPlaced = true
+
         for (row in game.gameLayout){
             for(tile in row){
                 when(tile){
@@ -456,27 +458,19 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         }
                     }
                     is CenterTile ->{
-                        if (!tile.availableGems.all{ it == GemType.NONE}) {
+                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
                             allGemsRemoved = false
                             break
                         }
+                    }
+                    is EmptyTile -> {
+                        allTilesPlaced =false
                     }
                     else -> 1 + 1 // do nothing
                 }
 
             }
         }
-
-        var allTilesPlaced = true
-
-        for (row in game.gameLayout){
-            for (tile in row){
-                if (tile is EmptyTile ){
-                    allTilesPlaced = false
-                }
-            }
-        }
-
 
         if (allGemsRemoved || allTilesPlaced ) {
             onAllRefreshables { refreshAfterEndGame() }
