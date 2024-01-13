@@ -1,7 +1,6 @@
 package view
 
 import entity.*
-import service.Constants
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
@@ -17,7 +16,6 @@ import java.awt.Color
 class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
-    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
     private val listOffset = halfWidth - 75
     private val offsetY = 250
@@ -168,7 +166,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
     }
 
-    fun resetAllComponents(){
+    private fun resetAllComponents(){
         for(i in 0 until 4) {
             playerNameInputList[i].isVisible = false
             playerNameInputList[i].text = ""
@@ -202,8 +200,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playersGemList.addAll(gate.gemsCollected)
         }
 
-        var i = 0
-        for(gem in playersGemList) {
+        for((i, gem) in playersGemList.withIndex()) {
             val gemVisual = when(gem) {
                 GemType.AMBER -> ImageVisual(Constants.amberImage)
                 GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
@@ -213,7 +210,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
             playerGemLayoutListList[playerIndex][i].visual = gemVisual
             playerGemLayoutListList[playerIndex][i].isVisible = true
-            i++
         }
     }
 
