@@ -189,7 +189,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
         game.playerList.forEachIndexed {index, player ->
             renderCollectedGemsForPlayer(player, index)
-            assignGemsToPlayer(player)
         }
     }
 
@@ -210,15 +209,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
             playerGemLayoutListList[playerIndex][i].visual = gemVisual
             playerGemLayoutListList[playerIndex][i].isVisible = true
-        }
-    }
-
-    private fun assignGemsToPlayer(player: Player) {
-        for(gate in player.gateList) {
-            for(gem in gate.gemsCollected) {
-                player.score += gem.toInt()
-                player.amountOfGems ++
-            }
         }
     }
 }
