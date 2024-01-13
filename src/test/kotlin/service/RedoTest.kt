@@ -15,7 +15,7 @@ class RedoTest {
     @BeforeEach
     fun setUp() {
         rootService = RootService()
-        gameService = GameService(rootService)
+        gameService = rootService.gameService
 
     }
 
@@ -47,7 +47,7 @@ class RedoTest {
         assertTrue(rootService.currentGame!!.redoStack.isEmpty())
     }
     /**
-     * Testet das allgemeine Wiederholen einer Aktion im Spiel.
+     * Testet ob redoStack nach dem aufrufen der methode leer ist
      */
     @Test
     fun testRedo() {
@@ -55,21 +55,22 @@ class RedoTest {
         gameService.startNewGame(players, false, 1.0, false)
         val game = rootService.currentGame
 
-        val initialCoords = Pair(0, 0)
+        val initialCoords = Pair(1, 1)
         rootService.playerService.placeTile(initialCoords.first, initialCoords.second)
 
         val rotationOffset = 2
         for (i in 0 until rotationOffset) {
             rootService.playerService.rotateTile()
         }
-
+        rootService.playerService.undo() // Or game!!.redoStack.addAll(listOf(Pair(testCoordinates, testRotationOffset)
         rootService.playerService.redo()
+
+
         val expectedRotationOffset = rotationOffset
-        val actualRotationOffset = game!!.playerList[game.activePlayerID].playHand.first().rotationOffset
-        assertTrue(game.redoStack.isEmpty())
+        val actualRotationOffset = game!!.playerList[game!!.activePlayerID].playHand.first().rotationOffset
+        assertTrue(game.redoStack.isEmpty()) // hier ist redoStack wieder leer
         assertEquals(expectedRotationOffset, actualRotationOffset)
     }
-
 
 
 
