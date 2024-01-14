@@ -2,6 +2,7 @@ package view
 
 import entity.*
 import service.RootService
+import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.ComponentView
 import tools.aqua.bgw.components.container.Area
@@ -365,6 +366,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
 
         setButtonsIfNetworkGame()
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        when(currentGame.playerList[0].playerType){
+            PlayerType.RANDOMAI -> {
+                rootService.aiService.randomNextTurn()
+            }
+            PlayerType.SMARTAI -> println("calculating next turn")
+            else -> return
+        }
     }
 
     private fun setButtonsIfNetworkGame() {
@@ -791,8 +802,29 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val view = tileMap.forward(Pair(x,y))
 
         val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
-        view.visual = newVisual
+
+        //view.visual = newVisual
         view.rotation = tile.rotationOffset * 60.0
+
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        //Delay the placement of random tile
+        if(currentGame.playerList[turn.playerID].playerType == PlayerType.RANDOMAI){
+            val gameScene = this
+            gameScene.lock()
+            this.playAnimation(
+                DelayAnimation(500).apply {
+                    onFinished = {
+                        view.visual = newVisual
+                        gameScene.unlock()
+                    }
+                }
+            )
+        }
+        else{
+            view.visual = newVisual
+        }
 
         renderGemsForPathOrTreasureTile(tile, view)
 
