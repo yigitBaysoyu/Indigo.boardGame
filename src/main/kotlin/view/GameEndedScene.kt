@@ -1,99 +1,102 @@
 package view
 
-import entity.Player
+import entity.*
 import service.RootService
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 
 /**
  * Is displayed after a game has ended. Shows scores and winner of the game.
  */
-class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 1080), Refreshable {
+class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
-    private val sceneWidth = 1920
+    private val sceneWidth = Constants.SCENE_WIDTH
     private val halfWidth = sceneWidth / 2
-    private val offsetY = -50
+    private val listOffset = halfWidth - 75
+    private val offsetY = 250
+    private val offsetX = 50
+    private val gemSize = 25
 
-    private val gameOverLabel = Label(
-        width = 600, height = 75,
-        posX = halfWidth - 600 / 2, posY = offsetY + 150,
-        text = "GAME OVER",
-        font = Font(size = 80, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+    private val headerLabel = Label(
+        width = 500, height = 100,
+        posX = halfWidth - 500 / 2, posY = 75,
+        text = "Game Over",
+        font = Font(size = 75, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
     )
 
-    private val firstPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 300,
-        text = "1.",
+    private val playerNameInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerNameInput: Label = Label(
+                width = 400, height = 75,
+                posX = listOffset - 500 / 2 + offsetX, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+
+                text = "Player ${i + 1}"
+            }
+            add(playerNameInput)
+        }
+    }
+
+    private val playerPosInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerPosInput: Label = Label(
+                width = 75, height = 75,
+                posX = listOffset - 500 / 2 + offsetX, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+            }
+            add(playerPosInput)
+        }
+    }
+
+    private val playerPointsInputList = mutableListOf<Label>().apply {
+        for(i in 0 until 4) {
+            val playerPosInput: Label = Label(
+                width = 75, height = 75,
+                posX = listOffset - 500 / 2 + offsetX + 510, posY = 150*i + offsetY,
+                font = Font(size = 35, Color(0, 0, 0)),
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
+            }
+            add(playerPosInput)
+        }
+    }
+
+    private val playerGemLayoutListList = mutableListOf<MutableList<Button>>().apply {
+        for (i in 0 until 4) {
+            val gems= mutableListOf<Button>()
+            for(j in 0 until 12) {
+                val gem = Button(
+                    posX = listOffset - 500 / 2 + offsetX + 600 + j*25, posY = 150*i + offsetY +25,
+                    width = gemSize, height = gemSize,
+                    visual = Visual.EMPTY
+                )
+                gems.add(gem)
+            }
+            add(gems)
+        }
+    }
+
+    private val playerWonIcon = Label(
+        width = 60, height = 60,
+        posX = listOffset - 500 / 2 + offsetX + 425, posY = offsetY + 5,
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val firstPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 300,
-        text = "David",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val firstPlaceWinnerSymbol = Label(
-        width = 50, height = 50,
-        posX = halfWidth + 180, posY = offsetY + 310,
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val secondPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 425,
-        text = "2.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val secondPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 425,
-        text = "Alex",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val thirdPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 550,
-        text = "3.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val thirdPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 550,
-        text = "Johannes",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
-    )
-
-    private val fourthPlaceNumberLabel = Label(
-        width = 75, height = 75,
-        posX = halfWidth - 525 / 2, posY = offsetY + 675,
-        text = "4.",
-        font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
-    )
-
-    private val fourthPlaceNameLabel = Label(
-        width = 400, height = 75,
-        posX = halfWidth - 400 / 2, posY = offsetY + 675,
-        text = "Nick",
-        font = Font(size = 40, fontWeight = Font.FontWeight.NORMAL, color = Color(250, 250, 240))
     )
 
     val newGameButton = Button(
         width = 350, height = 75,
-        posX = halfWidth - 350 / 2 - 185, posY = offsetY + 900,
+        posX = halfWidth - 375, posY = halfWidth - 50,
         text = "New Game",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -103,7 +106,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
     val quitButton = Button(
         width = 350, height = 75,
-        posX = halfWidth - 350 / 2 + 185, posY = offsetY + 900,
+        posX = halfWidth + 25, posY = halfWidth - 50,
         text = "Quit",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
@@ -113,54 +116,99 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(1920, 108
 
 
     init {
-        background = ColorVisual(44, 70, 127)
-        val winnerPNG : BufferedImage = ImageIO.read(GameEndedScene::class.java.getResource("/winnerSymbol.png"))
-        firstPlaceWinnerSymbol.visual = ImageVisual(winnerPNG)
+        background = Constants.sceneBackgroundColorVisual
         addComponents(
-            gameOverLabel,
-            newGameButton,
+            headerLabel,
+            playerNameInputList[0],
+            playerNameInputList[1],
+            playerNameInputList[2],
+            playerNameInputList[3],
+            playerPosInputList[0],
+            playerPosInputList[1],
+            playerPosInputList[2],
+            playerPosInputList[3],
+            playerPointsInputList[0],
+            playerPointsInputList[1],
+            playerPointsInputList[2],
+            playerPointsInputList[3],
+            playerWonIcon,
             quitButton,
-            firstPlaceWinnerSymbol,
-            firstPlaceNumberLabel,
-            firstPlaceNameLabel,
-            secondPlaceNumberLabel,
-            secondPlaceNameLabel,
-            thirdPlaceNumberLabel,
-            thirdPlaceNameLabel,
-            fourthPlaceNumberLabel,
-            fourthPlaceNameLabel
+            newGameButton,
         )
+        playerGemLayoutListList.forEach {
+            for(button in it) {
+                addComponents(button)
+            }
+        }
     }
 
     override fun refreshAfterEndGame() {
+        resetAllComponents()
+
         val game = rootService.currentGame
         checkNotNull(game) { "No game found." }
 
         val players = game.playerList
 
-        players.forEach { assignGemsToPlayer(it) }
+        renderCollectedGemsLists()
 
         //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
-        val labels = mutableListOf(
-            firstPlaceNameLabel,
-            secondPlaceNameLabel,
-            thirdPlaceNumberLabel,
-            fourthPlaceNumberLabel
-        )
 
         players.forEachIndexed { i, player ->
-            labels[i].text = player.name
+            playerNameInputList[i].text = player.name
+            playerNameInputList[i].isVisible = true
+            playerPosInputList[i].text = "${i + 1}"
+            playerPosInputList[i].isVisible = true
+            playerPointsInputList[i].text = "${player.score}"
+            playerPointsInputList[i].isVisible = true
         }
     }
 
-    private fun assignGemsToPlayer(player: Player) {
-        for(gate in player.gateList) {
-            for(gem in gate.gemsCollected) {
-                player.score += gem.toInt()
-                player.amountOfGems ++
+    private fun resetAllComponents(){
+        for(i in 0 until 4) {
+            playerNameInputList[i].isVisible = false
+            playerNameInputList[i].text = ""
+            playerPosInputList[i].isVisible = false
+            playerPosInputList[i].text = "1"
+            playerPointsInputList[i].isVisible = false
+            playerPointsInputList[i].text = "0"
+            for(j in 0 until 12) {
+                playerGemLayoutListList[i][j].visual = Visual.EMPTY
+                playerGemLayoutListList[i][j].isVisible = false
             }
+        }
+
+        playerWonIcon.visual = ImageVisual(Constants.wonIcon)
+    }
+
+    private fun renderCollectedGemsLists() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        game.playerList.forEachIndexed {index, player ->
+            renderCollectedGemsForPlayer(player, index)
+        }
+    }
+
+    private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
+        val playersGemList = mutableListOf<GemType>()
+
+        for(gate in player.gateList) {
+            playersGemList.addAll(gate.gemsCollected)
+        }
+
+        for((i, gem) in playersGemList.withIndex()) {
+            val gemVisual = when(gem) {
+                GemType.AMBER -> ImageVisual(Constants.amberImage)
+                GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
+                GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
+                GemType.NONE -> Visual.EMPTY
+            }
+
+            playerGemLayoutListList[playerIndex][i].visual = gemVisual
+            playerGemLayoutListList[playerIndex][i].isVisible = true
         }
     }
 }

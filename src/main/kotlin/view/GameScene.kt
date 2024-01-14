@@ -363,7 +363,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         updatePlayerScores()
 
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
+
+        setButtonsIfNetworkGame()
     }
+
+    private fun setButtonsIfNetworkGame() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        if(game.isNetworkGame) {
+            undoButton.isVisible = false
+            undoButton.isDisabled = true
+            redoButton.isVisible = false
+            redoButton.isDisabled = true
+            saveGameButton.isVisible = false
+            saveGameButton.isDisabled = true
+            loadGameButton.isVisible = false
+            loadGameButton.isDisabled = true
+        } else {
+            undoButton.isVisible = true
+            undoButton.isDisabled = false
+            redoButton.isVisible = true
+            redoButton.isDisabled = false
+            saveGameButton.isVisible = true
+            saveGameButton.isDisabled = false
+            loadGameButton.isVisible = true
+            loadGameButton.isDisabled = false
+        }
+    }
+
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int): MutableList<GemType> {
         val copiedList = mutableListOf<GemType>()
@@ -785,9 +813,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val tileView = tileMap.forward(Pair(startX, startY))
         val gemViews = gemMap.forward(tileView)
 
-        var gemView = gemViews[movement.positionOnStartTile]
-        if(movement.startTile is CenterTile) {
-            gemView = gemViews[movement.startTile.availableGems.size + 1 - 1]
+        val gemView = if(movement.startTile is CenterTile) {
+            gemViews[movement.startTile.availableGems.size + 1 - 1]
+        } else {
+            gemViews[movement.positionOnStartTile]
         }
 
         gemView.visual = Visual.EMPTY
@@ -849,9 +878,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
-            var gemView = gemViews[movement.positionOnStartTile]
-            if(movement.startTile is CenterTile) {
-                gemView = gemViews[movement.startTile.availableGems.size - 1]
+
+            val gemView = if(movement.startTile is CenterTile) {
+                gemViews[movement.startTile.availableGems.size + 1 - 1]
+            } else {
+                gemViews[movement.positionOnStartTile]
             }
 
             val gemVisual = when(movement.gemType) {
