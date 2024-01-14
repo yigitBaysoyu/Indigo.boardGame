@@ -24,6 +24,8 @@ class AIService(private val rootService: RootService) {
         gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
+        if(player.playHand.size == 0) return
+
         require(player.playerType == PlayerType.RANDOMAI)
 
         placeableTiles.shuffle()
