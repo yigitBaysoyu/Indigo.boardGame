@@ -133,6 +133,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      *  @param yCoordinate the y Coordinate, in the Axial System
      */
     fun placeTile(xCoordinate: Int, yCoordinate: Int){
+        val gameService = rootService.gameService
         val game = rootService.currentGame
         checkNotNull(game)
 
@@ -152,8 +153,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
 
-        onAllRefreshables { refreshAfterTilePlaced(tileToBePlaced) }
-
         // placing the Tile in the GameLayout and moving the Gems
         rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
 
@@ -167,7 +166,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         } else {
             game.playerList[game.activePlayerID].playHand.clear()
         }
-        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
 
         // if placed tile has same properties as last on redoStack, remove one turn from redoStack
         if(game.redoStack.isNotEmpty()) {
@@ -184,6 +182,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         onAllRefreshables { refreshAfterTilePlaced(turn) }
         rootService.gameService.checkIfGameEnded()
+
+        gameService.switchPlayer()
     }
 
     /**

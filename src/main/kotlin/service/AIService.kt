@@ -2,7 +2,6 @@ package service
 
 import entity.*
 import kotlin.random.Random
-import kotlin.reflect.typeOf
 
 class AIService(private val rootService: RootService) {
 
