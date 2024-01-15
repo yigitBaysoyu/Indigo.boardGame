@@ -236,8 +236,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     init {
         background = Constants.sceneBackgroundColorVisual
 
-        resetAllComponents()
-
         addComponents(
             cornersBackground,
             headerLabel,
@@ -358,6 +356,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     fun setUp(sessionID: String, name: String) {
         this.sessionID = sessionID
         this.hostName = name
+
+        resetAllComponents()
     }
     private fun resetAllComponents() {
 
@@ -368,6 +368,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         // host specific configuration
         playerNameInputList[0].isVisible = true
+        println("hostName is: " + hostName)
         playerNameInputList[0].text = hostName
         playerModeIconList[0].components[1].visual = ImageVisual(Constants.modeIconPlayer)
         playerColorIconList[0].components[1].visual = colorImageList[selectedColors[0]]
@@ -394,4 +395,9 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         startButton.isDisabled = true
     }
+
+    override fun refreshAfterPlayerJoined() {
+
+    }
+
 }

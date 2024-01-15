@@ -78,8 +78,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     val nameInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 725,
-        /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
-        prompt = "Name ...",
         font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY,
         text = "Name"
