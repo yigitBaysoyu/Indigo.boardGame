@@ -6,7 +6,7 @@ import entity.*
  * Handles the functionality of the player moves during the game.
  * Actions of the PlayerService influence the game and thus can end it.
  *
- * @param[rootService] Reference to the RootService to enable access to all layers of the programm
+ * @param[rootService] Reference to the RootService to enable access to all layers of the program
  */
 class PlayerService (private  val rootService: RootService) : AbstractRefreshingService() {
 
@@ -122,7 +122,88 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(lastTurn)
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
+    }
+
+    /**
+     *  Places the Tile on the hexagon Grid if no rules are broken and the tile is Empty
+     *  puts the Turn from moveGems onto the undo Stack
+     *  @param xCoordinate the x Coordinate, in the Axial System
+     *  @param yCoordinate the y Coordinate, in the Axial System
+     */
+    fun placeTile(xCoordinate: Int, yCoordinate: Int){
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val tileFromPlayer = game.playerList[game.activePlayerID].playHand.first()
+        val gemsOnTile = mutableListOf<GemType>()
+
+        for (i in 0 .. 5) gemsOnTile.add(GemType.NONE)
+
+        // new Tile because Coordinates are values
+        val tileToBePlaced = PathTile(
+            connections = tileFromPlayer.connections,
+            rotationOffset = tileFromPlayer.rotationOffset,
+            xCoordinate = xCoordinate, yCoordinate = yCoordinate,
+            gemPositions = gemsOnTile,
+            type = tileFromPlayer.type
+        )
+
+        if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
+
+        // placing the Tile in the GameLayout and moving the Gems
+        rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)
+
+        val scoreChanges = MutableList(game.playerList.size) {0}
+        val turn = Turn(game.activePlayerID, scoreChanges, tileToBePlaced)
+        rootService.gameService.moveGems(turn)
+
+        // Updates the PlayHand for the current Player and then switches the Player
+        if(game.drawPile.isNotEmpty()) {
+            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+        } else {
+            game.playerList[game.activePlayerID].playHand.clear()
+        }
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
+        // if placed tile has same properties as last on redoStack, remove one turn from redoStack
+        if(game.redoStack.isNotEmpty()) {
+            val lastFromRedoStack = game.redoStack.last()
+            if(xCoordinate == lastFromRedoStack.first.first && yCoordinate == lastFromRedoStack.first.second
+                && tileToBePlaced.rotationOffset == lastFromRedoStack.second) {
+                    game.redoStack.removeLast()
+            } else { // else remove everything from redoStack
+                game.redoStack.clear()
+            }
+        }
+
+        game.undoStack.add(turn)
+
+        onAllRefreshables { refreshAfterTilePlaced(turn) }
+        rootService.gameService.checkIfGameEnded()
+    }
+
+    /**
+     * Reverts the last undo action
+     *
+     * takes the last element from the redo Stack which is a Pair<Int,Int>
+     * these are the x and y Coordinates from the move which has been reverted with undo
+     */
+    fun redo() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game" }
+
+        if(game.redoStack.isEmpty()) return
+
+        val coordinatesAndRotation = game.redoStack.last()
+        val coords = coordinatesAndRotation.first
+        val rotationOffset = coordinatesAndRotation.second
+
+        // rotates the Tile to the rotationOffset which is needed
+        val tileInHand = game.playerList[game.activePlayerID].playHand.first()
+        for(i in 0 until (rotationOffset + 6 - tileInHand.rotationOffset) % 6) rotateTile()
+
+        placeTile(coords.first, coords.second)
     }
 }

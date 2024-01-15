@@ -1,5 +1,6 @@
 package entity
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -11,9 +12,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 class PathTile(
     override var connections: Map<Int, Int> = mutableMapOf(),
-    override  var rotationOffset: Int = 0,
+    override var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
-    override  val yCoordinate: Int = 0,
-    val gemPositions: MutableList<GemType> = mutableListOf(),
+    override val yCoordinate: Int = 0,
+    override val gemPositions: MutableList<GemType> = mutableListOf(),
+    @SerialName("PathTileType")
     val type: Int = 0
-) :Tile()
+): Tile(), TraverseAbleTile
