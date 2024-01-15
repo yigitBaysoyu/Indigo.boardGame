@@ -32,6 +32,9 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedModes = mutableListOf(0, 0, 0, 0)
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
+    private var sessionID = ""
+    private var hostName = ""
+
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
         ImageVisual(Constants.modeIconRandom),
@@ -219,6 +222,16 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         isVisible = false
     }
 
+    private val addDummyDataButton = Button(
+        width = 350, height = 75,
+        posX = halfWidth - 730, posY = 900,
+        text = "dummy data",
+        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+    }
+
 
     init {
         background = Constants.sceneBackgroundColorVisual
@@ -244,7 +257,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             backButton,
             startButton,
             randomOrderCheckbox,
-            threePlayerVariantCheckBox
+            threePlayerVariantCheckBox,
+            addDummyDataButton
         )
     }
 
@@ -341,29 +355,35 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         resetAllComponents()
     }
 
+    fun setUp(sessionID: String, name: String) {
+        this.sessionID = sessionID
+        this.hostName = name
+    }
     private fun resetAllComponents() {
+
         for(i in 0 until 4) {
-            selectedModes[i] = 3
             selectedColors[i] = i
+            selectedModes[i] = if (i == 0) 0 else 3
         }
 
-        // host:
+        // host specific configuration
         playerNameInputList[0].isVisible = true
-        playerNameInputList[0].text = ""
+        playerNameInputList[0].text = hostName
         playerModeIconList[0].components[1].visual = ImageVisual(Constants.modeIconPlayer)
         playerColorIconList[0].components[1].visual = colorImageList[selectedColors[0]]
+
         // other network player
         for(i in 1 until 4) {
             playerNameInputList[i].isVisible = false
             playerModeIconList[i].isVisible = false
             playerColorIconList[i].isVisible = false
 
-            playerNameInputList[i].text = "getPlayerFor(i)"
+            playerNameInputList[i].text = "Player ${i + 1}"
             playerModeIconList[i].components[1].visual = ImageVisual(Constants.modeIconNetwork)
             playerColorIconList[i].components[1].visual = colorImageList[selectedColors[i]]
         }
 
-      
+
 
         playerRemoveIcon.isVisible = false
         playerRemoveIcon.posY = 150.0 + offsetY
@@ -372,6 +392,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         threePlayerVariantCheckBox.isChecked = false
         threePlayerVariantCheckBox.isVisible = false
 
-        startButton.isDisabled = false
+        startButton.isDisabled = true
     }
 }

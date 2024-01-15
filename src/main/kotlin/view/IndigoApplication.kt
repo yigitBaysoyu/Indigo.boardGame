@@ -41,6 +41,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
         mainMenuScene.hostGameButton.onMouseClicked = {
             // host game logic
+            hostGameScene.setUp(mainMenuScene.sessionIDInput.text, mainMenuScene.nameInput.text)
             showMenuScene(hostGameScene)
         }
         mainMenuScene.joinGameButton.onMouseClicked = {

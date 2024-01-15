@@ -52,7 +52,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         font = Font(size = 60, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
     )
 
-    private val sessionIDInput: TextField = TextField(
+    val sessionIDInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 640,
         /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
@@ -75,7 +75,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
     }
 
-    private val nameInput: TextField = TextField(
+    val nameInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 725,
         /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
