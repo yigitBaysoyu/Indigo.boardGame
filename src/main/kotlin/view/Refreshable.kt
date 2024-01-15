@@ -69,7 +69,7 @@ interface Refreshable {
     /**
      * Performs necessary refreshes after a player joins a game.
     */
-    fun refreshAfterPlayerJoined() {}
+    fun refreshAfterPlayerJoined(name: String) {}
 
     /**
      * perform refreshes that are necessary after a player lefts a game.
