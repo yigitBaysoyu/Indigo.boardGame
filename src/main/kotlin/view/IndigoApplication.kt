@@ -38,7 +38,10 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
-        mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
+        mainMenuScene.loadGameButton.onMouseClicked = {
+            rootService.gameService.loadGame()
+            //showMenuScene(loadGameScene)
+        }
         mainMenuScene.hostGameButton.onMouseClicked = {
             // host game logic
             showMenuScene(hostGameScene)
