@@ -68,13 +68,15 @@ interface Refreshable {
 
     /**
      * Performs necessary refreshes after a player joins a game.
+     * * @param [name] from the player who has joined
     */
     fun refreshAfterPlayerJoined(name: String) {}
 
     /**
      * perform refreshes that are necessary after a player lefts a game.
+     * @param [color] from the player who has left
      */
-    fun refreshAfterPlayerLeft() {}
+    fun refreshAfterPlayerLeft(color: Int) {}
 
     /**
      * perform refreshes that are necessary after the simulation speed changed.
