@@ -16,6 +16,7 @@ import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
+import java.util.Random
 
 /**
  * Displays configuration for an online game.
@@ -38,7 +39,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
         ImageVisual(Constants.modeIconRandom),
-        ImageVisual(Constants.modeIconAI)
+        ImageVisual(Constants.modeIconAI),
     )
 
     private val colorImageList = mutableListOf(
@@ -145,39 +146,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             pane.add(playerColorIconBackground)
             pane.add(playerColorIcon)
             add(pane)
-
-            playerColorIconBackground.onMouseClicked = {
-                selectedColors[i] = (selectedColors[i] + 1) % 4
-                playerColorIcon.visual = colorImageList[selectedColors[i]]
-                setStartButtonState()
-            }
         }
-    }
-
-    private val playerRemoveIcon = Pane<Button>(
-        posX = halfWidth + 275 + offsetX, posY = 1*150 + offsetY,
-        width = 75, height = 75,
-        visual = Visual.EMPTY
-    ).apply {
-        val playerRemoveBackground = Button(
-            width = 75, height = 75,
-            posX = 0, posY = 0,
-            visual = Visual.EMPTY
-        ).apply {
-            componentStyle = "-fx-background-color: #ff999900; -fx-background-radius: 25px;"
-            onMouseClicked = { handleRemovePlayerClick() }
-        }
-
-        val playerRemoveButton = Button(
-            width = 60, height = 60,
-            posX = 8, posY = 8,
-            visual = ImageVisual(Constants.minusIcon)
-        ).apply {
-            isDisabled = true
-        }
-
-        this.add(playerRemoveBackground)
-        this.add(playerRemoveButton)
     }
 
     private val startButton = Button(
@@ -225,13 +194,32 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val addDummyDataButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 730, posY = 900,
-        text = "dummy data",
+        text = "add dummy data",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = {
+            refreshAfterPlayerJoined("nick")
+            refreshAfterPlayerJoined("tom")
+            refreshAfterPlayerJoined("Alex")
+
+        }
     }
 
+    private val deleteDummyData = Button(
+        width = 350, height = 75,
+        posX = halfWidth + 375, posY = 900,
+        text = "delete dummy data",
+        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseClicked = {
+            refreshAfterPlayerLeft(2)
+
+        }
+    }
 
     init {
         background = Constants.sceneBackgroundColorVisual
@@ -251,12 +239,12 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             playerColorIconList[1],
             playerColorIconList[2],
             playerColorIconList[3],
-            playerRemoveIcon,
             backButton,
             startButton,
             randomOrderCheckbox,
             threePlayerVariantCheckBox,
-            addDummyDataButton
+            addDummyDataButton,
+            deleteDummyData
         )
     }
 
@@ -292,40 +280,14 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         }
 
         for(i in 0 until 4) {
-            val validLength = isPlayerNameLengthValid(i)
-            if(!validLength) {
+            // val isJoined = isJoined(i)
+            if(true) {
                 startButton.isDisabled = true
                 return
             }
         }
 
         startButton.isDisabled = false
-    }
-
-    private fun isPlayerNameLengthValid(index: Int): Boolean {
-        if(!playerNameInputList[index].isVisible) return true
-        val name = playerNameInputList[index].text
-        return (name.length in 3..16)
-    }
-
-    private fun handleRemovePlayerClick() {
-        var indexToBeDeleted = 2
-        if(playerNameInputList[3].isVisible) indexToBeDeleted = 3
-
-        playerNameInputList[indexToBeDeleted].isVisible = false
-        playerColorIconList[indexToBeDeleted].isVisible = false
-        playerModeIconList[indexToBeDeleted].isVisible = false
-
-
-        if(indexToBeDeleted == 2) playerRemoveIcon.posY = 2000.0
-        else playerRemoveIcon.posY = 2*150.0 + offsetY
-
-        playerNameInputList[indexToBeDeleted].text = "Player ${indexToBeDeleted + 1}"
-
-        if(indexToBeDeleted == 2) threePlayerVariantCheckBox.isVisible = false
-        else threePlayerVariantCheckBox.isVisible = true
-
-        setStartButtonState()
     }
 
     private fun handleStartClick() {
@@ -358,6 +320,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         this.hostName = name
 
         resetAllComponents()
+        // NetworkService.host(sessionID)
     }
     private fun resetAllComponents() {
 
@@ -368,7 +331,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         // host specific configuration
         playerNameInputList[0].isVisible = true
-        println("hostName is: " + hostName)
         playerNameInputList[0].text = hostName
         playerModeIconList[0].components[1].visual = ImageVisual(Constants.modeIconPlayer)
         playerColorIconList[0].components[1].visual = colorImageList[selectedColors[0]]
@@ -379,15 +341,11 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             playerModeIconList[i].isVisible = false
             playerColorIconList[i].isVisible = false
 
-            playerNameInputList[i].text = "Player ${i + 1}"
+            playerNameInputList[i].text = ""
             playerModeIconList[i].components[1].visual = ImageVisual(Constants.modeIconNetwork)
             playerColorIconList[i].components[1].visual = colorImageList[selectedColors[i]]
         }
 
-
-
-        playerRemoveIcon.isVisible = false
-        playerRemoveIcon.posY = 150.0 + offsetY
 
         randomOrderCheckbox.isChecked = false
         threePlayerVariantCheckBox.isChecked = false
@@ -396,8 +354,64 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         startButton.isDisabled = true
     }
 
-    override fun refreshAfterPlayerJoined() {
+    override fun refreshAfterPlayerJoined(name: String) {
+        println("refreshAfterPlayerJoined called")
+        for(i in 1 until 4) {
+            println("name input is: ${playerNameInputList[i].text}")
+            if(playerNameInputList[i].text == "") {
+                playerNameInputList[i].text = name
+                playerNameInputList[i].isVisible = true
+                playerModeIconList[i].isVisible = true
+                playerColorIconList[i].isVisible = true
 
+
+                playerModeIconList[i].components[1].visual = ImageVisual(Constants.modeIconNetwork)
+                playerColorIconList[i].components[1].visual = colorImageList[selectedColors[i]]
+                return
+            }
+        }
+        // game is already full
+        println("game is already full")
+
+    }
+
+    override fun refreshAfterPlayerLeft(color: Int){
+        println("refreshAfterPlayerLeft called")
+        for(i in 1 until 4) {
+            if(selectedColors[i] == color) {
+                playerNameInputList[i].isVisible = false
+                playerModeIconList[i].isVisible = false
+                playerColorIconList[i].isVisible = false
+                playerNameInputList[i].text = ""
+
+                if(i in 1..2) {
+
+                    for(j in i ..2) {
+                        println("i is: $i")
+                        if(playerNameInputList[j+1].text == "") {
+                            return
+                        }
+                        println("move player")
+                        // move player at index i+1 to index i
+                        playerNameInputList[j].text = playerNameInputList[j+1].text
+
+                        playerNameInputList[j].isVisible = true
+                        playerModeIconList[j].isVisible = true
+                        playerColorIconList[j].isVisible = true
+
+                        playerNameInputList[j+1].isVisible = false
+                        playerModeIconList[j+1].isVisible = false
+                        playerColorIconList[j+1].isVisible = false
+                        playerNameInputList[j+1].text = ""
+
+                    }
+                }
+
+                return
+            }
+        }
+        // game is already full
+        println("color could not be found")
     }
 
 }
