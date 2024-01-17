@@ -525,7 +525,25 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     fun loadGame() {
         val file = File("saveGame.ser")
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
+
+        //Convert object from player.gateList to equal counterparts in IndigoGame.gateList
+        val loadedGame = rootService.currentGame
+        checkNotNull(loadedGame)
+
+        for(player in loadedGame.playerList){
+            val playerGates = player.gateList
+            for((index, gate) in playerGates.withIndex()){
+                gate@ for(gateList in loadedGame.gateList){
+                    val identicalObject = gateList.find {
+                        it.xCoordinate == gate.xCoordinate && it.yCoordinate == gate.yCoordinate
+                    } ?: break@gate
+                    player.gateList[index] =  identicalObject
+                    require(player.gateList[index] in gateList)
+                }
+            }
+        }
         onAllRefreshables { refreshAfterStartNewGame() }
+
     }
 
     /**

@@ -516,18 +516,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             for(gateTile in playerList[playerIndex].gateList) {
                 var gateNumber = 0
                 // Iterate over the List of all Gate tiles to find which Gate the tile belongs to
-                outerLoop@ for(i in 0 until game.gateList.size) {
-                    for(gate in game.gateList[i]){
-                        //Check if gate has the correct coordinates since objects are different
-                        if(gate.xCoordinate == gateTile.xCoordinate && gate.yCoordinate == gateTile.yCoordinate){
-                            gateNumber = i
-                            break@outerLoop
-                        }
+                for(i in 0 until game.gateList.size) {
+                    if(game.gateList[i].contains(gateTile)) {
+                        gateNumber = i
+                        break
                     }
                 }
                 gateAssignments[gateNumber].add(playerList[playerIndex].color)
             }
         }
+
 
         // Remove duplicates from the gateAssignments
         val filteredGateAssignments: List<MutableList<Int>> = gateAssignments.map { it.distinct().toMutableList() }
