@@ -53,6 +53,11 @@ class AIService(private val rootService: RootService) {
                 playerService.rotateTile()
                 continue
             }
+            //Remove any positions which doesn't pass the other checks
+            else{
+                placeableTiles.removeFirst()
+                continue
+            }
         }
 
         if(placeableTiles.isEmpty()){
