@@ -32,7 +32,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         isNetworkGame: Boolean
     ) {
         val undoStack = ArrayDeque<Turn>()
-        val redoStack = ArrayDeque<Turn>()
+        val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
         drawPile.shuffle()
@@ -279,10 +279,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     private fun adjacentGate(x: Int, y: Int, tile: PathTile): Boolean {
         // The tile with these conditions cannot be placed.
-        if (y == 4 && tile.connections[0] == 1 ) return false
-        if (x == 4 && tile.connections[2] == 3 ) return false
-        if (y == -4 && tile.connections[3] == 4 ) return false
-        if (x == -4 && tile.connections[5] == 0 ) return false
+        if (x == 4 && tile.connections[0] == 1 ) return false
+        if (y == 4 && tile.connections[2] == 3 ) return false
+        if (x == -4 && tile.connections[3] == 4 ) return false
+        if (y == -4 && tile.connections[5] == 0 ) return false
 
         val tilesPositions = listOf(
             //two Pairs that have a list of positions and a pair of connections
@@ -439,19 +439,46 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val game = rootService.currentGame
         checkNotNull(game)
 
-        var allGemsInGate = 0
+        var allGemsRemoved = true
 
-        for (i in 0 until game.gateList.size) {
-            for (j in 0 until game.gateList[i].size) {
-                allGemsInGate += game.gateList[i][j].gemsCollected.size
+        var allTilesPlaced = true
+
+        for (row in game.gameLayout){
+            for(tile in row){
+                when(tile){
+                    is PathTile -> {
+                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is TreasureTile -> {
+                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is CenterTile ->{
+                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is EmptyTile -> {
+                        allTilesPlaced =false
+                    }
+                    else -> 1 + 1 // do nothing
+                }
+
             }
         }
 
-        if (allGemsInGate == 12) {
+        if (allGemsRemoved || allTilesPlaced ) {
             onAllRefreshables { refreshAfterEndGame() }
         }
 
     }
+
 
     /**
      * Function to read the given csv File, which defines the different

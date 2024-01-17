@@ -27,9 +27,9 @@ interface Refreshable {
     /**
      * perform refreshes that are necessary after a tile placed.
      *
-     * @param tile The tile that is being placed.
+     * @param turn The turn that just took place.
      */
-    fun refreshAfterTilePlaced(tile: PathTile) {}
+    fun refreshAfterTilePlaced(turn: Turn) {}
 
     /**
      * Performs the necessary refreshes after a gem move.

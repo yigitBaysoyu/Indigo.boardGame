@@ -25,11 +25,16 @@ class SaveGameTest {
         gameService = GameService(rootService)
     }
 
+    /**
+     * Delete the saveGame.ser file after test case.
+     */
     @AfterTest
     fun tearDown() {
         File("saveGame.ser").delete()
     }
-
+    /**
+     * Tests the functionality of the GameService.saveGame method.
+     */
     @Test
     fun saveTest() {
         val player = mutableListOf(
