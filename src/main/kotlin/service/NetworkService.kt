@@ -84,7 +84,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
 
         // updateConnectionState(ConnectionState.CONNECTED) moved to the methode connect
-        client?.joinGame(sessionID, "Hello!")
+
+        val networkClient = checkNotNull(client){"No client connected."}
+        networkClient.joinGame(sessionID, "Hello!")
         updateConnectionState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
     }
 
@@ -108,7 +110,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game should not be null right after starting it." }
 
-        if (currentGame.playerList[currentGame.activePlayerID].name == client!!.playerName)
+        val networkClient = checkNotNull(client){"No client connected."}
+
+        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
             updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
@@ -121,11 +125,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     private fun sendGameInitMessage(){
-
-        val drawPile = rootService.currentGame?.drawPile
+        val game = checkNotNull(rootService.currentGame) {"Game not found"}
+        val drawPile = game.drawPile
         // check not null supply.
 
-        val formatedDrawPile = drawPile!!.map{
+        val formatedDrawPile = drawPile.map{
                 it ->
             when (it.type) {
                 0 -> {
@@ -154,7 +158,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(players_list, gameMode , formatedDrawPile)
 
         // send message
-        client?.sendGameActionMessage(initMessage)
+        val networkClient = checkNotNull(client){"No client connected."}
+        networkClient.sendGameActionMessage(initMessage)
 
         // update gameInit message sent
     }
@@ -166,11 +171,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
         { "not waiting for game init message. " }
 
+        val networkClient = checkNotNull(client){"No client connected."}
 
         val playerTypes:MutableList<PlayerType> = mutableListOf()
         for (playerInfo in message.players){
-            if (playerInfo.name == client!!.playerName)
-                playerTypes.add(client!!.playerType)
+            if (playerInfo.name == networkClient.playerName)
+                playerTypes.add(networkClient.playerType)
             else
                 playerTypes.add(PlayerType.NETWORKPLAYER)
         }
@@ -192,7 +198,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         {"game is not yet initialized!"}
 
 
-        if (currentGame.playerList[currentGame.activePlayerID].name == client!!.playerName)            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
@@ -245,7 +251,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     fun sendPlaceTile (TilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
-        client?.sendGameActionMessage(TilePlacedMessage)
+        val networkClient = checkNotNull(client){"No client connected."}
+        networkClient.sendGameActionMessage(TilePlacedMessage)
 
     }
 
@@ -258,7 +265,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     fun disconnect() {
-
         client?.apply {
             if (sessionID != null) leaveGame("Goodbye!")
             if (isOpen) disconnect()
