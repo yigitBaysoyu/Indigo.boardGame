@@ -56,7 +56,6 @@ class AIService(private val rootService: RootService) {
         }
 
         if(placeableTiles.isEmpty()){
-            gameService.checkIfGameEnded()
             return
         }
         checkNotNull(selectedPos)
