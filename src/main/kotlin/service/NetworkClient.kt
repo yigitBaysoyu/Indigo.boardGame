@@ -111,41 +111,39 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             { "not expecting any guests to join!" }
 
             val players = networkService.playersList
-            checkNotNull(players) { "playersList must be initialized!" }
 
             val isNameNotUnique = players.contains(notification.sender)
 
             if (isNameNotUnique) {
                 disconnectAndError("Player names are not unique!")
-            } else {
-
-
-                var numPlayers = 0
-                if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
-                    numPlayers = 2
-                } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
-                    numPlayers = 3
-                }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
-                    numPlayers = 4
-                }
-
-                if(players.size < numPlayers ) {
-                    players.add(notification.sender)
-                    var lastColor = colorList.last()
-                    var newGuset = Player(notification.sender, lastColor)
-                    networkService.players_list.add(newGuset)
-                    colorList.removeAt(colorList.lastIndex)
-                }else {
-                    error("maximum number of players has been reached.")
-                }
-
-                // update the connection state if minimum 2 players exist.
-                if (players.size in 2..numPlayers)
-                    if (networkService.connectionState != ConnectionState.READY_FOR_GAME) {
-                        networkService.updateConnectionState(ConnectionState.READY_FOR_GAME)
-                    }
-
             }
+
+            var numPlayers = 0
+            if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
+                numPlayers = 2
+            } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
+                numPlayers = 3
+            }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
+                numPlayers = 4
+            }
+
+            if(players.size < numPlayers ) {
+                players.add(notification.sender)
+                var lastColor = colorList.last()
+                var newGuest = Player(notification.sender, lastColor)
+                networkService.players_list.add(newGuest)
+                colorList.removeAt(colorList.lastIndex)
+            }else {
+                error("maximum number of players has been reached.")
+            }
+
+            // update the connection state if minimum 2 players exist.
+            if (players.size in 2..numPlayers)
+                if (networkService.connectionState != ConnectionState.READY_FOR_GAME) {
+                    networkService.updateConnectionState(ConnectionState.READY_FOR_GAME)
+                }
+
+
         }
     }
 
