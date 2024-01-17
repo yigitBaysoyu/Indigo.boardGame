@@ -55,12 +55,13 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val newPlayer = edu.udo.cs.sopra.ntf.Player(hostPlayerName, color)
         players_list.add(newPlayer)
 
-        // updateConnectionState(ConnectionState.CONNECTED) add in the methode connect.
+        // updateConnectionState(ConnectionState.CONNECTED) add in the method connect.
+        val networkClient = checkNotNull(client){"No client connected."}
 
         if (sessionID.isNullOrBlank()) {
-            client?.createGame(GAME_ID, "Welcome!")
+            networkClient.createGame(GAME_ID, "Welcome!")
         } else {
-            client?.createGame(GAME_ID, sessionID, "Welcome!")
+            networkClient.createGame(GAME_ID, sessionID, "Welcome!")
         }
         updateConnectionState(ConnectionState.HOST_WAITING_FOR_CONFIRMATION)
     }
