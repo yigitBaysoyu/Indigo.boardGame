@@ -29,8 +29,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     /** Network client. Nullable for offline games. */
     var client: NetworkClient? = null
-    var activePlayer: entity.Player? = rootService.currentGame?.getActivePlayer()
-    val activePlayerName: String = activePlayer?.name.toString()
     var simulationSpeed : Double = 0.0
     var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
@@ -93,7 +91,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         check(connectionState == ConnectionState.READY_FOR_GAME)
         { "currently not prepared to start a new hosted game." }
-        println(playersList)
         val players = this.playersList
 
         // playerNames
@@ -110,7 +107,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game should not be null right after starting it." }
 
-        if (activePlayerName == client!!.playerName)
+        if (currentGame.playerList[currentGame.activePlayerID].name == client!!.playerName)
             updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
@@ -151,7 +148,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
                 }
             }
         }.toMutableList()
-        println(formatedDrawPile.size)
 
         // create game GameInitMessage
         val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(players_list, gameMode , formatedDrawPile)
@@ -184,7 +180,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         val player = players.map { entity.Player( name = it)}.toMutableList()
 
-        println(player)
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
 
@@ -196,8 +191,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         {"game is not yet initialized!"}
 
 
-        if (activePlayerName == client!!.playerName)
-            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        if (currentGame.playerList[currentGame.activePlayerID].name == client!!.playerName)            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 

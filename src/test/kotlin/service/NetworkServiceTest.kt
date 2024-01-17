@@ -33,7 +33,7 @@ class NetworkServiceTest {
 
 
 
-        rootServiceHost.networkService.hostGame(NETWORK_SECRET, "11914","ahm", color = PlayerColor.BLUE ,GameMode.TWO_NOT_SHARED_GATEWAYS)
+        rootServiceHost.networkService.hostGame(NETWORK_SECRET, "199914","ahm", color = PlayerColor.BLUE ,GameMode.TWO_NOT_SHARED_GATEWAYS)
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)){
              error("Nach dem Warten nicht im Zustand angekommen")
@@ -68,9 +68,47 @@ class NetworkServiceTest {
 
         initConnections()
 
-        val currentGameHost = rootServiceHost.currentGame
         rootServiceHost.networkService.startNewHostedGame()
 
+
+        val currentGameHost = rootServiceHost.currentGame
+        assertNotNull(currentGameHost)
+
+
+
+        val currentPlayer = currentGameHost.activePlayerID
+
+        val hostClient = rootServiceHost.networkService.client!!
+
+
+
+        if (currentGameHost.playerList[currentPlayer].name == hostClient.playerName){
+
+            assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)){
+                error("connectionState of the host must be PLAYING_TURN")
+            }
+
+            assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)){
+                error("connectionState of the guest  must be WAITING_FOR_TURN")
+            }
+
+        }else{
+
+            // the host is not the currentPlayer
+            assert(rootServiceGuest.waitForState(ConnectionState.PLAYING_MY_TURN)){
+                error("connectionState of the guest must be PLAYING_TURN")
+            }
+
+            assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)){
+                error("connectionState of the Host must be WAITING_FOR_TURN")
+            }
+            // retrieve currentGame of the guest
+            val currentGameGuest = rootServiceGuest.currentGame
+            assertNotNull(currentGameGuest)
+
+
+
+        }
 
 
     }
