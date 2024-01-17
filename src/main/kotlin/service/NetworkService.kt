@@ -2,10 +2,9 @@ package service
 import entity.*
 import service.message.*
 import service.message.Player
+import tools.aqua.bgw.net.common.Message
 import view.*
 import java.lang.IllegalStateException
-import service.GameService
-
 
 /**
  * Service layer class that realizes the necessary logic for sending and receiving messages
@@ -16,7 +15,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     var connectionState: ConnectionState = ConnectionState.DISCONNECTED
-    lateinit var playersList: MutableList<entity.Player>
+    var playersList: MutableList<String> = mutableListOf()
+
     var threePlayerVariant: Boolean = false
 
     companion object {
@@ -33,12 +33,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     var client: NetworkClient? = null
     var activePlayer: entity.Player? = rootService.currentGame?.getActivePlayer()
     val activePlayerName: String = activePlayer?.name.toString()
-    var playersNameList: MutableList<String>? = null
     var simulationSpeed : Double = 0.0
-    lateinit var playersListOnline : MutableList <service.message.Player>
-    lateinit var gameMode: service.message.GameMode
+    var gameMode: service.message.GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
-
+    val players_list: MutableList<service.message.Player> = mutableListOf()
 
     /**
      * Connects to server and creates a new game session.
@@ -50,36 +48,24 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @throws IllegalStateException if already connected to another game or connection attempt fails
      */
 
-    fun hostGame(secret: String,
-                 sessionID: String?,
-                 hostPlayerName: String,
-                 simulationSpeed : Double,
-                 gameMode: GameMode) {
 
+    fun hostGame(secret: String ,sessionID: String?, hostPlayerName: String, color: PlayerColor,  gameMode: GameMode) {
         if (!connect(secret, hostPlayerName,PlayerType.NETWORKPLAYER)) {
             error("Connection failed")
-        }else{
-            print("Connection success!")
         }
+        this.playersList.add(hostPlayerName)
+        this.gameMode =  gameMode
 
-        this.gameMode = gameMode
+        val newPlayer = Player(hostPlayerName, color)
+        players_list.add(newPlayer)
 
-        this.simulationSpeed = setSimulationSpeed(speed = simulationSpeed)
+        // updateConnectionState(ConnectionState.CONNECTED) add in the methode connect.
 
-        // set attributes. and add the host player name to the list
-        this.playersNameList = mutableListOf(hostPlayerName)
-        playersListOnline.add(Player(hostPlayerName, PlayerColor.RED))
-
-
-        updateConnectionState(ConnectionState.CONNECTED)
-
-        // create new game
-        if (sessionID.isNullOrBlank())
+        if (sessionID.isNullOrBlank()) {
             client?.createGame(GAME_ID, "Welcome!")
-        else
+        } else {
             client?.createGame(GAME_ID, sessionID, "Welcome!")
-
-        // update the connectionState after creating the game
+        }
         updateConnectionState(ConnectionState.HOST_WAITING_FOR_CONFIRMATION)
     }
 
@@ -94,31 +80,135 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      *
      * @throws IllegalStateException if already connected to another game or connection attempt fails
      */
-    fun joinGame (secret: String, sessionID: String, guestName: String,guestPlayerType:PlayerType) {
+    fun joinGame(secret: String, sessionID: String,  guestName: String, guestPlayerType:PlayerType) {
 
-        if (!connect(secret, guestName, guestPlayerType))
+        if (!connect(secret, guestName,guestPlayerType)) {
             error("Connection failed")
+        }
 
-        updateConnectionState(ConnectionState.CONNECTED)
+        // updateConnectionState(ConnectionState.CONNECTED) moved to the methode connect
         client?.joinGame(sessionID, "Hello!")
         updateConnectionState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
     }
 
-
-
-
-
     fun startNewHostedGame() {
+
+        check(connectionState == ConnectionState.READY_FOR_GAME)
+        { "currently not prepared to start a new hosted game." }
+        println(playersList)
+        val players = this.playersList
+
+        // playerNames
+        val player = players.map { entity.Player( name = it)}.toMutableList()
+
+        // start new game and give the supply as a parameter.
+        rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
+
+        // startGame from the gameService to start the game
+        // send game init message to server
+
+        sendGameInitMessage()
+
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame) { "game should not be null right after starting it." }
+
+        if (activePlayerName == client!!.playerName)
+            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        else
+            updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+
+        /**
+        // hier kommt die Ki implementierung
+         */
 
     }
 
+
+    private fun sendGameInitMessage(){
+
+        val drawPile = rootService.currentGame?.drawPile
+        // check not null supply.
+
+        val formatedDrawPile = drawPile!!.map{
+                it ->
+            when (it.type) {
+                0 -> {
+                    TileType.TYPE_0
+                }
+
+                1 -> {
+                    TileType.TYPE_1
+                }
+
+                2 -> {
+                    TileType.TYPE_2
+                }
+
+                3 -> {
+                    TileType.TYPE_3
+                }
+
+                else -> {
+                    TileType.TYPE_4
+                }
+            }
+        }.toMutableList()
+        println(formatedDrawPile.size)
+
+        // create game GameInitMessage
+        val initMessage = GameInitMessage(players_list, gameMode , formatedDrawPile)
+
+        // send message
+        client?.sendGameActionMessage(initMessage)
+
+        // update gameInit message sent
+    }
 
 
     fun startNewJoinedGame(message: GameInitMessage) {
 
+        // check if we are waiting for gameInitMessage. if not then there is no game to start
+        check(connectionState == ConnectionState.WAITING_FOR_INIT)
+        { "not waiting for game init message. " }
+
+
+        val playerTypes:MutableList<PlayerType> = mutableListOf()
+        for (playerInfo in message.players){
+            if (playerInfo.name == client!!.playerName)
+                playerTypes.add(client!!.playerType)
+            else
+                playerTypes.add(PlayerType.NETWORKPLAYER)
+        }
+
+        val players:MutableList<String> = mutableListOf()
+        message.players.forEach { players.add(it.name) }
+
+
+        val player = players.map { entity.Player( name = it)}.toMutableList()
+
+        println(player)
+        // start new game and give the supply as a parameter.
+        rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
+
+        // update connection state after game was initialized
+        // updateConnectionState(ConnectionState.GAME_INITIALIZED)
+
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        {"game is not yet initialized!"}
+
+
+        if (activePlayerName == client!!.playerName)
+            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        else
+            updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+
+        /**
+        // hier kommt die Ki implementierung
+         */
+
+
     }
-
-
 
 
     /**
@@ -149,6 +239,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         return if (newClient.connect()) {
             this.client = newClient
+            updateConnectionState(ConnectionState.CONNECTED)
+            // update connection setate to connected.
             true
         } else {
             false
@@ -206,4 +298,3 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 }
-

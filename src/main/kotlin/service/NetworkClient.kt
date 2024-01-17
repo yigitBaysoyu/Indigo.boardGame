@@ -1,16 +1,13 @@
 package service
 
 import entity.PlayerType
-import service.message.GameInitMessage
-import service.message.TilePlacedMessage
+import service.message.*
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
 import tools.aqua.bgw.net.common.annotations.GameActionReceiver
 import tools.aqua.bgw.net.common.notification.PlayerJoinedNotification
 import tools.aqua.bgw.net.common.response.*
-
-
 
 
 /**
@@ -23,13 +20,9 @@ import tools.aqua.bgw.net.common.response.*
 class NetworkClient (playerName: String, host: String, secret: String, val networkService: NetworkService, val playerType: PlayerType):
     BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE) {
 
-
-
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
-    val nextIsMyTurn = (networkService.client!!.playerName == networkService.activePlayerName)
-
-
+    var colorList: MutableList<service.message.PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
      * Handle a [CreateGameResponse] sent by the server. Will await the guest player when its
@@ -39,7 +32,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      *
      * @throws IllegalStateException if status != success or currently not waiting for a game creation response.
      */
-
 
     override fun onCreateGameResponse(response: CreateGameResponse) {
         BoardGameApplication.runOnGUIThread {
@@ -56,7 +48,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             }
         }
     }
-
 
 
     /**
@@ -84,7 +75,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             }
         }
     }
-
 
     /**
      * Handle a [GameActionResponse] sent by the server. Does nothing when its
@@ -116,10 +106,11 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
 
-            check(networkService.connectionState == ConnectionState.WAITING_FOR_GUESTS)
+            check(networkService.connectionState == ConnectionState.WAITING_FOR_GUESTS ||
+                    networkService.connectionState == ConnectionState.READY_FOR_GAME)
             { "not expecting any guests to join!" }
 
-            val players = networkService.playersNameList
+            val players = networkService.playersList
             checkNotNull(players) { "playersList must be initialized!" }
 
             val isNameNotUnique = players.contains(notification.sender)
@@ -127,19 +118,36 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             if (isNameNotUnique) {
                 disconnectAndError("Player names are not unique!")
             } else {
-                if (players.size < 4)
-                    players.add(notification.sender)
-            }
 
-            if (players.size > 4 && ! (nextIsMyTurn)) {
-                networkService.updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
-            }else if (players.size > 4 &&  nextIsMyTurn) {
-                networkService.updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+
+                var numPlayers = 0
+                if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
+                    numPlayers = 2
+                } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
+                    numPlayers = 3
+                }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
+                    numPlayers = 4
+                }
+
+                if(players.size < numPlayers ) {
+                    players.add(notification.sender)
+                    var lastColor = colorList.last()
+                    var newGuset = Player(notification.sender, lastColor)
+                    networkService.players_list.add(newGuset)
+                    colorList.removeAt(colorList.lastIndex)
+                }else {
+                    error("maximum number of players has been reached.")
+                }
+
+                // update the connection state if minimum 2 players exist.
+                if (players.size in 2..numPlayers)
+                    if (networkService.connectionState != ConnectionState.READY_FOR_GAME) {
+                        networkService.updateConnectionState(ConnectionState.READY_FOR_GAME)
+                    }
 
             }
         }
     }
-
 
     /**
      * Handle a [GameInitMessage] sent by the server.
@@ -152,7 +160,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         check(networkService.connectionState == ConnectionState.WAITING_FOR_INIT)
         { "Not waiting for initMessage." }
 
-
         BoardGameApplication.runOnGUIThread {
             networkService.startNewJoinedGame(
                 message = message,
@@ -161,18 +168,14 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     }
 
-
-
     @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
-
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
         check(networkService.connectionState == ConnectionState.WAITING_FOR_INIT)
 
         BoardGameApplication.runOnGUIThread {
             networkService.tilePlacedMessage(message, sender)
         }
-
     }
 
 
@@ -187,6 +190,3 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     }
 
 }
-
-
-

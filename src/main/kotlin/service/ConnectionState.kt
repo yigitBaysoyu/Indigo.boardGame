@@ -34,6 +34,7 @@ enum class ConnectionState {
     /**
      * joinGame request sent to server. waiting for confirmation (i.e. [JoinGameResponse])
      */
+
     GUEST_WAITING_FOR_CONFIRMATION,
 
     /**
@@ -52,4 +53,8 @@ enum class ConnectionState {
      */
     WAITING_FOR_OPPONENTS_TURN,
 
+    /**
+    *init received ready to start playing
+    */
+    READY_FOR_GAME
 }
