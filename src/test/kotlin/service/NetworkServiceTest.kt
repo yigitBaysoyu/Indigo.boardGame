@@ -3,9 +3,8 @@ package service
 import entity.Player
 import entity.PlayerType
 import org.junit.jupiter.api.Test
-import service.message.GameMode
-import service.message.PlayerColor
 import kotlin.test.assertNotNull
+import edu.udo.cs.sopra.ntf.*
 
 /**
  * Testfälle für die Klasse NetWorkService

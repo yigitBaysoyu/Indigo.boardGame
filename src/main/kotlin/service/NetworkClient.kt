@@ -1,7 +1,7 @@
 package service
 
 import entity.PlayerType
-import service.message.*
+import edu.udo.cs.sopra.ntf.*
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
@@ -22,7 +22,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
-    var colorList: MutableList<service.message.PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
+    var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
      * Handle a [CreateGameResponse] sent by the server. Will await the guest player when its

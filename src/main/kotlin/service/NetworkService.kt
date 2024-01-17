@@ -1,11 +1,9 @@
 package service
 import entity.*
-import service.message.*
-import service.message.Player
 import tools.aqua.bgw.net.common.Message
 import view.*
 import java.lang.IllegalStateException
-
+import edu.udo.cs.sopra.ntf.*
 /**
  * Service layer class that realizes the necessary logic for sending and receiving messages
  * in multiplayer network games.
@@ -34,9 +32,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     var activePlayer: entity.Player? = rootService.currentGame?.getActivePlayer()
     val activePlayerName: String = activePlayer?.name.toString()
     var simulationSpeed : Double = 0.0
-    var gameMode: service.message.GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
+    var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
-    val players_list: MutableList<service.message.Player> = mutableListOf()
+    val players_list: MutableList<edu.udo.cs.sopra.ntf.Player> = mutableListOf()
 
     /**
      * Connects to server and creates a new game session.
@@ -56,7 +54,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         this.playersList.add(hostPlayerName)
         this.gameMode =  gameMode
 
-        val newPlayer = Player(hostPlayerName, color)
+        val newPlayer = edu.udo.cs.sopra.ntf.Player(hostPlayerName, color)
         players_list.add(newPlayer)
 
         // updateConnectionState(ConnectionState.CONNECTED) add in the methode connect.
@@ -156,7 +154,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         println(formatedDrawPile.size)
 
         // create game GameInitMessage
-        val initMessage = GameInitMessage(players_list, gameMode , formatedDrawPile)
+        val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(players_list, gameMode , formatedDrawPile)
 
         // send message
         client?.sendGameActionMessage(initMessage)
@@ -165,7 +163,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
-    fun startNewJoinedGame(message: GameInitMessage) {
+    fun startNewJoinedGame(message: edu.udo.cs.sopra.ntf.GameInitMessage) {
 
         // check if we are waiting for gameInitMessage. if not then there is no game to start
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
@@ -250,7 +248,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
 
-    fun sendPlaceTile (TilePlacedMessage : service.message.TilePlacedMessage) {
+    fun sendPlaceTile (TilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
         client?.sendGameActionMessage(TilePlacedMessage)
 
@@ -259,7 +257,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
 
-        rootService.playerService.placeTile(message.rCoordinate,message.qCoordinate)
+        rootService.playerService.placeTile(message.rcoordinate,message.qcoordinate)
 
     }
 
