@@ -43,11 +43,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-
+        if (isNetworkGame ==false){
         for(player in players) {
             player.playHand.clear()
             player.playHand.add(drawPile.removeLast())
-        }
+        } }
+
 
         setDefaultGameLayout()
         setSimulationSpeed(simulationSpeed)
@@ -512,7 +513,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf(), splitLine[0].toInt()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf(),
+                    splitLine[0].toInt()))
             }
         }
         return playingTiles
@@ -539,7 +541,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
+     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout
+     * 2d List,
      * and if they are not inside the hexagonal play area.
      */
     fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {

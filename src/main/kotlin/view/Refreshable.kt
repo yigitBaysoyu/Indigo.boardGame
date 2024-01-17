@@ -3,6 +3,7 @@ package view
 import entity.GemMovement
 import entity.PathTile
 import entity.Turn
+import service.ConnectionState
 
 /**
  * This interface provides a mechanism for the service layer classes to communicate
@@ -82,4 +83,12 @@ interface Refreshable {
      * perform refreshes that are necessary after the simulation speed changed.
      */
     fun refreshAfterSimulationSpeedChange(speed: Double) {}
+
+    /**
+     * perform refreshes that are necessary after "updateConnectionState",
+     * [service.NetworkService]
+     * @param newState the new state of the connection
+     */
+    fun refreshConnectionState(newState: ConnectionState){}
+
 }
