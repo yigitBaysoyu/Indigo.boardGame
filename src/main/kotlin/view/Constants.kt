@@ -28,6 +28,7 @@ object Constants {
     val treasureTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileTreasure.png"))
     val centerTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileCenter.png"))
     val emptyTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileEmpty.png"))
+    val hoverTintImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/HoverTintImage.png"))
 
     val amberImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Amber.png"))
     val emeraldImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Emerald.png"))
@@ -55,4 +56,6 @@ object Constants {
     val plusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlusIcon.png"))
     val minusIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MinusIcon.png"))
     val warningIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/WarningIcon.png"))
+
+    val wonIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/WonIcon.png"))
 }

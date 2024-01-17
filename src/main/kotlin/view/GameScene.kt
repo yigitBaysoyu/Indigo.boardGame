@@ -16,6 +16,7 @@ import tools.aqua.bgw.event.MouseEvent
 import tools.aqua.bgw.util.BidirectionalMap
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
+import tools.aqua.bgw.visual.CompoundVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
@@ -362,7 +363,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         updatePlayerScores()
 
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
+
+        setButtonsIfNetworkGame()
     }
+
+    private fun setButtonsIfNetworkGame() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "Game is null" }
+
+        if(game.isNetworkGame) {
+            undoButton.isVisible = false
+            undoButton.isDisabled = true
+            redoButton.isVisible = false
+            redoButton.isDisabled = true
+            saveGameButton.isVisible = false
+            saveGameButton.isDisabled = true
+            loadGameButton.isVisible = false
+            loadGameButton.isDisabled = true
+        } else {
+            undoButton.isVisible = true
+            undoButton.isDisabled = false
+            redoButton.isVisible = true
+            redoButton.isDisabled = false
+            saveGameButton.isVisible = true
+            saveGameButton.isDisabled = false
+            loadGameButton.isVisible = true
+            loadGameButton.isDisabled = false
+        }
+    }
+
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int): MutableList<GemType> {
         val copiedList = mutableListOf<GemType>()
@@ -600,6 +629,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 )
 
                 if(tile is EmptyTile) area.onMouseClicked = { handleTileClick(it, area) }
+                if(tile is EmptyTile) {
+                    area.onMouseEntered = { handleOnMouseEntered(area, x, y) }
+                    area.onMouseExited = { handleOnMouseExited(area, x, y) }
+                }
 
                 area.rotate(tile.rotationOffset * 60)
 
@@ -610,6 +643,34 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 tileMap.add(Pair(x,y), area)
             }
         }
+    }
+
+    private fun handleOnMouseEntered(area: Area<TokenView>, x: Int, y: Int) {
+        if(rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game"}
+        val tileInPlayersHand = game.playerList[game.activePlayerID].playHand[0]
+
+        val hoverTileVisual = ImageVisual(Constants.pathTileImageList[tileInPlayersHand.type])
+        hoverTileVisual.transparency = 0.63
+        val hoverBackgroundImage = ImageVisual(Constants.emptyTileImage)
+
+        if(!rootService.gameService.isPlaceAble(x, y, tileInPlayersHand)) {
+            val hoverTintVisual = ImageVisual(Constants.hoverTintImage)
+            hoverTileVisual.transparency = 0.45
+            area.visual = CompoundVisual(hoverBackgroundImage, hoverTileVisual, hoverTintVisual)
+        } else {
+            area.visual = CompoundVisual(hoverBackgroundImage, hoverTileVisual)
+        }
+
+        area.rotation = tileInPlayersHand.rotationOffset * 60.0
+    }
+
+    private fun handleOnMouseExited(area: Area<TokenView>, x: Int, y: Int) {
+        if(rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+        area.visual = ImageVisual(Constants.emptyTileImage)
+        area.rotation = 0.0
     }
 
     private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
@@ -752,9 +813,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val tileView = tileMap.forward(Pair(startX, startY))
         val gemViews = gemMap.forward(tileView)
 
-        var gemView = gemViews[movement.positionOnStartTile]
-        if(movement.startTile is CenterTile) {
-            gemView = gemViews[movement.startTile.availableGems.size + 1 - 1]
+        val gemView = if(movement.startTile is CenterTile) {
+            gemViews[movement.startTile.availableGems.size + 1 - 1]
+        } else {
+            gemViews[movement.positionOnStartTile]
         }
 
         gemView.visual = Visual.EMPTY
@@ -816,9 +878,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
-            var gemView = gemViews[movement.positionOnStartTile]
-            if(movement.startTile is CenterTile) {
-                gemView = gemViews[movement.startTile.availableGems.size - 1]
+
+            val gemView = if(movement.startTile is CenterTile) {
+                gemViews[movement.startTile.availableGems.size + 1 - 1]
+            } else {
+                gemViews[movement.positionOnStartTile]
             }
 
             val gemVisual = when(movement.gemType) {

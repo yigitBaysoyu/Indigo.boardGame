@@ -4,7 +4,9 @@ package service
 import entity.*
 import kotlin.test.*
 import java.io.File
-
+/**
+ * This test class verifies the functionality of the `LoadGame` method in the Game service.
+ */
 class LoadGameTest {
     private lateinit var gameService: GameService
     private lateinit var playerService: PlayerService
