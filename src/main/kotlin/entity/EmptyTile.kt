@@ -11,4 +11,13 @@ class EmptyTile (
    override var  rotationOffset: Int,
    override val xCoordinate: Int,
    override val yCoordinate: Int
-): Tile()
+): Tile() {
+   override fun copy(): EmptyTile {
+      return EmptyTile(
+         connections = this.connections.toMap(),
+         rotationOffset = this.rotationOffset,
+         xCoordinate = this.xCoordinate,
+         yCoordinate = this.yCoordinate
+      )
+   }
+}

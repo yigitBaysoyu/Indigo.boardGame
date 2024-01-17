@@ -11,4 +11,13 @@ data class Turn (
     val scoreChanges: MutableList<Int> = mutableListOf(),
     val placedTile: PathTile,
     val gemMovements: MutableList<GemMovement> = mutableListOf()
-)
+){
+    fun deepCopy(): Turn {
+        return Turn(
+            playerID = this.playerID,
+            scoreChanges = this.scoreChanges.toMutableList(),
+            placedTile = this.placedTile.copy(),
+            gemMovements = this.gemMovements.map { it.copy() }.toMutableList()
+        )
+    }
+}

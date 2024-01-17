@@ -14,4 +14,15 @@ sealed class Tile {
     abstract var rotationOffset: Int
     abstract val xCoordinate: Int
     abstract val yCoordinate: Int
+
+    open fun copy(): Tile {
+        return when(this) {
+            is GateTile -> this.copy()
+            is CenterTile -> this.copy()
+            is EmptyTile -> this.copy()
+            is TreasureTile -> this.copy()
+            is PathTile -> this.copy()
+            else -> throw IllegalArgumentException("Unknown Tile type")
+        }
+    }
 }

@@ -2,6 +2,7 @@ package entity
 
 import kotlinx.serialization.Serializable
 
+
 /**
  * Main Entity. Holds all the data used during a Game.
  *
@@ -29,4 +30,19 @@ data class IndigoGame(
     fun getActivePlayer(): Player {
         return playerList[activePlayerID]
     }
+
+    fun deepCopy(): IndigoGame {
+        return IndigoGame(
+            activePlayerID = this.activePlayerID,
+            simulationSpeed = this.simulationSpeed,
+            isNetworkGame = this.isNetworkGame,
+            undoStack = ArrayDeque(this.undoStack.map { it.deepCopy() }),
+            redoStack = ArrayDeque(this.redoStack.map { it.copy() }),
+            playerList = this.playerList.map { it.deepCopy() }.toMutableList(),
+            gateList = this.gateList.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList(),
+            drawPile = this.drawPile.map { it.copy() }.toMutableList(),
+            gameLayout = this.gameLayout.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList()
+        )
+    }
+
 }

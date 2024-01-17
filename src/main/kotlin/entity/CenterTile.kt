@@ -16,4 +16,15 @@ class CenterTile(
     override val yCoordinate: Int,
     @Serializable(with = ArrayDequeGemTypeSerializer::class)
     val availableGems: ArrayDeque<GemType>
-): Tile()
+): Tile(){
+
+    override fun copy(): CenterTile {
+        return CenterTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate,
+            availableGems = ArrayDeque(this.availableGems)
+        )
+    }
+}

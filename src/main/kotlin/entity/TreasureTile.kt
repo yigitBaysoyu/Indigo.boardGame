@@ -12,4 +12,14 @@ class TreasureTile (
     override val xCoordinate: Int = 0,
     override  val yCoordinate: Int = 0,
     override val gemPositions: MutableList<GemType> = mutableListOf()
-): Tile(), TraverseAbleTile
+): Tile(), TraverseAbleTile {
+    override fun copy(): TreasureTile {
+        return TreasureTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate,
+            gemPositions = this.gemPositions.toMutableList()
+        )
+    }
+}

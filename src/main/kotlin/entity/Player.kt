@@ -17,4 +17,16 @@ data class Player(
     var amountOfGems: Int = 0,
     val playHand: MutableList<PathTile> = mutableListOf(),
     val gateList: MutableList<GateTile> = mutableListOf()
-)
+){
+    fun deepCopy(): Player {
+        return Player(
+            name = this.name,
+            color = this.color,
+            playerType = this.playerType,
+            score = this.score,
+            amountOfGems = this.amountOfGems,
+            playHand = this.playHand.map { it.copy() }.toMutableList(),
+            gateList = this.gateList.map { it.copy() }.toMutableList()
+        )
+    }
+}

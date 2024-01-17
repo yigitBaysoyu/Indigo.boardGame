@@ -16,4 +16,14 @@ class GateTile(
     override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>
 ): Tile(
-)
+){
+    override fun copy(): GateTile {
+        return GateTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate,
+            gemsCollected = this.gemsCollected.toMutableList()
+        )
+    }
+}
