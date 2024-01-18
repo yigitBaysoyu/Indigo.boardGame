@@ -58,4 +58,9 @@ object Constants {
     val warningIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/WarningIcon.png"))
 
     val wonIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/WonIcon.png"))
+
+    val gameModeIcon2: BufferedImage = ImageIO.read(Constants::class.java.getResource("/gameMode_2_not_shared.png"))
+    val gameModeIcon3NotShared: BufferedImage = ImageIO.read(Constants::class.java.getResource("/gameMode_3_not_shared.png"))
+    val gameModeIcon3Shared: BufferedImage = ImageIO.read(Constants::class.java.getResource("/gameMode_3_shared.png"))
+    val gameModeIcon4: BufferedImage = ImageIO.read(Constants::class.java.getResource("/gameMode_4_shared.png"))
 }

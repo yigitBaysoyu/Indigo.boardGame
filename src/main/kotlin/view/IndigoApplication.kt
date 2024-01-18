@@ -1,5 +1,7 @@
 package view
 
+import edu.udo.cs.sopra.ntf.GameMode
+import edu.udo.cs.sopra.ntf.PlayerColor
 import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.core.WindowMode
@@ -7,6 +9,7 @@ import tools.aqua.bgw.core.WindowMode
 /**
  * Implementation of the Indigo game using BoardGameWork.
  */
+@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode = WindowMode.FULLSCREEN), Refreshable {
 
     // Central service from which all others are created/accessed
@@ -20,6 +23,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
+     private val NETWORK_SECRET = "game23d"
 
     init {
         // all scenes and the application itself need to
@@ -41,6 +45,20 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
         mainMenuScene.hostGameButton.onMouseClicked = {
             // host game logic
+
+            val gameMode = when (mainMenuScene.selectedGameMode) {
+                0 -> GameMode.TWO_NOT_SHARED_GATEWAYS
+                1 -> GameMode.THREE_NOT_SHARED_GATEWAYS
+                2 -> GameMode.THREE_SHARED_GATEWAYS
+                3 -> GameMode.FOUR_SHARED_GATEWAYS
+                else -> { GameMode.TWO_NOT_SHARED_GATEWAYS }
+            }
+            val hostname = mainMenuScene.nameInput.text
+            rootService.networkService.hostGame(NETWORK_SECRET, mainMenuScene.sessionIDInput.text,
+                hostname, PlayerColor.WHITE, gameMode)
+            hostGameScene.hostName = hostname
+            hostGameScene.resetAllComponents()
+
             showMenuScene(hostGameScene)
         }
         mainMenuScene.joinGameButton.onMouseClicked = {
