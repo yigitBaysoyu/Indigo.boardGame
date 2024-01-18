@@ -13,6 +13,10 @@ class TreasureTile (
     override  val yCoordinate: Int = 0,
     override val gemPositions: MutableList<GemType> = mutableListOf()
 ): Tile(), TraverseAbleTile {
+
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
     override fun copy(): TreasureTile {
         return TreasureTile(
             connections = this.connections.toMap(),

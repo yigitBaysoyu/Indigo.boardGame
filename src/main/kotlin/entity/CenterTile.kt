@@ -18,6 +18,9 @@ class CenterTile(
     val availableGems: ArrayDeque<GemType>
 ): Tile(){
 
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
     override fun copy(): CenterTile {
         return CenterTile(
             connections = this.connections.toMap(),

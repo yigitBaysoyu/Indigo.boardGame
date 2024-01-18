@@ -15,6 +15,9 @@ sealed class Tile {
     abstract val xCoordinate: Int
     abstract val yCoordinate: Int
 
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
     open fun copy(): Tile {
         return when(this) {
             is GateTile -> this.copy()

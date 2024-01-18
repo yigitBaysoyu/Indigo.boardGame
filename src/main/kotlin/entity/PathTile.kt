@@ -19,6 +19,10 @@ class PathTile(
     @SerialName("PathTileType")
     val type: Int = 0
 ): Tile(), TraverseAbleTile {
+
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
     override fun copy(): PathTile {
         return PathTile(
             connections = this.connections.toMap(),

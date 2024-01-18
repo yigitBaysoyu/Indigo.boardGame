@@ -31,6 +31,9 @@ data class IndigoGame(
         return playerList[activePlayerID]
     }
 
+    /**
+     *  creates a deep copy of the game state for the AIService to simulate possible game states.
+     */
     fun deepCopy(): IndigoGame {
         return IndigoGame(
             activePlayerID = this.activePlayerID,

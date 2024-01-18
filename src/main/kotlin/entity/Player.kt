@@ -18,6 +18,10 @@ data class Player(
     val playHand: MutableList<PathTile> = mutableListOf(),
     val gateList: MutableList<GateTile> = mutableListOf()
 ){
+
+    /**
+     *  creates a deep copy of the player object for the AIService to simulate possible game states.
+     */
     fun deepCopy(): Player {
         return Player(
             name = this.name,

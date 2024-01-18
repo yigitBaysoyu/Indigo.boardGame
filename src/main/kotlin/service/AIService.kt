@@ -10,6 +10,12 @@ class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
 
+
+    /**
+     *  Function calculates and executes the next best move for the AI player.
+     *  It utilizes the minimax function to evaluate and choose the move that
+     *  maximizes the AI's position in the game.
+     */
     fun calculateNextTurn() {
         val gameService = rootService.gameService
         val playerService = rootService.playerService
@@ -27,7 +33,7 @@ class AIService(private val rootService: RootService) {
 
         val possibleMoves = possibleMovesInGameState(currentGame)
         for (move in possibleMoves) {
-            val simGame: IndigoGame = currentGame.copy()
+            val simGame: IndigoGame = currentGame.deepCopy()
             val x = move.second.first
             val y = move.second.second
             val rotation = move.first
@@ -44,7 +50,7 @@ class AIService(private val rootService: RootService) {
                 depth = 4,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
-                maximizingPlayer = true
+                playerIndex = currentGame.activePlayerID
             )
 
             if (score > bestScore) {
@@ -54,28 +60,44 @@ class AIService(private val rootService: RootService) {
         }
         checkNotNull(bestMove)
 
+        // Execute the best move
         for (i in 1..bestMove.first) playerService.rotateTile()
         val x = bestMove.second.first
         val y = bestMove.second.second
         playerService.placeTile(x, y)
-
     }
 
-    private fun minimax(game: IndigoGame,
-                        depth: Int,
-                        initialAlpha: Int,
-                        initialBeta: Int,
-                        maximizingPlayer: Boolean
+    /**
+     *  The minimax function is a recursive algorithm used for optimizing the move of the AI player.
+     *  Function evaluates the best possible move for the AI player in the game "Indigo",
+     *  considering multiple players.
+     *
+     *  @param [game] The current state of the game.
+     *  @param [depth] The depth of the search tree. A larger depth results in a more thorough search
+     *  but requires more computation.
+     *  @param [initialAlpha] The initial value of alpha for alpha-beta pruning. Typically set to Int.MIN_VALUE.
+     *  @param [initialBeta] The initial value of beta for alpha-beta pruning. Typically set to Int.MAX_VALUE.
+     *  @param [playerIndex] The index of the current player. This determines whether the function is
+     *  maximizing or minimizing.
+     *
+     *  @return The score of the best move found for the current player at the given depth.
+     */
+    private fun minimax(
+        game: IndigoGame,
+        depth: Int,
+        initialAlpha: Int,
+        initialBeta: Int,
+        playerIndex: Int
     ): Int {
-
         if (depth == 0 || checkIfGameEnded(game)) {
-            return evaluateGameState(game, game.getActivePlayer())
+            return evaluateGameState(game)
         }
 
+        val currentPlayer = game.playerList[playerIndex]
         var alpha = initialAlpha
         var beta = initialBeta
 
-        if (maximizingPlayer) {
+        if (currentPlayer.playerType == PlayerType.SMARTAI) {
             var maxEval = Int.MIN_VALUE
             for (move in possibleMovesInGameState(game)) {
                 val simGame: IndigoGame = game.deepCopy()
@@ -85,7 +107,8 @@ class AIService(private val rootService: RootService) {
                 for(i in 1..move.first) rotateTile(simGame)
 
                 val newGame = placeTile(simGame, x, y)
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, false)
+                val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
                 maxEval = max(maxEval, evaluation)
                 alpha = max(alpha, evaluation)
                 if (beta <= alpha) {
@@ -103,7 +126,8 @@ class AIService(private val rootService: RootService) {
                 for(i in 1..move.first) rotateTile(simGame)
 
                 val newGame = placeTile(simGame, x, y)
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, true)
+                val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
                 minEval = min(minEval, evaluation)
                 beta = min(beta, evaluation)
                 if (beta <= alpha) {
@@ -113,6 +137,8 @@ class AIService(private val rootService: RootService) {
             return minEval
         }
     }
+
+
 
     /**
      *  Function to get all possible moves in a game state of a given IndigoGame object.
@@ -143,20 +169,17 @@ class AIService(private val rootService: RootService) {
     }
 
 
-
-
     /**
-     *  Function to evaluate the game state of the IndigoGame object it receives as parameter.
+     *  Function to evaluate the game state of the IndigoGame it receives as parameter.
      *
      *  @param [game] The IndigoGame object in which the function will be implemented
-     *  @param [activePlayer] The Player whose score will be evaluated
      */
-    private fun evaluateGameState(game : IndigoGame, activePlayer : Player) : Int {
+    private fun evaluateGameState(game : IndigoGame) : Int {
 
         var score = 0
 
         for(player in game.playerList){
-            if(player == activePlayer)
+            if(player.playerType == PlayerType.SMARTAI)
                 score += player.score
             else
                 score -= player.score
