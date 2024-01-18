@@ -179,7 +179,11 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         }
 
         game.undoStack.add(turn)
-
+        if(game.isNetworkGame==true && rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN)
+        {
+            val tilePMessage = edu.udo.cs.sopra.ntf.TilePlacedMessage(rotation = tileFromPlayer.rotationOffset, qcoordinate = xCoordinate  , rcoordinate = yCoordinate )
+            rootService.networkService.sendPlaceTile(tilePMessage)
+        }
         onAllRefreshables { refreshAfterTilePlaced(turn) }
         rootService.gameService.checkIfGameEnded()
     }

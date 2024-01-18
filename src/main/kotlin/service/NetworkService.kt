@@ -259,18 +259,22 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
-
-
     fun sendPlaceTile (TilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
-        val networkClient = checkNotNull(client){"No client connected."}
-        networkClient.sendGameActionMessage(TilePlacedMessage)
+        val networkClient = checkNotNull(client){"No client connected."}//
+        client?.sendGameActionMessage(TilePlacedMessage)//
+        updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
     }
 
 
     fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
+        val rotationSteps = message.rotation / 60
 
+        // Rotate the tile the required number of times
+        for (i in 1..rotationSteps) {
+            rootService.playerService.rotateTile()
+        }
         rootService.playerService.placeTile(message.rcoordinate,message.qcoordinate)
 
     }

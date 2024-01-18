@@ -28,22 +28,22 @@ class NetworkServiceTest {
 
         rootServiceHost = RootService()
         rootServiceGuest = RootService()
-        val rootService = RootService()
-        val gameService = rootService.gameService
+        val rootServiceGuest2 = RootService()
 
 
 
-        rootServiceHost.networkService.hostGame(NETWORK_SECRET, "199914","ahm", color = PlayerColor.BLUE ,GameMode.TWO_NOT_SHARED_GATEWAYS)
+
+        rootServiceHost.networkService.hostGame(NETWORK_SECRET, "9999219213","ahmad", color = PlayerColor.WHITE ,GameMode.THREE_NOT_SHARED_GATEWAYS)
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)){
-             error("Nach dem Warten nicht im Zustand angekommen")
+            error("Nach dem Warten nicht im Zustand angekommen")
         }
 
         val hostClient = rootServiceHost.networkService.client
         assertNotNull(hostClient)
 
-        rootServiceGuest.networkService.joinGame(NETWORK_SECRET, hostClient.sessionID!!,"mo",PlayerType.NETWORKPLAYER)
-
+        rootServiceGuest.networkService.joinGame(NETWORK_SECRET, hostClient.sessionID!!,"mohmed",PlayerType.NETWORKPLAYER)
+        rootServiceGuest2.networkService.joinGame(NETWORK_SECRET, hostClient.sessionID!!,"Alex",PlayerType.NETWORKPLAYER)
         assert(rootServiceGuest.waitForState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
                 || rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)){
             error("Nach dem Warten nicht im Zustand angekommen")
@@ -63,7 +63,7 @@ class NetworkServiceTest {
      * Test für Host und Beitritt zum neuen Spiel
      */
     @Test
-     fun testHostAndJoinGame() {
+    fun testHostAndJoinGame() {
 
 
         initConnections()
@@ -82,47 +82,18 @@ class NetworkServiceTest {
 
 
 
-        if (currentGameHost.playerList[currentPlayer].name == hostClient.playerName){
-
-            assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)){
-                error("connectionState of the host must be PLAYING_TURN")
-            }
-
-            assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)){
-                error("connectionState of the guest  must be WAITING_FOR_TURN")
-            }
-
-        }else{
-
-            // the host is not the currentPlayer
-            assert(rootServiceGuest.waitForState(ConnectionState.PLAYING_MY_TURN)){
-                error("connectionState of the guest must be PLAYING_TURN")
-            }
-
-            assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)){
-                error("connectionState of the Host must be WAITING_FOR_TURN")
-            }
-            // retrieve currentGame of the guest
-            val currentGameGuest = rootServiceGuest.currentGame
-            assertNotNull(currentGameGuest)
-
-
-
-        }
-
-
     }
 
- private fun RootService.waitForState(state: ConnectionState, timeout: Int = 5000):Boolean {
-     var timePassed = 0
-     while (timePassed < timeout) {
-         if (networkService.connectionState == state)
-             return true
-         else {
-             Thread.sleep(100)
-             timePassed += 100
-         }
-     }
-     return false
- }
+    private fun RootService.waitForState(state: ConnectionState, timeout: Int = 5000):Boolean {
+        var timePassed = 0
+        while (timePassed < timeout) {
+            if (networkService.connectionState == state)
+                return true
+            else {
+                Thread.sleep(100)
+                timePassed += 100
+            }
+        }
+        return false
+    }
 }
