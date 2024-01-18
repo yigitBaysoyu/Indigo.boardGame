@@ -114,6 +114,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         val networkClient = checkNotNull(client){"No client connected."}
 
+        for(player in players) {
+            currentGame.playerList[currentGame.activePlayerID].playHand.clear()
+            currentGame.playerList[currentGame.activePlayerID].playHand.add(currentGame.drawPile.removeLast())
+        }
+
         if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
             updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
