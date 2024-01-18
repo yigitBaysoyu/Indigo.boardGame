@@ -131,9 +131,49 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         ImageVisual(Constants.gameModeIcon3Shared),
         ImageVisual(Constants.gameModeIcon4),
     )
-    private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
+    private val gameModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(
             posX = halfWidth - 350/2 - 75, posY = offsetY + 815,
+            width = 70, height = 70,
+            visual = Visual.EMPTY
+        )
+
+        val gameModeIconBackground = Button(
+            width = 70, height = 70,
+            posX = 0, posY = 0,
+            visual = Visual.EMPTY
+        ).apply {
+            componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
+        }
+
+        val gameModeIcon = Button(
+            width = 55, height = 55,
+            posX = 7, posY = 7,
+            visual = ImageVisual(Constants.gameModeIcon2)
+        ).apply {
+            isDisabled = true
+        }
+        pane.add(gameModeIconBackground)
+        pane.add(gameModeIcon)
+        add(pane)
+
+        gameModeIconBackground.onMouseClicked = {
+            selectedGameMode = (selectedGameMode + 1) % 4
+            gameModeIcon.visual = gameModeImageList[selectedGameMode]
+        }
+    }
+
+    // 0 = LOCAL_PLAYER, 1 = RANDOM_AI, 2 = SMART_AI
+
+    var selectedPlayerType = 0
+    private val playerTypeImageList = listOf(
+        ImageVisual(Constants.modeIconPlayer),
+        ImageVisual(Constants.modeIconAI),
+        ImageVisual(Constants.modeIconRandom),
+    )
+    private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
+        val pane = Pane<Button>(
+            posX = halfWidth - 350/2 - 75, posY = offsetY + 675,
             width = 70, height = 70,
             visual = Visual.EMPTY
         )
@@ -149,7 +189,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         val playerModeIcon = Button(
             width = 55, height = 55,
             posX = 7, posY = 7,
-            visual = ImageVisual(Constants.gameModeIcon2)
+            visual = ImageVisual(Constants.modeIconPlayer)
         ).apply {
             isDisabled = true
         }
@@ -158,8 +198,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         add(pane)
 
         playerModeIconBackground.onMouseClicked = {
-            selectedGameMode = (selectedGameMode + 1) % 4
-            playerModeIcon.visual = gameModeImageList[selectedGameMode]
+            selectedPlayerType = (selectedPlayerType + 1) % 3
+            playerModeIcon.visual = playerTypeImageList[selectedPlayerType]
         }
     }
 
@@ -210,7 +250,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
             joinGameButtonBackground,
             joinGameButton,
             quitButton,
-            playerModeIconList[0]
+            playerModeIconList[0],
+            gameModeIconList[0]
         )
     }
 }
