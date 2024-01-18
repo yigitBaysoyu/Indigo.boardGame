@@ -25,7 +25,7 @@ sealed class Tile {
             is EmptyTile -> this.copy()
             is TreasureTile -> this.copy()
             is PathTile -> this.copy()
-            else -> throw IllegalArgumentException("Unknown Tile type")
+            is InvisibleTile -> this.copy()
         }
     }
 }
