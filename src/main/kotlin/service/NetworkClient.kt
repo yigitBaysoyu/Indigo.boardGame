@@ -15,6 +15,7 @@ import tools.aqua.bgw.net.common.response.*
  * @param playerName name of the client
  * @param playerType type of the player
  * @param networkService the [NetworkService] to potentially forward received messages to.
+ * @param secret A secret key for secure communication.
  */
 
 class NetworkClient (playerName: String, host: String, secret: String, val networkService: NetworkService, val playerType: PlayerType):
@@ -25,12 +26,9 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
-     * Handle a [CreateGameResponse] sent by the server. Will await the guest player when its
-     * status is [CreateGameResponseStatus.SUCCESS]. As recovery from network problems is not
-     * implemented in NetWar, the method disconnects from the server and throws an
-     * [IllegalStateException] otherwise.
-     *
-     * @throws IllegalStateException if status != success or currently not waiting for a game creation response.
+     * Handles a [CreateGameResponse] received from the server. It waits for the guest player when its
+     * status is [CreateGameResponseStatus.SUCCESS] to handle network issues.
+     * @throws IllegalStateException if the status is not success or if not currently awaiting a game creation response.
      */
 
     override fun onCreateGameResponse(response: CreateGameResponse) {
@@ -53,9 +51,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     /**
      * Handle a [JoinGameResponse] sent by the server. Will await the init message when its
      * status is [JoinGameResponseStatus.SUCCESS]. As recovery from network problems is not
-     * implemented in NetWar, the method disconnects from the server and throws an
-     * [IllegalStateException] otherwise.
-     *
      * @throws IllegalStateException if status != success or currently not waiting for a join game response.
      */
 
@@ -79,7 +74,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     /**
      * Handle a [GameActionResponse] sent by the server. Does nothing when its
      * status is [GameActionResponseStatus.SUCCESS]. As recovery from network problems is not
-     * implemented in CableCar, the method disconnects from the server and throws an
      * [IllegalStateException] otherwise.
      */
     override fun onGameActionResponse(response: GameActionResponse) {

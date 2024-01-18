@@ -29,18 +29,16 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     /** Network client. Nullable for offline games. */
     var client: NetworkClient? = null
-    var simulationSpeed : Double = 0.0
+    var simulationSpeed : Double = 1.0
     var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
     val players_list: MutableList<edu.udo.cs.sopra.ntf.Player> = mutableListOf()
 
     /**
      * Connects to server and creates a new game session.
-     *
      * @param secret Server secret.
      * @param hostPlayerName Player name.
      * @param sessionID identifier of the hosted session (to be used by guest on join)
-     *
      * @throws IllegalStateException if already connected to another game or connection attempt fails
      */
 
@@ -74,7 +72,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @param guestName name of the player wants to join
      * @param guestPlayerType player type of the player wants to join
      * @param sessionID identifier of the joined session (as defined by host on create)
-     *
      * @throws IllegalStateException if already connected to another game or connection attempt fails
      */
     fun joinGame(secret: String, sessionID: String,  guestName: String, guestPlayerType:PlayerType) {
@@ -89,6 +86,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         networkClient.joinGame(sessionID, "Hello!")
         updateConnectionState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
     }
+    /**
+     * set up the game using [GameService.startNewGame] and send the game init message
+     * Called when  [ConnectionState.READY_FOR_GAME] and the host wants to start the game.
+     * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
+     */
 
     fun startNewHostedGame() {
 
@@ -112,6 +114,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         val networkClient = checkNotNull(client){"No client connected."}
 
+        for(player in players) {
+            currentGame.playerList[currentGame.activePlayerID].playHand.clear()
+            currentGame.playerList[currentGame.activePlayerID].playHand.add(currentGame.drawPile.removeLast())
+        }
+
         if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
             updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
@@ -122,7 +129,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
          */
 
     }
-
+    /**
+    * This methode sends [GameInitMessage] to server
+    * @throws IllegalStateException when players is not yet initialized
+    */
 
     private fun sendGameInitMessage(){
         val game = checkNotNull(rootService.currentGame) {"Game not found"}
@@ -161,7 +171,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val networkClient = checkNotNull(client){"No client connected."}
         networkClient.sendGameActionMessage(initMessage)
 
-        // update gameInit message sent
+        updateConnectionState(ConnectionState.GAME_STARTED)
     }
 
 
@@ -191,7 +201,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
 
         // update connection state after game was initialized
-        // updateConnectionState(ConnectionState.GAME_INITIALIZED)
+
+        updateConnectionState(ConnectionState.GAME_STARTED)
+
 
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
@@ -274,6 +286,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
+    /**
+     * Updates the [connectionState] to [newState] and notifies
+     * all refreshables via [Refreshable.refreshConnectionState]
+     */
 
     fun updateConnectionState(newState: ConnectionState) {
         this.connectionState = newState
@@ -282,18 +298,5 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
     }
 
-    private fun setSimulationSpeed(speed: Double) :Double  {
-        val game = rootService.currentGame
-        checkNotNull(game)
-
-        var newSpeed = speed
-        if(newSpeed < 1) newSpeed = 1.0
-        if(newSpeed > 100) newSpeed = 100.0
-        game.simulationSpeed = newSpeed
-
-        onAllRefreshables { refreshAfterSimulationSpeedChange(newSpeed) }
-        return newSpeed
-
-    }
 
 }
