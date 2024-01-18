@@ -1017,12 +1017,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {
-                val aiService = rootService.aiService
-                aiService.randomNextTurn()
+                rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                println("Add call for calculateNextTurn() currently doing nothing")
-                switchPlayer()
+                rootService.aiService.calculateNextTurn()
             }
             else -> return
         }
