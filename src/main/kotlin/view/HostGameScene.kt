@@ -4,6 +4,7 @@ import edu.udo.cs.sopra.ntf.GameMode
 import edu.udo.cs.sopra.ntf.PlayerColor
 import entity.Player
 import entity.PlayerType
+import service.ConnectionState
 import view.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
@@ -37,6 +38,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
     private var sessionID = ""
     private var hostName = ""
+    private val NETWORK_SECRET = "game23d"
 
     private var selectedGameMode = 0
 
@@ -77,9 +79,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
                 visual = Visual.EMPTY
             ).apply {
                 componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
-                onKeyTyped = {
-                    setStartButtonState()
-                }
             }
             add(playerNameInput)
         }
@@ -252,69 +251,19 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         )
     }
 
-
-    private fun checkForSamePlayerColors(): Boolean {
-        for(i in 0 until 4) {
-            playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
-        }
-
-        val copiedSelectColors = mutableListOf<Int>()
-        for(i in 0 until 4) {
-            if(!playerNameInputList[i].isVisible) break
-            copiedSelectColors.add(selectedColors[i])
-        }
-
-        var returnValue = false
-        for(i in 0 until copiedSelectColors.size) {
-            for(j in 0 until copiedSelectColors.size) {
-                if(copiedSelectColors[i] == copiedSelectColors[j] && i != j) {
-                    playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
-                    returnValue = true
-                }
-            }
-        }
-        return returnValue
-    }
-
-    private fun setStartButtonState() {
-        val validColor = !checkForSamePlayerColors()
-        if(!validColor) {
-            startButton.isDisabled = true
-            return
-        }
-
-        for(i in 0 until 4) {
-            // val isJoined = isJoined(i)
-            if(true) {
-                startButton.isDisabled = true
-                return
-            }
-        }
-
+    // a refreshable for the moment when the game is ready to play
+    private fun refreshAfterGameIsReady() {
         startButton.isDisabled = false
     }
-
-    private fun handleStartClick() {
-        val playerList = mutableListOf<Player>()
-        for(i in 0 until 4) {
-            if(!playerNameInputList[i].isVisible) continue
-
-            val player = Player(
-                name = playerNameInputList[i].text,
-                color = selectedColors[i],
-                playerType = PlayerType.values()[selectedModes[i]]
-            )
-            playerList.add(player)
+    // or just use this method ? question the ConnectionStates
+    override fun refreshConnectionState(newState: ConnectionState){
+        if(newState == ConnectionState.READY_FOR_GAME) {
+            startButton.isDisabled = false
         }
-
-        if(randomOrderCheckbox.isChecked) playerList.shuffle()
-
-        rootService.gameService.startNewGame(
-            players = playerList,
-            threePlayerVariant = threePlayerVariantCheckBox.isChecked && playerList.size == 3,
-            simulationSpeed = 10.0,
-            isNetworkGame = false
-        )
+    }
+    
+    private fun handleStartClick() {
+        rootService.networkService.startNewHostedGame()
 
         resetAllComponents()
     }
@@ -325,7 +274,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
         resetAllComponents()
 
-        rootService.networkService.hostGame("game23d", sessionID, name, PlayerColor.BLUE, selectedGameMode)
+        rootService.networkService.hostGame(NETWORK_SECRET, sessionID, name, PlayerColor.WHITE, selectedGameMode)
     }
     private fun resetAllComponents() {
 
