@@ -4,6 +4,7 @@ import entity.*
 import java.lang.IndexOutOfBoundsException
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 class AIService(private val rootService: RootService) {
 
@@ -16,6 +17,7 @@ class AIService(private val rootService: RootService) {
      *  maximizes the AI's position in the game.
      */
     fun calculateNextTurn() {
+        println("Starting calculation")
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
@@ -46,7 +48,7 @@ class AIService(private val rootService: RootService) {
             // Evaluate the move
             val score = minimax(
                 newGame,
-                depth = 4,
+                depth = 2,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
                 playerIndex = currentGame.activePlayerID
@@ -620,46 +622,6 @@ class AIService(private val rootService: RootService) {
         return Pair(tile, currentConnection)
     }
 
-    /**
-     * Function which creates a Gem movement representing the scoring move,
-     * and adds the points according to the move and [gem]
-     *
-     * @param[game] The IndigoGame object in which the function will be implemented.
-     * @param[startTile] The Tile where the scoring move started
-     * @param[startConnection] The connection where the scoring move started
-     * @param[endTile] The Tile where the scoring move ended
-     * @param[endConnection] The connection where the scoring move ended
-     * @param[gem] The gem which moved to a gate tile and thus scored points
-     * according to [GemType.toInt]
-     * @param[turn] The current [Turn]
-     */
-    private fun scoringAction(game : IndigoGame,
-                              startTile: Tile,
-                              startConnection: Int,
-                              endTile: Tile,
-                              endConnection: Int,
-                              gem: GemType,
-                              turn: Turn
-    ){
-        val scoringMovement = GemMovement(
-            gem,
-            startTile,
-            startConnection,
-            endTile,
-            endConnection,
-            false
-        )
-        turn.gemMovements.add(scoringMovement)
-
-        for((index, player) in game.playerList.withIndex()){
-            if(endTile in player.gateList){
-                player.score += gem.toInt()
-                player.amountOfGems++
-
-                turn.scoreChanges[index] += gem.toInt()
-            }
-        }
-    }
 
     /**
      * Function which focuses on checking whether there are collisions between

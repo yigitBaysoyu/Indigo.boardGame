@@ -7,6 +7,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
+import kotlin.system.measureTimeMillis
 
 
 /**
@@ -1020,7 +1021,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                rootService.aiService.calculateNextTurn()
+                val timeTaken = measureTimeMillis {
+                    rootService.aiService.calculateNextTurn()
+                }
+                println("Took : ${timeTaken/1000} sec")
             }
             else -> return
         }
