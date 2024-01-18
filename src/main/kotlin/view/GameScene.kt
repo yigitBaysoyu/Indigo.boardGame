@@ -23,6 +23,7 @@ import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
+import kotlin.system.measureTimeMillis
 
 /**
  * Displays the actual gameplay.
@@ -373,7 +374,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
-            PlayerType.SMARTAI -> println("calculating next turn")
+            PlayerType.SMARTAI -> {
+                val timeTaken = measureTimeMillis {
+                    rootService.aiService.calculateNextTurn()
+                }
+                println("Took : ${timeTaken/1000} sec")
+            }
             else -> return
         }
     }
