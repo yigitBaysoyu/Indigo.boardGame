@@ -16,4 +16,17 @@ class GateTile(
     override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>
 ): Tile(
-)
+){
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
+    override fun copy(): GateTile {
+        return GateTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate,
+            gemsCollected = this.gemsCollected.toMutableList()
+        )
+    }
+}
