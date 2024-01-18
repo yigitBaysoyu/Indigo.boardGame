@@ -36,9 +36,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedModes = mutableListOf(0, 0, 0, 0)
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
-    private var sessionID = ""
-    private var hostName = ""
-    private val NETWORK_SECRET = "game23d"
+    var hostName = ""
 
     private var selectedGameMode = 0
 
@@ -268,15 +266,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         resetAllComponents()
     }
 
-    fun setUp(sessionID: String, name: String, selectedGameMode: GameMode) {
-        this.sessionID = sessionID
-        this.hostName = name
-
-        resetAllComponents()
-
-        rootService.networkService.hostGame(NETWORK_SECRET, sessionID, name, PlayerColor.WHITE, selectedGameMode)
-    }
-    private fun resetAllComponents() {
+    fun resetAllComponents() {
 
         for(i in 0 until 4) {
             selectedColors[i] = i

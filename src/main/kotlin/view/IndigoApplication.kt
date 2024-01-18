@@ -1,6 +1,7 @@
 package view
 
 import edu.udo.cs.sopra.ntf.GameMode
+import edu.udo.cs.sopra.ntf.PlayerColor
 import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.core.WindowMode
@@ -22,6 +23,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
+     private val NETWORK_SECRET = "game23d"
 
     init {
         // all scenes and the application itself need to
@@ -51,7 +53,12 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
                 3 -> GameMode.FOUR_SHARED_GATEWAYS
                 else -> { GameMode.TWO_NOT_SHARED_GATEWAYS }
             }
-            hostGameScene.setUp(mainMenuScene.sessionIDInput.text, mainMenuScene.nameInput.text, gameMode)
+            val hostname = mainMenuScene.nameInput.text
+            rootService.networkService.hostGame(NETWORK_SECRET, mainMenuScene.sessionIDInput.text,
+                hostname, PlayerColor.WHITE, gameMode)
+            hostGameScene.hostName = hostname
+            hostGameScene.resetAllComponents()
+
             showMenuScene(hostGameScene)
         }
         mainMenuScene.joinGameButton.onMouseClicked = {
