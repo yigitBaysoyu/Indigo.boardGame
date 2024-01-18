@@ -16,6 +16,6 @@ class PathTile(
     override val xCoordinate: Int = 0,
     override val yCoordinate: Int = 0,
     override val gemPositions: MutableList<GemType> = mutableListOf(),
-    @SerialName("pathTileType")
+    @SerialName("PathTileType")
     val type: Int = 0
 ): Tile(), TraverseAbleTile
