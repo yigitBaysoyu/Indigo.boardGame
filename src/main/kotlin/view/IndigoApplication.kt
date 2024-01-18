@@ -1,5 +1,6 @@
 package view
 
+import edu.udo.cs.sopra.ntf.GameMode
 import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.core.WindowMode
@@ -7,6 +8,7 @@ import tools.aqua.bgw.core.WindowMode
 /**
  * Implementation of the Indigo game using BoardGameWork.
  */
+@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode = WindowMode.FULLSCREEN), Refreshable {
 
     // Central service from which all others are created/accessed
@@ -41,7 +43,15 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
         mainMenuScene.hostGameButton.onMouseClicked = {
             // host game logic
-            hostGameScene.setUp(mainMenuScene.sessionIDInput.text, mainMenuScene.nameInput.text)
+
+            val gameMode = when (mainMenuScene.selectedGameMode) {
+                0 -> GameMode.TWO_NOT_SHARED_GATEWAYS
+                1 -> GameMode.THREE_NOT_SHARED_GATEWAYS
+                2 -> GameMode.THREE_SHARED_GATEWAYS
+                3 -> GameMode.FOUR_SHARED_GATEWAYS
+                else -> { GameMode.TWO_NOT_SHARED_GATEWAYS }
+            }
+            hostGameScene.setUp(mainMenuScene.sessionIDInput.text, mainMenuScene.nameInput.text, gameMode)
             showMenuScene(hostGameScene)
         }
         mainMenuScene.joinGameButton.onMouseClicked = {

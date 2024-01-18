@@ -1,11 +1,13 @@
 package view
 
 import service.RootService
+import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
+import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 
@@ -17,6 +19,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     private val sceneWidth = 1920
     private val halfWidth = sceneWidth / 2
     private val offsetY = -90 // Used to Position all Elements vertically
+    private val offsetX = 50
 
     private val localLabel = Label(
         width = 350, height = 75,
@@ -119,6 +122,47 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         componentStyle = "-fx-background-color: #211c4f50; -fx-background-radius: 25px;"
     }
 
+    // 0 = TWO_NOT_SHARED_GATEWAYS, 1 = THREE_SHARED_GATEWAYS, 2 = THREE_NOT_SHARED_GATEWAYS
+    // 3 = FOUR_SHARED_GATEWAYS
+    var selectedGameMode = 0
+    private val gameModeImageList = listOf(
+        ImageVisual(Constants.gameModeIcon2),
+        ImageVisual(Constants.gameModeIcon3NotShared),
+        ImageVisual(Constants.gameModeIcon3Shared),
+        ImageVisual(Constants.gameModeIcon4),
+    )
+    private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
+        val pane = Pane<Button>(
+            posX = halfWidth - 350/2 - 75, posY = offsetY + 815,
+            width = 70, height = 70,
+            visual = Visual.EMPTY
+        )
+
+        val playerModeIconBackground = Button(
+            width = 70, height = 70,
+            posX = 0, posY = 0,
+            visual = Visual.EMPTY
+        ).apply {
+            componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
+        }
+
+        val playerModeIcon = Button(
+            width = 55, height = 55,
+            posX = 7, posY = 7,
+            visual = ImageVisual(Constants.gameModeIcon2)
+        ).apply {
+            isDisabled = true
+        }
+        pane.add(playerModeIconBackground)
+        pane.add(playerModeIcon)
+        add(pane)
+
+        playerModeIconBackground.onMouseClicked = {
+            selectedGameMode = (selectedGameMode + 1) % 4
+            playerModeIcon.visual = gameModeImageList[selectedGameMode]
+        }
+    }
+
     val joinGameButton = Button(
         width = 350 / 2 - 10, height = 50,
         posX = halfWidth + 5, posY = offsetY + 815,
@@ -165,7 +209,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
             hostGameButton,
             joinGameButtonBackground,
             joinGameButton,
-            quitButton
+            quitButton,
+            playerModeIconList[0]
         )
     }
 }

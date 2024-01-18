@@ -1,5 +1,7 @@
 package view
 
+import edu.udo.cs.sopra.ntf.GameMode
+import edu.udo.cs.sopra.ntf.PlayerColor
 import entity.Player
 import entity.PlayerType
 import view.Constants
@@ -35,6 +37,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
     private var sessionID = ""
     private var hostName = ""
+
+    private var selectedGameMode = 0
 
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -315,12 +319,13 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         resetAllComponents()
     }
 
-    fun setUp(sessionID: String, name: String) {
+    fun setUp(sessionID: String, name: String, selectedGameMode: GameMode) {
         this.sessionID = sessionID
         this.hostName = name
 
         resetAllComponents()
-        // NetworkService.host(sessionID)
+
+        rootService.networkService.hostGame("game23d", sessionID, name, PlayerColor.BLUE, selectedGameMode)
     }
     private fun resetAllComponents() {
 
