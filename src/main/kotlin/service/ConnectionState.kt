@@ -56,5 +56,9 @@ enum class ConnectionState {
     /**
     *init received ready to start playing
     */
-    READY_FOR_GAME
+    READY_FOR_GAME,
+     /**
+    update connection state after game was initialized
+     */
+    GAME_STARTED
 }
