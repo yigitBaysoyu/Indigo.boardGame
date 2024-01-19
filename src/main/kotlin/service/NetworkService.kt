@@ -204,13 +204,13 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         updateConnectionState(ConnectionState.GAME_STARTED)
 
-
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
         {"game is not yet initialized!"}
 
 
-        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
+            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
         else
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
@@ -231,7 +231,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @throws IllegalStateException when ConnectionState is not [ConnectionState.DISCONNECTED]
      * @throws IllegalArgumentException when secret or name is blank
      */
-    private fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
+     fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
 
         require(connectionState == ConnectionState.DISCONNECTED && client == null)
         { "already connected to another game" }
