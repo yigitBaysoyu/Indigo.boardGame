@@ -10,7 +10,6 @@ class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
 
-
     /**
      *  Function calculates and executes the next best move for the AI player.
      *  It utilizes the minimax function to evaluate and choose the move that
@@ -80,6 +79,7 @@ class AIService(private val rootService: RootService) {
      *  @param [initialBeta] The initial value of beta for alpha-beta pruning. Typically set to Int.MAX_VALUE.
      *  @param [playerIndex] The index of the current player. This determines whether the function is
      *  maximizing or minimizing.
+     *  @param [mainIndex] The index of the player minimax algorithm serves to.
      *
      *  @return The score of the best move found for the current player at the given depth.
      */
@@ -160,7 +160,9 @@ class AIService(private val rootService: RootService) {
 
             for(coordinate in possibleCoordinates){
 
-                if(isPlaceAble(game, coordinate.first, coordinate.second, tile)) {
+                if(isPlaceAble(game, coordinate.first, coordinate.second, tile) &&
+                    stoneIsCloserToGate(game, coordinate.first, coordinate.second, game.getActivePlayer()))
+                {
                     allPossibleMoves.add(Pair(rotation, coordinate))
                 }
 
@@ -170,15 +172,31 @@ class AIService(private val rootService: RootService) {
     }
 
 
-    private fun stoneCloserToGate(game: IndigoGame, tile: PathTile, x: Int, y: Int) : Boolean {
+    private fun stoneIsCloserToGate(game: IndigoGame, x: Int, y: Int, currentPlayer : Player) : Boolean {
 
         val simGame : IndigoGame = game.deepCopy()
         placeTile(simGame, x, y)
 
-        return true
+        val tile = getTileFromAxialCoordinates(simGame, x, y) as PathTile
+
+        val startPosDistance = minDistance(currentPlayer, tile)
+        var endPosDistance = Int.MAX_VALUE
+        var gemScore = 0
+
+
+        for(i in 0 until tile.gemPositions.size) {
+            if(tile.gemPositions[i] != GemType.NONE && tile.gemPositions[i].toInt() >= gemScore) {
+                gemScore = tile.gemPositions[i].toInt()
+                val nextTile = getAdjacentTileByConnection(simGame, tile, i)
+                endPosDistance = minDistance(currentPlayer, nextTile!!)
+            }
+        }
+
+        return endPosDistance < startPosDistance
+
     }
 
-    fun minDistance(player : Player, tile: Tile) : Int {
+    private fun minDistance(player : Player, tile: Tile) : Int {
 
         val pointA: Pair<Int, Int> = Pair(tile.xCoordinate, tile.yCoordinate)
         var minDistance: Int = Int.MAX_VALUE
