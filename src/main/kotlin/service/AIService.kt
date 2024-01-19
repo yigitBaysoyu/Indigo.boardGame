@@ -5,6 +5,9 @@ import java.lang.IndexOutOfBoundsException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class AIService(private val rootService: RootService) {
 
@@ -31,9 +34,14 @@ class AIService(private val rootService: RootService) {
 
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Pair<Int, Int>>? = null
+        val maxDuration: Duration = 10.seconds
+        val startTime = System.currentTimeMillis()
 
         val possibleMoves = possibleMovesInGameState(currentGame)
         for (move in possibleMoves) {
+            if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
+                break
+            }
             val simGame: IndigoGame = currentGame.deepCopy()
             val x = move.second.first
             val y = move.second.second
