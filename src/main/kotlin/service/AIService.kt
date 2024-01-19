@@ -2,6 +2,7 @@ package service
 
 import entity.*
 import java.lang.IndexOutOfBoundsException
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -49,7 +50,8 @@ class AIService(private val rootService: RootService) {
                 depth = 4,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
-                playerIndex = currentGame.activePlayerID
+                playerIndex = currentGame.activePlayerID,
+                mainIndex = currentGame.activePlayerID
             )
 
             if (score > bestScore) {
@@ -86,17 +88,17 @@ class AIService(private val rootService: RootService) {
         depth: Int,
         initialAlpha: Int,
         initialBeta: Int,
-        playerIndex: Int
+        playerIndex: Int,
+        mainIndex: Int
     ): Int {
         if (depth == 0 || checkIfGameEnded(game)) {
             return evaluateGameState(game)
         }
 
-        val currentPlayer = game.playerList[playerIndex]
         var alpha = initialAlpha
         var beta = initialBeta
 
-        if (currentPlayer.playerType == PlayerType.SMARTAI) {
+        if (playerIndex == mainIndex) {
             var maxEval = Int.MIN_VALUE
             for (move in possibleMovesInGameState(game)) {
                 val simGame: IndigoGame = game.deepCopy()
@@ -107,7 +109,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex)
                 maxEval = max(maxEval, evaluation)
                 alpha = max(alpha, evaluation)
                 if (beta <= alpha) {
@@ -126,7 +128,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex)
                 minEval = min(minEval, evaluation)
                 beta = min(beta, evaluation)
                 if (beta <= alpha) {
@@ -150,7 +152,7 @@ class AIService(private val rootService: RootService) {
 
         val allPossibleMoves : MutableList<Pair<Int, Pair<Int, Int>>> = mutableListOf()
 
-        for(r in 0..6){
+        for(r in 1..6){
 
             rotateTile(game)
             val tile = game.playerList[game.activePlayerID].playHand[0]
@@ -165,6 +167,35 @@ class AIService(private val rootService: RootService) {
             }
         }
         return allPossibleMoves
+    }
+
+
+    private fun stoneCloserToGate(game: IndigoGame, tile: PathTile, x: Int, y: Int) : Boolean {
+
+        val simGame : IndigoGame = game.deepCopy()
+        placeTile(simGame, x, y)
+
+        return true
+    }
+
+    fun minDistance(player : Player, tile: Tile) : Int {
+
+        val pointA: Pair<Int, Int> = Pair(tile.xCoordinate, tile.yCoordinate)
+        var minDistance: Int = Int.MAX_VALUE
+
+        for(gate in player.gateList){
+            val pointB = Pair(gate.xCoordinate, gate.yCoordinate)
+            val distanceToGate = axialDistance(pointA, pointB)
+            minDistance = min(minDistance, distanceToGate)
+        }
+        return minDistance
+
+    }
+
+    private fun axialDistance(a: Pair<Int,Int>, b: Pair<Int, Int>): Int{
+        return (abs(a.first - b.first)
+                + abs(a.first + a.second - b.first - b.second)
+                + abs(a.second - b.second)) / 2
     }
 
 
