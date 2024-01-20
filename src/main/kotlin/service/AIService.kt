@@ -161,7 +161,7 @@ class AIService(private val rootService: RootService) {
             for(coordinate in possibleCoordinates){
 
                 if(isPlaceAble(game, coordinate.first, coordinate.second, tile) &&
-                    stoneIsCloserToGate(game, coordinate.first, coordinate.second, game.getActivePlayer()))
+                    gemIsMoved(game,coordinate.first, coordinate.second))
                 {
                     allPossibleMoves.add(Pair(rotation, coordinate))
                 }
@@ -171,28 +171,40 @@ class AIService(private val rootService: RootService) {
         return allPossibleMoves
     }
 
+    private fun gemIsMoved(game: IndigoGame, x: Int, y: Int) : Boolean {
+
+        val simGame : IndigoGame = game.deepCopy()
+        val nextGame = placeTile(simGame, x, y)
+
+        val tile = getTileFromAxialCoordinates(nextGame, x, y) as PathTile
+
+        for(i in 0..5) {
+            if(tile.gemPositions[i] != GemType.NONE) {
+                return true
+            }
+        }
+        return false
+
+    }
 
     private fun stoneIsCloserToGate(game: IndigoGame, x: Int, y: Int, currentPlayer : Player) : Boolean {
 
         val simGame : IndigoGame = game.deepCopy()
-        placeTile(simGame, x, y)
+        val nextGame = placeTile(simGame, x, y)
 
-        val tile = getTileFromAxialCoordinates(simGame, x, y) as PathTile
+        val tile = getTileFromAxialCoordinates(nextGame, x, y) as PathTile
 
         val startPosDistance = minDistance(currentPlayer, tile)
         var endPosDistance = Int.MAX_VALUE
-        var gemScore = 0
 
-
-        for(i in 0 until tile.gemPositions.size) {
-            if(tile.gemPositions[i] != GemType.NONE && tile.gemPositions[i].toInt() >= gemScore) {
-                gemScore = tile.gemPositions[i].toInt()
-                val nextTile = getAdjacentTileByConnection(simGame, tile, i)
-                endPosDistance = minDistance(currentPlayer, nextTile!!)
+        for(i in 0..5) {
+            if(tile.gemPositions[i] != GemType.NONE) {
+                val nextTile = getAdjacentTileByConnection(simGame, tile, i) ?: continue
+                endPosDistance = minDistance(currentPlayer, nextTile)
             }
         }
 
-        return endPosDistance < startPosDistance
+        return endPosDistance <= startPosDistance
 
     }
 
