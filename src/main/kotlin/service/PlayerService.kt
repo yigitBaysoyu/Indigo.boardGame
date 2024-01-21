@@ -151,7 +151,10 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
             type = tileFromPlayer.type
         )
 
-        if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)) return
+        if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)){
+            println("Not Placable")
+            return
+        }
 
         // placing the Tile in the GameLayout and moving the Gems
         rootService.gameService.setTileFromAxialCoordinates(xCoordinate, yCoordinate, tileToBePlaced)

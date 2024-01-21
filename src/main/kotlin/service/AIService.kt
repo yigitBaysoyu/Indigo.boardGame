@@ -7,7 +7,8 @@ import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.*
+import kotlin.math.abs
 
 class AIService(private val rootService: RootService) {
 
@@ -18,8 +19,11 @@ class AIService(private val rootService: RootService) {
      *  Function calculates and executes the next best move for the AI player.
      *  It utilizes the minimax function to evaluate and choose the move that
      *  maximizes the AI's position in the game.
+     *
+     *  Function is "suspend" to allow function to be suspended and resumed without
+     *  blocking the main thread.
      */
-    fun calculateNextTurn() {
+    suspend fun calculateNextTurn() {
         println("Starting calculation")
         val gameService = rootService.gameService
         val playerService = rootService.playerService
@@ -32,15 +36,57 @@ class AIService(private val rootService: RootService) {
 
         initializePossibleCoordinates()
 
+        val possibleMoves = possibleMovesInGameState(currentGame)
+        if(possibleMoves.isEmpty()) return
+
+        val availableProcessors = Runtime.getRuntime().availableProcessors()
+        val dividedMoves = possibleMoves.chunked(possibleMoves.size / availableProcessors)
+        println("Total amount: ${possibleMoves.size}")
+        var bestMove: Pair<Int, Pair<Int, Int>>
+
+        coroutineScope{
+            //Map each chunk of moves to a thread and use Default Dispatcher to assure time limit is held
+            val moves = dividedMoves.map { moves ->
+                async(Dispatchers.Default){
+                    calculateBestMove(moves, player)
+                }
+            }
+            //Wait for all Threads to finish
+            val result = moves.awaitAll()
+            var bestResult = result.first()
+            println("First result: ${bestResult.first}")
+            for(i in 1 until result.size){
+                //println("$i Result : ${result[i].first}")
+                if(result[i].first > bestResult.first){
+                    bestResult = result[i]
+                }
+            }
+            println("bestscore: ${bestResult.first}")
+            bestMove = bestResult.second
+        }
+
+        // Execute the best move
+        for (i in 1..bestMove.first) playerService.rotateTile()
+        val x = bestMove.second.first
+        val y = bestMove.second.second
+        if(!gameService.isPlaceAble(x, y, player.playHand[0])) playerService.rotateTile()
+
+        playerService.placeTile(x, y)
+        println(evaluateGameState(currentGame, aiPlayer = player))
+    }
+
+    private fun calculateBestMove(possibleMoves: List<Pair<Int, Pair<Int, Int>>>, player: Player):
+            Pair<Int,Pair<Int, Pair<Int, Int>>>
+    {
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Pair<Int, Int>>? = null
+        var moveCounter = 0
 
         val maxDuration: Duration = 10000.milliseconds
         val startTime = System.currentTimeMillis()
-        var moveCounter = 0
-
-        val possibleMoves = possibleMovesInGameState(currentGame)
-        println("Total moves: ${possibleMoves.size}")
         for (move in possibleMoves) {
             if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
                 break
@@ -63,7 +109,8 @@ class AIService(private val rootService: RootService) {
                 depth = 1,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
-                playerIndex = currentGame.activePlayerID
+                playerIndex = currentGame.activePlayerID,
+                aiPlayer = player
             )
             if (score > bestScore) {
                 bestScore = score
@@ -71,13 +118,8 @@ class AIService(private val rootService: RootService) {
             }
         }
         checkNotNull(bestMove)
-        println("bestMove: $bestMove with score: $bestScore")
-        // Execute the best move
-        for (i in 1..bestMove.first) playerService.rotateTile()
-        val x = bestMove.second.first
-        val y = bestMove.second.second
-        println("moveCounter: $moveCounter")
-        playerService.placeTile(x, y)
+        println("Bestscore: $bestScore")
+        return Pair(bestScore, bestMove)
     }
 
     /**
@@ -100,10 +142,11 @@ class AIService(private val rootService: RootService) {
         depth: Int,
         initialAlpha: Int,
         initialBeta: Int,
-        playerIndex: Int
+        playerIndex: Int,
+        aiPlayer: Player
     ): Int {
         if (depth == 0 || checkIfGameEnded(game)) {
-            return evaluateGameState(game)
+            return evaluateGameState(game, aiPlayer)
         }
 
         val currentPlayer = game.playerList[playerIndex]
@@ -121,7 +164,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, aiPlayer)
                 maxEval = max(maxEval, evaluation)
                 alpha = max(alpha, evaluation)
                 if (beta <= alpha) {
@@ -140,7 +183,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = (playerIndex + 1) % game.playerList.size
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, aiPlayer)
                 minEval = min(minEval, evaluation)
                 beta = min(beta, evaluation)
                 if (beta <= alpha) {
@@ -207,23 +250,57 @@ class AIService(private val rootService: RootService) {
      *
      *  @param [game] The IndigoGame object in which the function will be implemented
      */
-    private fun evaluateGameState(game : IndigoGame) : Int {
+    private fun evaluateGameState(game : IndigoGame, aiPlayer: Player) : Int {
 
         var score = 0
-
+        var opponentScore = 0
         for(player in game.playerList){
             if(player.playerType == PlayerType.SMARTAI)
                 score += player.score
             else
-                score -= player.score
+                opponentScore += player.score
         }
+        score -= (opponentScore / (game.playerList.size - 1))
+
+        val lastTurn = game.undoStack.last()
+
         if(game.undoStack.isNotEmpty()){
-            score += game.undoStack.last().gemMovements.size
+            score += lastTurn.gemMovements.size
         }
-        
+
+        var distanceVal: Int = 100
+        for(gemMove in lastTurn.gemMovements){
+            if(gemMove.endTile is TraverseAbleTile){
+                distanceVal += calculateDistanceToGate(gemMove.endTile, aiPlayer)
+            }
+            else if(gemMove.endTile is GateTile){
+                distanceVal -= 200
+            }
+        }
+        score -= distanceVal
         return score
     }
 
+    private fun calculateDistanceToGate(tile: TraverseAbleTile, player: Player): Int{
+        val pointA: Pair<Int, Int> = Pair(tile.xCoordinate, tile.yCoordinate)
+        var minDistance: Int = Int.MAX_VALUE
+
+        for(gate in player.gateList){
+            val pointB = Pair(gate.xCoordinate, gate.yCoordinate)
+            val distanceToGate = axialDistance(pointA, pointB)
+            minDistance = min(minDistance, distanceToGate)
+        }
+        return minDistance
+    }
+
+    /**
+     * q = xCoordinate r = yCoordinate
+     */
+    private fun axialDistance(a: Pair<Int,Int>, b: Pair<Int, Int>): Int{
+        return (abs(a.first - b.first)
+                + abs(a.first + a.second - b.first - b.second)
+                + abs(a.second - b.second)) / 2
+    }
 
     /**
      * Function to rotate the tile in the current players hand.
@@ -234,7 +311,7 @@ class AIService(private val rootService: RootService) {
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
     private fun rotateTile(game : IndigoGame) {
-
+        rootService.gameService.checkIfGameEnded()
         val tile = game.playerList[game.activePlayerID].playHand[0]
 
         // map to store the new Connections
@@ -281,7 +358,9 @@ class AIService(private val rootService: RootService) {
             type = tileFromPlayer.type
         )
 
-        if (!isPlaceAble(game, xCoordinate, yCoordinate, tileToBePlaced)) return game
+        if (!isPlaceAble(game, xCoordinate, yCoordinate, tileToBePlaced)) {
+            return game
+        }
 
         // placing the Tile in the GameLayout and moving the Gems
         setTileFromAxialCoordinates(game, xCoordinate, yCoordinate, tileToBePlaced)
@@ -309,7 +388,7 @@ class AIService(private val rootService: RootService) {
             }
         }
 
-        game.undoStack.add(turn)
+        game.undoStack.addLast(turn)
 
         return game
 

@@ -1,5 +1,6 @@
 package service
 import entity.*
+import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -235,7 +236,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-
+        println("Ende kein empty tile")
         return false
     }
 
@@ -1022,7 +1023,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
             PlayerType.SMARTAI -> {
                 val timeTaken = measureTimeMillis {
-                    rootService.aiService.calculateNextTurn()
+                    runBlocking {
+                        rootService.aiService.calculateNextTurn()
+                    }
                 }
                 println("Took : ${timeTaken/1000} sec")
             }

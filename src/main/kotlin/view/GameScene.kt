@@ -1,6 +1,7 @@
 package view
 
 import entity.*
+import kotlinx.coroutines.runBlocking
 import service.RootService
 import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
@@ -376,7 +377,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             PlayerType.SMARTAI -> {
                 val timeTaken = measureTimeMillis {
-                    rootService.aiService.calculateNextTurn()
+                    //Blocking current Thread until coroutine in calculateNextTurn() is finished
+                    runBlocking {
+                        rootService.aiService.calculateNextTurn()
+                    }
                 }
                 println("Took : ${timeTaken/1000} sec")
             }
