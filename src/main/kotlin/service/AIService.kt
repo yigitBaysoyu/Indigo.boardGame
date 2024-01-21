@@ -665,6 +665,7 @@ class AIService(private val rootService: RootService) {
         return turn
     }
 
+
     /**
      * Function to get the neighbour according to the [connection]
      *
