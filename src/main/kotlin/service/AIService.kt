@@ -34,14 +34,18 @@ class AIService(private val rootService: RootService) {
 
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Pair<Int, Int>>? = null
-        val maxDuration: Duration = 10.seconds
+
+        val maxDuration: Duration = 10000.milliseconds
         val startTime = System.currentTimeMillis()
+        var moveCounter = 0
 
         val possibleMoves = possibleMovesInGameState(currentGame)
+        println("Total moves: ${possibleMoves.size}")
         for (move in possibleMoves) {
             if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
                 break
             }
+            moveCounter++
             val simGame: IndigoGame = currentGame.deepCopy()
             val x = move.second.first
             val y = move.second.second
@@ -56,23 +60,23 @@ class AIService(private val rootService: RootService) {
             // Evaluate the move
             val score = minimax(
                 newGame,
-                depth = 2,
+                depth = 1,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
                 playerIndex = currentGame.activePlayerID
             )
-
             if (score > bestScore) {
                 bestScore = score
                 bestMove = Pair(rotation, Pair(x, y))
             }
         }
         checkNotNull(bestMove)
-
+        println("bestMove: $bestMove with score: $bestScore")
         // Execute the best move
         for (i in 1..bestMove.first) playerService.rotateTile()
         val x = bestMove.second.first
         val y = bestMove.second.second
+        println("moveCounter: $moveCounter")
         playerService.placeTile(x, y)
     }
 
@@ -213,7 +217,10 @@ class AIService(private val rootService: RootService) {
             else
                 score -= player.score
         }
-
+        if(game.undoStack.isNotEmpty()){
+            score += game.undoStack.last().gemMovements.size
+        }
+        
         return score
     }
 
@@ -290,6 +297,19 @@ class AIService(private val rootService: RootService) {
             game.playerList[game.activePlayerID].playHand.clear()
         }
         game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
+        // if placed tile has same properties as last on redoStack, remove one turn from redoStack
+        if(game.redoStack.isNotEmpty()) {
+            val lastFromRedoStack = game.redoStack.last()
+            if(xCoordinate == lastFromRedoStack.first.first && yCoordinate == lastFromRedoStack.first.second
+                && tileToBePlaced.rotationOffset == lastFromRedoStack.second) {
+                game.redoStack.removeLast()
+            } else { // else remove everything from redoStack
+                game.redoStack.clear()
+            }
+        }
+
+        game.undoStack.add(turn)
 
         return game
 
