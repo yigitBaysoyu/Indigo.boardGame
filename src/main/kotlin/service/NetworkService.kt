@@ -4,6 +4,9 @@ import tools.aqua.bgw.net.common.Message
 import view.*
 import java.lang.IllegalStateException
 import edu.udo.cs.sopra.ntf.*
+import kotlinx.coroutines.runBlocking
+import kotlin.system.measureTimeMillis
+
 /**
  * Service layer class that realizes the necessary logic for sending and receiving messages
  * in multiplayer network games.
@@ -265,20 +268,26 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         /**
         // hier muss auch die Ki implementierung aktiveret werden
 
-        /*
+        */
 
         if ( connectionState == ConnectionState.PLAYING_MY_TURN ){
 
         when (client!!.playerType){
 
-        PlayerType.SMARTAI -> {rootService.aiService.calculateNextTurn()}
+        PlayerType.SMARTAI -> {
+            val timeTaken = measureTimeMillis {
+                runBlocking {
+                    rootService.aiService.calculateNextTurn()
+                }
+            }
+            println("Took : ${timeTaken/1000} sec")
+
+        }
         PlayerType.RANDOMAI -> {rootService.aiService.randomNextTurn()}
         else -> {}
         }
         }
 
-        */
-         */
 
 
     }
