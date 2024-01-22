@@ -208,15 +208,15 @@ class AIService(private val rootService: RootService) {
                 val end = movement.endTile
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score += 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score += 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score += 3
                 }
             }
@@ -226,15 +226,15 @@ class AIService(private val rootService: RootService) {
                 val end = movement.endTile
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score -= 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score -= 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
                     score -= 3
                 }
             }
