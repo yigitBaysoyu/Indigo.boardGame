@@ -260,7 +260,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
                 startButton.isDisabled = false
             }
         }*/
-    
+
     private fun handleStartClick() {
         rootService.networkService.startNewHostedGame()
 

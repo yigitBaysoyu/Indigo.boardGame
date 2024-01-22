@@ -11,4 +11,17 @@ class InvisibleTile(
     override var rotationOffset: Int = 0,
     override val xCoordinate: Int = 0,
     override val yCoordinate: Int = 0,
-): Tile()
+): Tile() {
+
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
+    override fun copy(): InvisibleTile {
+        return InvisibleTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate
+        )
+    }
+}
