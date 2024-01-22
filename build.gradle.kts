@@ -26,7 +26,7 @@ dependencies {
     implementation(group = "tools.aqua", name = "bgw-net-common", version = "0.9")
     implementation(group = "tools.aqua", name = "bgw-net-client", version = "0.9")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
 }
 
 tasks.distZip {

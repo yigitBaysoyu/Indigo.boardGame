@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
+    private var gameStateScore : Int = 0
 
     /**
      *  Function calculates and executes the next best move for the AI player.
@@ -122,7 +123,7 @@ class AIService(private val rootService: RootService) {
         return Pair(bestScore, bestMove)
     }
 
-        /**
+    /**
      *  The minimax function is a recursive algorithm used for optimizing the move of the AI player.
      *  Function evaluates the best possible move for the AI player in the game "Indigo",
      *  considering multiple players.
@@ -149,7 +150,7 @@ class AIService(private val rootService: RootService) {
         maxDuration: Duration
     ): Int {
         if (depth == 0 || checkIfGameEnded(game)
-                       || (System.currentTimeMillis() - startTime).milliseconds > maxDuration)
+            || (System.currentTimeMillis() - startTime).milliseconds > maxDuration)
         {
             return evaluateGameState(game, mainIndex)
         }
@@ -237,13 +238,13 @@ class AIService(private val rootService: RootService) {
      */
     private fun evaluateGameState(game : IndigoGame, mainPlayerIndex: Int) : Int {
 
-        var score = 0
+        gameStateScore
 
         for((index, player) in game.playerList.withIndex()){
             if(index == mainPlayerIndex)
-                score += player.score * 5
+                gameStateScore += player.score * 5
             else
-                score -= player.score * 5
+                gameStateScore -= player.score * 5
         }
 
         val gemMovements = game.undoStack.last().gemMovements
@@ -251,41 +252,52 @@ class AIService(private val rootService: RootService) {
             for(movement in gemMovements){
                 val start = movement.startTile
                 val end = movement.endTile
+                val next = getAdjacentTileByConnection(game, end, movement.positionOnEndTile) ?: end
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score += 1
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore += 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score += 2
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore += 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score += 3
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore += 3
                 }
+
+                if(next is GateTile) {
+                    gameStateScore = 0
+                }
+
+
             }
         } else if(game.undoStack.isNotEmpty() && game.undoStack.last().playerID != mainPlayerIndex){
             for(movement in gemMovements){
                 val start = movement.startTile
                 val end = movement.endTile
+                val next = getAdjacentTileByConnection(game, end, movement.positionOnEndTile) ?: end
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score -= 1
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore -= 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score -= 2
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore -= 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
-                    score -= 3
+                    minDistance(game.getActivePlayer(), next) < minDistance(game.getActivePlayer(), start)){
+                    gameStateScore -= 3
+                }
+                if(next is GateTile) {
+                    gameStateScore = 0
                 }
             }
         }
 
-        return score
+        return gameStateScore
     }
 
     private fun gemIsMoved(game: IndigoGame, x: Int, y: Int) : Boolean {
@@ -1077,7 +1089,7 @@ class AIService(private val rootService: RootService) {
         placeableTiles.shuffle()
 
         //Rotate the tile by a random amount
-        val randomRotation = Random.Default.nextInt(0, 6)
+        val randomRotation = Random.nextInt(0, 6)
         for (i in 0 until randomRotation){
             playerService.rotateTile()
         }
