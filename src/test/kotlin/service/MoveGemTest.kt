@@ -4,8 +4,9 @@ import kotlin.test.*
 import entity.*
 
 /**
- * Class to test the moveGem method
+ * This test class verifies the functionality of the `moveGems` method in the Game service.
  */
+
 class MoveGemTest {
 
     /**

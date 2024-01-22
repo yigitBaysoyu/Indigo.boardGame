@@ -28,6 +28,7 @@ class RootService {
     fun addRefreshable(newRefreshable: Refreshable) {
         gameService.addRefreshable(newRefreshable)
         playerService.addRefreshable(newRefreshable)
+        networkService.addRefreshable(newRefreshable)
     }
 
     /**

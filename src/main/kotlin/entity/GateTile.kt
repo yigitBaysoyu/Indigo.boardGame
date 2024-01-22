@@ -15,8 +15,22 @@ class GateTile(
     override val xCoordinate: Int,
     override val yCoordinate: Int,
     val gemsCollected: MutableList<GemType>
-): Tile(
-){
+): Tile() {
+    override fun equals(other: Any?): Boolean {
+        if(other !is GateTile) return false
+        if(other.xCoordinate != xCoordinate) return false
+        if(other.yCoordinate != yCoordinate) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = connections.hashCode()
+        result = 31 * result + rotationOffset
+        result = 31 * result + xCoordinate
+        result = 31 * result + yCoordinate
+        result = 31 * result + gemsCollected.hashCode()
+        return result
+    }
     /**
      *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
      */

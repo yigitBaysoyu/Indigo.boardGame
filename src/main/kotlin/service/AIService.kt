@@ -1065,7 +1065,7 @@ class AIService(private val rootService: RootService) {
             selectedPos = placeableTiles.first()
             selectedTile = gameService.getTileFromAxialCoordinates(selectedPos.first, selectedPos.second)
 
-            if(selectedTile is PathTile){
+            if(selectedTile is PathTile || selectedTile is TreasureTile || selectedTile is CenterTile){
                 placeableTiles.removeFirst()
                 continue
             }
@@ -1086,7 +1086,6 @@ class AIService(private val rootService: RootService) {
         }
 
         if(placeableTiles.isEmpty()){
-            gameService.checkIfGameEnded()
             return
         }
         checkNotNull(selectedPos)

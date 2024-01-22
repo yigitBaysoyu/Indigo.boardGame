@@ -24,6 +24,7 @@ import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
+import service.ConnectionState
 import kotlin.system.measureTimeMillis
 
 /**
@@ -49,7 +50,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private var simulationSpeedBinary = ""
 
     // Maps
-	private val tileMap: BidirectionalMap<Pair<Int, Int>, Area<TokenView>> = BidirectionalMap()
+    private val tileMap: BidirectionalMap<Pair<Int, Int>, Area<TokenView>> = BidirectionalMap()
     private val gemMap: BidirectionalMap<Area<TokenView>, MutableList<TokenView>> = BidirectionalMap()
 
     // Components
@@ -72,11 +73,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     )
 
     private val playerLabelList = mutableListOf<Label>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val playerLabel = Label(
                 width = 300, height = 50,
-                posX = playerListOffsetX, posY = playerListOffsetY + i*250,
-                text = "Player" + (i+1),
+                posX = playerListOffsetX, posY = playerListOffsetY + i * 250,
+                text = "Player" + (i + 1),
                 font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
             )
             add(playerLabel)
@@ -84,7 +85,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val playerColorList = mutableListOf<TokenView>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val playerColor = TokenView(
                 width = 45, height = 45,
                 posX = 10 + playerListOffsetX, posY = 5 + playerListOffsetY + i * 250,
@@ -95,10 +96,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val playerScoreList = mutableListOf<Label>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val scoreLabel = Label(
                 width = 100, height = 50,
-                posX = -25 + playerListOffsetX, posY = 90 + playerListOffsetY + i*250 + hexagonHeight / 2 - 25,
+                posX = -25 + playerListOffsetX, posY = 90 + playerListOffsetY + i * 250 + hexagonHeight / 2 - 25,
                 text = "0 pts.",
                 font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
             )
@@ -107,10 +108,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val playerAIIconList = mutableListOf<TokenView>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val playerAIIcon = TokenView(
                 width = 28 * 1.5, height = 25 * 1.5,
-                posX = 230 + playerListOffsetX, posY = 5 + playerListOffsetY + i*250,
+                posX = 230 + playerListOffsetX, posY = 5 + playerListOffsetY + i * 250,
                 visual = ImageVisual(Constants.aiIcon)
             )
             add(playerAIIcon)
@@ -118,10 +119,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val playerHandList = mutableListOf<TokenView>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val playerHand = TokenView(
-                width = hexagonWidth,  height = hexagonHeight,
-                posX = 90 + playerListOffsetX, posY = 90 + playerListOffsetY + i*250,
+                width = hexagonWidth, height = hexagonHeight,
+                posX = 90 + playerListOffsetX, posY = 90 + playerListOffsetY + i * 250,
                 visual = ImageVisual(Constants.pathTileImageList[0])
             )
             add(playerHand)
@@ -129,9 +130,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private val playerGemLayoutList = mutableListOf<LinearLayout<TokenView>>().apply {
-        for(i in 0 until 4) {
+        for (i in 0 until 4) {
             val playerGemLayout = LinearLayout<TokenView>(
-                posX = 0 + playerListOffsetX, posY = 48 + playerListOffsetY + i*250,
+                posX = 0 + playerListOffsetX, posY = 48 + playerListOffsetY + i * 250,
                 width = 300, height = 35,
                 visual = Visual.EMPTY,
                 alignment = Alignment.CENTER_LEFT
@@ -148,12 +149,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-radius: 25px;"
         onMouseClicked = { rootService.playerService.rotateTile() }
     }
-
-
-
-
-
-
 
 
     private val menuArea = Pane<ComponentView>(
@@ -207,7 +202,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {simulationSpeedBinary = "0$simulationSpeedBinary"}
+        onMouseClicked = { simulationSpeedBinary = "0$simulationSpeedBinary" }
     }
 
     private val oneButton = Button(
@@ -218,7 +213,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {simulationSpeedBinary = "1$simulationSpeedBinary" }
+        onMouseClicked = { simulationSpeedBinary = "1$simulationSpeedBinary" }
     }
 
     private val setButton = Button(
@@ -392,7 +387,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        if(game.isNetworkGame) {
+        if (game.isNetworkGame) {
             undoButton.isVisible = false
             undoButton.isDisabled = true
             redoButton.isVisible = false
@@ -416,9 +411,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int): MutableList<GemType> {
         val copiedList = mutableListOf<GemType>()
-        for(gem in list) copiedList.add(gem)
+        for (gem in list) copiedList.add(gem)
 
-        for(i in 0 until offset) {
+        for (i in 0 until offset) {
             copiedList.add(copiedList.removeFirst())
         }
 
@@ -427,14 +422,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun renderGemsForPathOrTreasureTile(tile: Tile, area: Area<TokenView>) {
         var unRotatedGemPositions: MutableList<GemType> = mutableListOf()
-        if(tile is PathTile) unRotatedGemPositions = tile.gemPositions
-        if(tile is TreasureTile) unRotatedGemPositions = tile.gemPositions
+        if (tile is PathTile) unRotatedGemPositions = tile.gemPositions
+        if (tile is TreasureTile) unRotatedGemPositions = tile.gemPositions
 
         val gemPositions = rotateListBackwards(unRotatedGemPositions, tile.rotationOffset)
         val gemList: MutableList<TokenView> = MutableList(6) { TokenView(visual = Visual.EMPTY) }
 
-        for(i in 0 .. 5) {
-            val gemVisual = when(gemPositions[i]) {
+        for (i in 0..5) {
+            val gemVisual = when (gemPositions[i]) {
                 GemType.AMBER -> ImageVisual(Constants.amberImage)
                 GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
                 GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
@@ -442,21 +437,21 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
 
             var gemX = 0
-            if(i == 0 || i == 2) gemX = hexagonWidth / 4 - gemSize / 2
-            if(i == 3 || i == 5) gemX = -hexagonWidth / 4 + gemSize / 2
-            if(i == 1) gemX = (hexagonWidth / 2 - gemSize * (0.75)).toInt()
-            if(i == 4) gemX = (-hexagonWidth / 2 + gemSize * (0.75)).toInt()
+            if (i == 0 || i == 2) gemX = hexagonWidth / 4 - gemSize / 2
+            if (i == 3 || i == 5) gemX = -hexagonWidth / 4 + gemSize / 2
+            if (i == 1) gemX = (hexagonWidth / 2 - gemSize * (0.75)).toInt()
+            if (i == 4) gemX = (-hexagonWidth / 2 + gemSize * (0.75)).toInt()
 
             var gemY = 0
-            if(i == 0 || i == 5) gemY = (-hexagonHeight * (3.0/8.0) + gemSize / (3.0/2.0)).toInt()
-            if(i == 2 || i == 3) gemY = (hexagonHeight * (3.0/8.0) - gemSize / (3.0/2.0)).toInt()
+            if (i == 0 || i == 5) gemY = (-hexagonHeight * (3.0 / 8.0) + gemSize / (3.0 / 2.0)).toInt()
+            if (i == 2 || i == 3) gemY = (hexagonHeight * (3.0 / 8.0) - gemSize / (3.0 / 2.0)).toInt()
 
             gemX += hexagonWidth / 2
             gemY += hexagonHeight / 2
 
             // This gem is the one that starts on the Treasure tile
             val correctedGemIndex = (i + tile.rotationOffset) % 6
-            if(tile is TreasureTile && tile.connections[correctedGemIndex] == correctedGemIndex) {
+            if (tile is TreasureTile && tile.connections[correctedGemIndex] == correctedGemIndex) {
                 // this moves the gems coordinates closer to the center of the tile
                 val centerX = hexagonWidth / 2
                 val centerY = hexagonHeight / 2
@@ -483,7 +478,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val gemList = mutableListOf<TokenView>()
 
-        for(i in 0 until tile.availableGems.size - 1) {
+        for (i in 0 until tile.availableGems.size - 1) {
             var gemX = hexagonWidth / 2
             var gemY = hexagonHeight / 2
 
@@ -498,7 +493,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             gemList.add(gemView)
         }
 
-        if(tile.availableGems.size >= 1) {
+        if (tile.availableGems.size >= 1) {
             val gemX = hexagonWidth / 2
             val gemY = hexagonHeight / 2
             val gemView = TokenView(
@@ -514,7 +509,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun visualFromColorInt(number: Int): ImageVisual {
-        return when(number) {
+        return when (number) {
             0 -> ImageVisual(Constants.redGate)
             1 -> ImageVisual(Constants.whiteGate)
             2 -> ImageVisual(Constants.blueGate)
@@ -529,16 +524,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val playerList = game.playerList
 
         // will hold the colors of the 6 gates
-        val gateAssignments: MutableList<MutableList<Int>> = MutableList(6){ mutableListOf()}
+        val gateAssignments: MutableList<MutableList<Int>> = MutableList(6) { mutableListOf() }
 
         // Iterate over all Players
-        for(playerIndex in 0 until playerList.size) {
+        for (playerIndex in 0 until playerList.size) {
             // Iterate over their GateTiles
-            for(gateTile in playerList[playerIndex].gateList) {
+            for (gateTile in playerList[playerIndex].gateList) {
                 var gateNumber = 0
                 // Iterate over the List of all Gate tiles to find which Gate the tile belongs to
-                for(i in 0 until game.gateList.size) {
-                    if(game.gateList[i].contains(gateTile)) {
+                for (i in 0 until game.gateList.size) {
+                    if (game.gateList[i].contains(gateTile)) {
                         gateNumber = i
                         break
                     }
@@ -549,8 +544,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         // Remove duplicates from the gateAssignments
         val filteredGateAssignments: List<MutableList<Int>> = gateAssignments.map { it.distinct().toMutableList() }
-        for(list in filteredGateAssignments) {
-            if(list.size == 1) list.add(list[0])
+        for (list in filteredGateAssignments) {
+            if (list.size == 1) list.add(list[0])
         }
 
         val gateVisuals: List<List<ImageVisual>> = filteredGateAssignments.map { n -> n.map { visualFromColorInt(it) } }
@@ -566,15 +561,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val tokenSize = 61
 
-        for(i in 0 until 6) {
-            for(j in 0 until 2) {
+        for (i in 0 until 6) {
+            for (j in 0 until 2) {
                 val x = positions[i][j].first
                 val y = positions[i][j].second
                 val offsetX = hexagonWidth * 9 / 2
                 val offsetY = (hexagonHeight * 5 + (hexagonHeight / 2) * 4) / 2
 
-                val tokenX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0)/2 * y)
-                val tokenY = hexagonSize * (3.0/2.0 * y)
+                val tokenX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0) / 2 * y)
+                val tokenY = hexagonSize * (3.0 / 2.0 * y)
 
                 val calculatedX = tokenX + offsetX
                 val calculatedY = tokenY + offsetY
@@ -596,7 +591,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        game.playerList.forEachIndexed {index, player ->
+        game.playerList.forEachIndexed { index, player ->
             renderCollectedGemsForPlayer(player, index)
         }
     }
@@ -604,19 +599,19 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
         val playersGemList = mutableListOf<GemType>()
 
-        for(gate in player.gateList) {
+        for (gate in player.gateList) {
             playersGemList.addAll(gate.gemsCollected)
         }
 
         playerGemLayoutList[playerIndex].clear()
-        for(gem in playersGemList) {
-            val gemVisual = when(gem) {
+        for (gem in playersGemList) {
+            val gemVisual = when (gem) {
                 GemType.AMBER -> ImageVisual(Constants.amberImage)
                 GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
                 GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
                 GemType.NONE -> Visual.EMPTY
             }
-            val gemView = TokenView( -gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
+            val gemView = TokenView(-gemSize / 2, -gemSize / 2, gemSize, gemSize, gemVisual)
             playerGemLayoutList[playerIndex].add(gemView)
         }
     }
@@ -626,7 +621,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             for (y in -5..5) {
                 if (!rootService.gameService.checkIfValidAxialCoordinates(x, y)) continue
                 val tile = rootService.gameService.getTileFromAxialCoordinates(x, y)
-                if(tile is GateTile || tile is InvisibleTile) continue
+                if (tile is GateTile || tile is InvisibleTile) continue
 
                 var image: BufferedImage = Constants.emptyTileImage
 
@@ -640,44 +635,44 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 val offsetX = hexagonWidth * 9 / 2
                 val offsetY = (hexagonHeight * 5 + (hexagonHeight / 2) * 4) / 2
 
-                val areaX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0)/2 * y)
-                val areaY = hexagonSize * (3.0/2.0 * y)
+                val areaX = hexagonSize * (sqrt(3.0) * x + sqrt(3.0) / 2 * y)
+                val areaY = hexagonSize * (3.0 / 2.0 * y)
 
                 val area = Area<TokenView>(
-                    posX = areaX + offsetX - hexagonWidth/2, posY = areaY + offsetY - hexagonHeight / 2,
+                    posX = areaX + offsetX - hexagonWidth / 2, posY = areaY + offsetY - hexagonHeight / 2,
                     width = hexagonWidth, height = hexagonHeight,
                     visual = tileVisual
                 )
 
-                if(tile is EmptyTile) area.onMouseClicked = { handleTileClick(it, area) }
-                if(tile is EmptyTile) {
+                if (tile is EmptyTile) area.onMouseClicked = { handleTileClick(it, area) }
+                if (tile is EmptyTile) {
                     area.onMouseEntered = { handleOnMouseEntered(area, x, y) }
                     area.onMouseExited = { handleOnMouseExited(area, x, y) }
                 }
 
                 area.rotate(tile.rotationOffset * 60)
 
-                if(tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
-                if(tile is CenterTile) renderGemsForCenterTile(tile, area)
+                if (tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
+                if (tile is CenterTile) renderGemsForCenterTile(tile, area)
 
                 outerArea.add(area)
-                tileMap.add(Pair(x,y), area)
+                tileMap.add(Pair(x, y), area)
             }
         }
     }
 
     private fun handleOnMouseEntered(area: Area<TokenView>, x: Int, y: Int) {
-        if(rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+        if (rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
 
         val game = rootService.currentGame
-        checkNotNull(game) { "no active game"}
+        checkNotNull(game) { "no active game" }
         val tileInPlayersHand = game.playerList[game.activePlayerID].playHand[0]
 
         val hoverTileVisual = ImageVisual(Constants.pathTileImageList[tileInPlayersHand.type])
         hoverTileVisual.transparency = 0.63
         val hoverBackgroundImage = ImageVisual(Constants.emptyTileImage)
 
-        if(!rootService.gameService.isPlaceAble(x, y, tileInPlayersHand)) {
+        if (!rootService.gameService.isPlaceAble(x, y, tileInPlayersHand)) {
             val hoverTintVisual = ImageVisual(Constants.hoverTintImage)
             hoverTileVisual.transparency = 0.45
             area.visual = CompoundVisual(hoverBackgroundImage, hoverTileVisual, hoverTintVisual)
@@ -689,54 +684,61 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun handleOnMouseExited(area: Area<TokenView>, x: Int, y: Int) {
-        if(rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+        if (rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
         area.visual = ImageVisual(Constants.emptyTileImage)
         area.rotation = 0.0
     }
 
     private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
-        val mouseX: Double = mouseEvent.posX.toDouble()
-        val mouseY: Double = mouseEvent.posY.toDouble()
-        val tileCoords = tileMap.backward(area)
-        var tileX = tileCoords.first
-        var tileY = tileCoords.second
 
-        // Check if player clicked top left or bottom left area that is outside the
-        // hexagon but inside the area rectangle
-        val maxPossibleWidth: Double = hexagonWidth / 2.0
-        val maxPossibleHeight: Double = hexagonHeight / 4.0
+        if (  (rootService.currentGame!!.isNetworkGame == false) || (rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN) ){
+            val mouseX: Double = mouseEvent.posX.toDouble()
 
-        // used for top left corner
-        val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+            val mouseY: Double = mouseEvent.posY.toDouble()
+            val tileCoords = tileMap.backward(area)
+            var tileX = tileCoords.first
+            var tileY = tileCoords.second
 
-        // used for bottom left corner
-        val distanceFromMaxHeight = (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
-        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+            // Check if player clicked top left or bottom left area that is outside the
+            // hexagon but inside the area rectangle
+            val maxPossibleWidth: Double = hexagonWidth / 2.0
+            val maxPossibleHeight: Double = hexagonHeight / 4.0
 
-        // check if top left corner was clicked
-        if(mouseX.toInt() in 0 .. maxAllowedWidth && mouseY.toInt() in 0 .. hexagonHeight / 4) {
-            tileY -= 1
+            // used for top left corner
+            val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+
+            // used for bottom left corner
+            val distanceFromMaxHeight =
+                (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
+            val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+
+            // check if top left corner was clicked
+            if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
+                tileY -= 1
+            }
+
+            // check if bottom left corner was clicked
+            if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
+                tileX -= 1
+                tileY += 1
+            }
+
+
+            rootService.playerService.placeTile(tileX, tileY)
         }
-
-        // check if bottom left corner was clicked
-        if(mouseX.toInt() in 0 .. hexagonWidth / 2 && mouseY.toInt() in minNeededHeight .. hexagonHeight) {
-            tileX -= 1
-            tileY += 1
-        }
-
-        rootService.playerService.placeTile(tileX, tileY)
     }
+
 
     private fun renderPlayerConfiguration() {
         val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
+        checkNotNull(game) { "game is null" }
 
         game.playerList.forEachIndexed { index, player ->
             playerLabelList[index].text = player.name
             playerLabelList[index].isVisible = true
             playerColorList[index].visual = visualFromColorInt(player.color)
             playerColorList[index].isVisible = true
-            playerAIIconList[index].isVisible = when(player.playerType) {
+            playerAIIconList[index].isVisible = when (player.playerType) {
                 PlayerType.RANDOMAI -> true
                 PlayerType.SMARTAI -> true
                 else -> false
@@ -749,26 +751,26 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun setRotateButtonHeight() {
         val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
+        checkNotNull(game) { "game is null" }
 
-        rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID*250)
+        rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID * 250)
     }
 
     private fun updatePlayerScores() {
         val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
+        checkNotNull(game) { "game is null" }
 
-        game.playerList.forEachIndexed {index, player ->
+        game.playerList.forEachIndexed { index, player ->
             playerScoreList[index].text = "${player.score} pts."
         }
     }
 
     private fun renderPlayerHands() {
         val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
+        checkNotNull(game) { "game is null" }
 
         game.playerList.forEachIndexed { index, player ->
-            if(player.playHand.size > 0) {
+            if (player.playHand.size > 0) {
                 val tileType = player.playHand[0].type
                 playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
                 playerHandList[index].rotation = player.playHand[0].rotationOffset * 60.0
@@ -782,13 +784,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     private fun resetAllComponents() {
         outerArea.clear()
 
-        for(label in playerLabelList) label.isVisible = false
-        for(color in playerColorList) color.isVisible = false
-        for(aiIcon in playerAIIconList) aiIcon.isVisible = false
-        for(hand in playerHandList) hand.isVisible = false
-        for(gemLayout in playerGemLayoutList) gemLayout.isVisible = false
-        for(gemLayout in playerGemLayoutList) gemLayout.clear()
-        for(playerScore in playerScoreList) playerScore.isVisible = false
+        for (label in playerLabelList) label.isVisible = false
+        for (color in playerColorList) color.isVisible = false
+        for (aiIcon in playerAIIconList) aiIcon.isVisible = false
+        for (hand in playerHandList) hand.isVisible = false
+        for (gemLayout in playerGemLayoutList) gemLayout.isVisible = false
+        for (gemLayout in playerGemLayoutList) gemLayout.clear()
+        for (playerScore in playerScoreList) playerScore.isVisible = false
         tileMap.clear()
         gemMap.clear()
     }
@@ -809,11 +811,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val tile = turn.placedTile
         val x = tile.xCoordinate
         val y = tile.yCoordinate
-        val view = tileMap.forward(Pair(x,y))
+        val view = tileMap.forward(Pair(x, y))
 
         val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
 
-        //view.visual = newVisual
         view.rotation = tile.rotationOffset * 60.0
 
         val currentGame = rootService.currentGame
@@ -843,7 +844,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         renderCollectedGemsLists()
         setRotateButtonHeight()
 
-        for(gemMovement in turn.gemMovements) {
+        for (gemMovement in turn.gemMovements) {
             refreshAfterGemMoved(gemMovement)
         }
     }
@@ -855,7 +856,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val tileView = tileMap.forward(Pair(startX, startY))
         val gemViews = gemMap.forward(tileView)
 
-        val gemView = if(movement.startTile is CenterTile) {
+        val gemView = if (movement.startTile is CenterTile) {
             gemViews[movement.startTile.availableGems.size + 1 - 1]
         } else {
             gemViews[movement.positionOnStartTile]
@@ -863,7 +864,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         gemView.visual = Visual.EMPTY
 
-        if(!movement.didCollide && movement.endTile !is GateTile) {
+        if (!movement.didCollide && movement.endTile !is GateTile) {
             val endX = movement.endTile.xCoordinate
             val endY = movement.endTile.yCoordinate
 
@@ -871,7 +872,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             val endGemViews = gemMap.forward(endTileView)
             val endGemView = endGemViews[movement.positionOnEndTile]
 
-            val gemVisual = when(movement.gemType) {
+            val gemVisual = when (movement.gemType) {
                 GemType.AMBER -> ImageVisual(Constants.amberImage)
                 GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
                 GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
@@ -884,14 +885,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     override fun refreshAfterUndo(turn: Turn) {
         val game = rootService.currentGame
-        checkNotNull(game) {"game is null"}
+        checkNotNull(game) { "game is null" }
 
         // render reverted scores
         updatePlayerScores()
 
         // render old tile in hand
         val player = game.playerList[turn.playerID]
-        if(player.playHand.isNotEmpty()) {
+        if (player.playHand.isNotEmpty()) {
             val tileType = player.playHand[0].type
             playerHandList[turn.playerID].visual = ImageVisual(Constants.pathTileImageList[tileType])
             playerHandList[turn.playerID].rotation = player.playHand[0].rotationOffset * 60.0
@@ -912,7 +913,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         renderCollectedGemsForPlayer(player, turn.playerID)
 
         // update gem positions
-        for(movement in turn.gemMovements) {
+        for (movement in turn.gemMovements) {
 
             // put gem back on start tile
             val startX = movement.startTile.xCoordinate
@@ -921,13 +922,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
 
-            val gemView = if(movement.startTile is CenterTile) {
-                gemViews[movement.startTile.availableGems.size + 1 - 1]
+            val gemView = if (movement.startTile is CenterTile) {
+                gemViews[movement.startTile.availableGems.size - 1]
             } else {
                 gemViews[movement.positionOnStartTile]
             }
 
-            val gemVisual = when(movement.gemType) {
+            val gemVisual = when (movement.gemType) {
                 GemType.AMBER -> ImageVisual(Constants.amberImage)
                 GemType.EMERALD -> ImageVisual(Constants.emeraldImage)
                 GemType.SAPPHIRE -> ImageVisual(Constants.sapphireImage)
@@ -936,7 +937,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             gemView.visual = gemVisual
 
             // remove gem from endTile
-            if(!movement.didCollide && movement.endTile !is GateTile) {
+            if (!movement.didCollide && movement.endTile !is GateTile) {
                 val endX = movement.endTile.xCoordinate
                 val endY = movement.endTile.yCoordinate
                 val endView = tileMap.forward(Pair(endX, endY))
@@ -949,5 +950,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         tileView.clear()
         // remove entry from gemMap
         gemMap.removeForward(tileView)
+    }
+
+
+    override fun refreshConnectionState(newState: service.ConnectionState) {
+
+        if (newState == service.ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
+
+            rotateButton.isDisabled = true
+            rotateButton.isVisible = false
+
+
+
+        } else if (newState == service.ConnectionState.PLAYING_MY_TURN) {
+
+            rotateButton.isDisabled = false
+            rotateButton.isVisible = true
+
+            val client = rootService.networkService.client
+
+            if (client != null && client.playerType != PlayerType.NETWORKPLAYER && client.playerType != PlayerType.LOCALPLAYER) {
+
+
+            } else {
+
+
+
+            }
+
+        }
+
     }
 }
