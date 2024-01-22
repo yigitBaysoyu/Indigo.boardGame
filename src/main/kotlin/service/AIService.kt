@@ -8,7 +8,7 @@ import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.*
 
 class AIService(private val rootService: RootService) {
 
@@ -32,15 +32,17 @@ class AIService(private val rootService: RootService) {
 
         initializePossibleCoordinates(currentGame)
 
+        val possibleMoves = possibleMovesInGameState(currentGame)
+        if(possibleMoves.isEmpty()) return
+        println("Total moves: ${possibleMoves.size}")
+
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Pair<Int, Int>>? = null
+        var moveCounter = 0
 
         val maxDuration: Duration = 10000.milliseconds
         val startTime = System.currentTimeMillis()
-        var moveCounter = 0
 
-        val possibleMoves = possibleMovesInGameState(currentGame)
-        println("Total moves: ${possibleMoves.size}")
         for (move in possibleMoves) {
             if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
                 break
@@ -64,7 +66,9 @@ class AIService(private val rootService: RootService) {
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
                 playerIndex = currentGame.activePlayerID,
-                mainIndex = currentGame.activePlayerID
+                mainIndex = currentGame.activePlayerID,
+                startTime = startTime,
+                maxDuration = maxDuration
             )
             if (score > bestScore) {
                 bestScore = score
@@ -103,9 +107,13 @@ class AIService(private val rootService: RootService) {
         initialAlpha: Int,
         initialBeta: Int,
         playerIndex: Int,
-        mainIndex: Int
+        mainIndex: Int,
+        startTime: Long,
+        maxDuration: Duration
     ): Int {
-        if (depth == 0 || checkIfGameEnded(game)) {
+        if (depth == 0 || checkIfGameEnded(game)
+                       || (System.currentTimeMillis() - startTime).milliseconds > maxDuration)
+        {
             return evaluateGameState(game, mainIndex)
         }
 
@@ -123,7 +131,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = newGame.activePlayerID
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex, startTime, maxDuration)
                 maxEval = max(maxEval, evaluation)
                 alpha = max(alpha, evaluation)
                 if (beta <= alpha) {
@@ -142,7 +150,7 @@ class AIService(private val rootService: RootService) {
 
                 val newGame = placeTile(simGame, x, y)
                 val nextPlayerIndex = newGame.activePlayerID
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex)
+                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex, startTime, maxDuration)
                 minEval = min(minEval, evaluation)
                 beta = min(beta, evaluation)
                 if (beta <= alpha) {
@@ -208,15 +216,15 @@ class AIService(private val rootService: RootService) {
                 val end = movement.endTile
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score += 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score += 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score += 3
                 }
             }
@@ -226,15 +234,15 @@ class AIService(private val rootService: RootService) {
                 val end = movement.endTile
 
                 if(movement.gemType == GemType.AMBER &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score -= 1
                 }
                 if(movement.gemType == GemType.EMERALD &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score -= 2
                 }
                 if(movement.gemType == GemType.SAPPHIRE &&
-                    minDistance(game.getActivePlayer(), end) < minDistance(game.getActivePlayer(), start)){
+                    minDistance(game.getActivePlayer(), end) <= minDistance(game.getActivePlayer(), start)){
                     score -= 3
                 }
             }
@@ -323,7 +331,7 @@ class AIService(private val rootService: RootService) {
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
     private fun rotateTile(game : IndigoGame) {
-
+        rootService.gameService.checkIfGameEnded()
         val tile = game.playerList[game.activePlayerID].playHand[0]
 
         // map to store the new Connections
