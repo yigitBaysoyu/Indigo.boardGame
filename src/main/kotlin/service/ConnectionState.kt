@@ -53,12 +53,5 @@ enum class ConnectionState {
      */
     WAITING_FOR_OPPONENTS_TURN,
 
-    /**
-    *init received ready to start playing
-    */
-    READY_FOR_GAME,
-     /**
-    update connection state after game was initialized
-     */
-    GAME_STARTED
+
 }

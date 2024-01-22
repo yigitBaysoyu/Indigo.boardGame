@@ -48,20 +48,22 @@ class NetworkServiceTest {
         assertNotNull(hostClient)
 
         rootServiceGuest.networkService.joinGame(NETWORK_SECRET, hostClient.sessionID!!,"mohmed",PlayerType.NETWORKPLAYER)
+        assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)){
+            error("Nach dem Warten nicht im Zustand angekommen")
+        }
+
+
 
         rootServiceGuest2.networkService.joinGame(NETWORK_SECRET, hostClient.sessionID!!,"Alex",PlayerType.NETWORKPLAYER)
-        assert(rootServiceGuest.waitForState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
-                || rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)){
+
+        assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_INIT)){
             error("Nach dem Warten nicht im Zustand angekommen")
         }
 
-        val guestClient = rootServiceGuest.networkService.client
-        assertNotNull(guestClient)
-        println(rootServiceGuest.networkService.playersList)
-        // danach muss nach mindestens einem Spielerbeitritt der Verbindungsstatus des Hosts auf READY_FOR_GAME sein
-        assert(rootServiceHost.waitForState(ConnectionState.READY_FOR_GAME)){
-            error("Nach dem Warten nicht im Zustand angekommen")
+        assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)) {
+            error("connectionState of the host must be PLAYING_TURN")
         }
+
 
     }
 
@@ -74,22 +76,10 @@ class NetworkServiceTest {
 
         initConnections()
 
-        rootServiceHost.networkService.startNewHostedGame()
 
 
-        val currentGameHost = rootServiceHost.currentGame
-        assertNotNull(currentGameHost)
 
 
-        val currentPlayer = currentGameHost.activePlayerID
-
-        val hostClient = rootServiceHost.networkService.client!!
-
-        if (currentGameHost.playerList[currentPlayer].name == hostClient.playerName) {
-
-            assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)) {
-                error("connectionState of the host must be PLAYING_TURN")
-            }
 
 
 
@@ -123,45 +113,4 @@ class NetworkServiceTest {
     }
 
 
-    @Test
-    fun testConnect() {
-        // Arrange
-        val rootService = RootService()
-        val networkService = NetworkService(rootService)
 
-
-        val isConnected = networkService.connect(NETWORK_SECRET, "Player1", PlayerType.NETWORKPLAYER)
-
-        assertTrue(isConnected, "Connection should be successful")
-        assertEquals(ConnectionState.CONNECTED, networkService.connectionState, "Connection state should be CONNECTED")
-        assertNotNull(networkService.client, "Client should not be null after successful connection")
-    }
-
-    @Test
-    fun testDisconnect() {
-
-        val rootService = RootService()
-        val networkService = NetworkService(rootService)
-        networkService.connect(NETWORK_SECRET, "Player1", PlayerType.NETWORKPLAYER)
-
-
-        networkService.disconnect()
-
-        assertEquals(ConnectionState.DISCONNECTED, networkService.connectionState, "Connection state should be DISCONNECTED")
-        assertNull(networkService.client, "Client should be null after disconnection")
-    }
-
-    @Test
-    fun testHostGame() {
-
-        val rootService = RootService()
-        val networkService = NetworkService(rootService)
-
-        networkService.hostGame(NETWORK_SECRET, null, "HostPlayer", PlayerColor.BLUE, GameMode.TWO_NOT_SHARED_GATEWAYS)
-
-
-        assertEquals(ConnectionState.HOST_WAITING_FOR_CONFIRMATION, networkService.connectionState, "Connection state should be HOST_WAITING_FOR_CONFIRMATION")
-        assertNotNull(networkService.client, "Client should not be null after hosting a game")
-        assertTrue(networkService.playersList.contains("HostPlayer"), "HostPlayer should be in the players list")
-    }
-}

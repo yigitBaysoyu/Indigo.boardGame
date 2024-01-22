@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Player(
     val name: String = "",
-    val color: Int = 0,
+    var color: Int = 0,
     val playerType: PlayerType = PlayerType.LOCALPLAYER,
     var score: Int = 0,
     var amountOfGems: Int = 0,
