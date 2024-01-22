@@ -248,17 +248,18 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             deleteDummyData
         )
     }
-
-    // a refreshable for the moment when the game is ready to play
-    private fun refreshAfterGameIsReady() {
-        startButton.isDisabled = false
-    }
-    // or just use this method ? question the ConnectionStates
-    override fun refreshConnectionState(newState: ConnectionState){
-        if(newState == ConnectionState.READY_FOR_GAME) {
+    /*
+        // a refreshable for the moment when the game is ready to play
+        private fun refreshAfterGameIsReady() {
             startButton.isDisabled = false
         }
-    }
+
+        // or just use this method ? question the ConnectionStates
+        override fun refreshConnectionState(newState: ConnectionState){
+            if(newState == ConnectionState.READY_FOR_GAME) {
+                startButton.isDisabled = false
+            }
+        }*/
     
     private fun handleStartClick() {
         rootService.networkService.startNewHostedGame()

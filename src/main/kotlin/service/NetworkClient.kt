@@ -75,7 +75,8 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      * Handle a [GameActionResponse] sent by the server. Does nothing when its
      * status is [GameActionResponseStatus.SUCCESS]. As recovery from network problems is not
      * [IllegalStateException] otherwise.
-     */
+
+
     override fun onGameActionResponse(response: GameActionResponse) {
         BoardGameApplication.runOnGUIThread {
             check(networkService.connectionState == ConnectionState.PLAYING_MY_TURN ||
@@ -88,7 +89,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             }
         }
     }
-
+       */
 
 
     /**
@@ -100,9 +101,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
 
-            check(networkService.connectionState == ConnectionState.WAITING_FOR_GUESTS ||
-                    networkService.connectionState == ConnectionState.READY_FOR_GAME)
-            { "not expecting any guests to join!" }
+
 
             val players = networkService.playersList
 
@@ -127,15 +126,17 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 var newGuest = Player(notification.sender, lastColor)
                 networkService.players_list.add(newGuest)
                 colorList.removeAt(colorList.lastIndex)
+
             }else {
                 error("maximum number of players has been reached.")
             }
 
-            // update the connection state if minimum 2 players exist.
-            if (players.size in 2..numPlayers)
-                if (networkService.connectionState != ConnectionState.READY_FOR_GAME) {
-                    networkService.updateConnectionState(ConnectionState.READY_FOR_GAME)
-                }
+            println( players.size)
+            if (players.size == numPlayers){
+
+            networkService.startNewHostedGame()
+            }
+
 
 
         }
@@ -149,13 +150,16 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onInitReceived(message: GameInitMessage, sender: String) {
-        check(networkService.connectionState == ConnectionState.WAITING_FOR_INIT)
+        check(networkService.connectionState == ConnectionState.WAITING_FOR_INIT )
         { "Not waiting for initMessage." }
 
         BoardGameApplication.runOnGUIThread {
+
             networkService.startNewJoinedGame(
                 message = message,
-            )
+
+                )
+
         }
 
     }
@@ -163,7 +167,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
-        check(networkService.connectionState == ConnectionState.WAITING_FOR_INIT)
+        check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
         BoardGameApplication.runOnGUIThread {
             networkService.tilePlacedMessage(message, sender)

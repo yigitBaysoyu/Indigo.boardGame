@@ -14,7 +14,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     var connectionState: ConnectionState = ConnectionState.DISCONNECTED
     var playersList: MutableList<String> = mutableListOf()
-
     var threePlayerVariant: Boolean = false
 
     companion object {
@@ -80,8 +79,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             error("Connection failed")
         }
 
-        // updateConnectionState(ConnectionState.CONNECTED) moved to the methode connect
-
+        updateConnectionState(ConnectionState.CONNECTED)
         val networkClient = checkNotNull(client){"No client connected."}
         networkClient.joinGame(sessionID, "Hello!")
         updateConnectionState(ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
@@ -94,13 +92,15 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     fun startNewHostedGame() {
 
-        check(connectionState == ConnectionState.READY_FOR_GAME)
+        check(connectionState == ConnectionState.WAITING_FOR_GUESTS)
         { "currently not prepared to start a new hosted game." }
         val players = this.playersList
 
         // playerNames
         val player = players.map { entity.Player( name = it)}.toMutableList()
-
+        for (i in players.indices) {
+            player[i].color = i
+        }
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
 
@@ -110,29 +110,49 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         sendGameInitMessage()
 
         val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+        println(currentGame.drawPile)
+
         checkNotNull(currentGame) { "game should not be null right after starting it." }
 
         val networkClient = checkNotNull(client){"No client connected."}
 
-        for(player in players) {
-            currentGame.playerList[currentGame.activePlayerID].playHand.clear()
-            currentGame.playerList[currentGame.activePlayerID].playHand.add(currentGame.drawPile.removeLast())
+        for(player in player) {
+            player.playHand.clear()
+            player.playHand.add(currentGame.drawPile.removeLast())
+        }
+        val playerNames = player.map { it.name }
+        val index = playerNames.indexOf(client!!.playerName)
+
+        if( index == 0) {
+            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        }else{
+            updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
         }
 
-        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
-            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
-        else
-            updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+           // SEHR WICHTIG : von hier kann man die KI aktivieren ( es wurde nicht aktiviert WEIL KI Noch NICHT Fertig)
+          // BITTE auch dasselbe aktivieren in  startNewJoinedGame aktivieren
 
-        /**
-        // hier kommt die Ki implementierung
-         */
+        /*
+
+        if ( connectionState == ConnectionState.PLAYING_MY_TURN ){
+
+            when (client!!.playerType){
+
+                PlayerType.SMARTAI -> {rootService.aiService.calculateNextTurn()}
+                PlayerType.RANDOMAI -> {rootService.aiService.randomNextTurn()}
+                else -> {}
+            }
+        }
+
+        */
+
 
     }
     /**
-    * This methode sends [GameInitMessage] to server
-    * @throws IllegalStateException when players is not yet initialized
-    */
+     * This methode sends [GameInitMessage] to server
+     * @throws IllegalStateException when players is not yet initialized
+     */
 
     private fun sendGameInitMessage(){
         val game = checkNotNull(rootService.currentGame) {"Game not found"}
@@ -164,6 +184,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             }
         }.toMutableList()
 
+
+
+
         // create game GameInitMessage
         val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(players_list, gameMode , formatedDrawPile)
 
@@ -171,10 +194,39 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val networkClient = checkNotNull(client){"No client connected."}
         networkClient.sendGameActionMessage(initMessage)
 
-        updateConnectionState(ConnectionState.GAME_STARTED)
+
     }
 
+    private fun extractDrawPile(message: GameInitMessage): MutableList<PathTile> {
+        val drawPile = mutableListOf<PathTile>()
+        for(tileType in message.tileList) {
+            drawPile.add(tileTypeToPathTile(tileType))
+        }
+        return drawPile
+    }
+    private fun tileTypeToPathTile(type: TileType): PathTile {
+        val lines = rootService.gameService.loadTilesCsv()
 
+        val typeAsInt = when(type) {
+            TileType.TYPE_0 -> 0
+            TileType.TYPE_1 -> 1
+            TileType.TYPE_2 -> 2
+            TileType.TYPE_3 -> 3
+            TileType.TYPE_4 -> 4
+        }
+
+        val splitLine = lines[typeAsInt].split(";")
+        val map: MutableMap<Int, Int> = mutableMapOf()
+
+        //Create connections map going both ways
+        for (i in 2 until splitLine.size step 2) {
+            map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
+            map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
+        }
+
+        val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
+        return pathTile
+    }
     fun startNewJoinedGame(message: edu.udo.cs.sopra.ntf.GameInitMessage) {
 
         // check if we are waiting for gameInitMessage. if not then there is no game to start
@@ -183,39 +235,49 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         val networkClient = checkNotNull(client){"No client connected."}
 
-        val playerTypes:MutableList<PlayerType> = mutableListOf()
-        for (playerInfo in message.players){
-            if (playerInfo.name == networkClient.playerName)
-                playerTypes.add(networkClient.playerType)
-            else
-                playerTypes.add(PlayerType.NETWORKPLAYER)
+        val players = message.players
+        val player = players.map { entity.Player( name = it.name)}.toMutableList()
+        for (i in players.indices) {
+            player[i].color = i
         }
 
-        val players:MutableList<String> = mutableListOf()
-        message.players.forEach { players.add(it.name) }
-
-
-        val player = players.map { entity.Player( name = it)}.toMutableList()
-
         // start new game and give the supply as a parameter.
-        rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
+        rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true, )
+        var game = rootService.currentGame
+        checkNotNull(game)
+        val playerNames = players.map { it.name }
+        val index = playerNames.indexOf(client!!.playerName)
 
-        // update connection state after game was initialized
+        game.drawPile = extractDrawPile(message)
 
-        updateConnectionState(ConnectionState.GAME_STARTED)
+        for (player in player) {
+            player.playHand.clear()
+            player.playHand.add(game.drawPile.removeLast())
+        }
 
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
-        {"game is not yet initialized!"}
-
-
-        if (currentGame.playerList[currentGame.activePlayerID].name == networkClient.playerName)
+        if( index == 0) {
             updateConnectionState(ConnectionState.PLAYING_MY_TURN)
-        else
+        }else{
             updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+        }
+
 
         /**
-        // hier kommt die Ki implementierung
+        // hier muss auch die Ki implementierung aktiveret werden
+
+        /*
+
+        if ( connectionState == ConnectionState.PLAYING_MY_TURN ){
+
+        when (client!!.playerType){
+
+        PlayerType.SMARTAI -> {rootService.aiService.calculateNextTurn()}
+        PlayerType.RANDOMAI -> {rootService.aiService.randomNextTurn()}
+        else -> {}
+        }
+        }
+
+        */
          */
 
 
@@ -231,7 +293,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @throws IllegalStateException when ConnectionState is not [ConnectionState.DISCONNECTED]
      * @throws IllegalArgumentException when secret or name is blank
      */
-     fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
+    fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
 
         require(connectionState == ConnectionState.DISCONNECTED && client == null)
         { "already connected to another game" }
@@ -250,7 +312,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         return if (newClient.connect()) {
             this.client = newClient
-            updateConnectionState(ConnectionState.CONNECTED)
             // update connection setate to connected.
             true
         } else {
@@ -269,13 +330,25 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
-        val rotationSteps = message.rotation / 60
+
+        check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+        val rotationSteps = message.rotation
 
         // Rotate the tile the required number of times
         for (i in 1..rotationSteps) {
             rootService.playerService.rotateTile()
         }
-        rootService.playerService.placeTile(message.rcoordinate,message.qcoordinate)
+        var game = rootService.currentGame
+        checkNotNull(game)
+        val networkClient = checkNotNull(client){"No client connected."}//
+        rootService.playerService.placeTile(message.qcoordinate,message.rcoordinate)
+
+        if (game.playerList[game.activePlayerID].name == networkClient.playerName){
+
+            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+        }
+
+
 
     }
 
