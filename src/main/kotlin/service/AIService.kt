@@ -19,7 +19,7 @@ class AIService(private val rootService: RootService) {
      *  It utilizes the minimax function to evaluate and choose the move that
      *  maximizes the AI's position in the game.
      */
-    fun calculateNextTurn() {
+    suspend fun calculateNextTurn() {
         println("Starting calculation")
         val gameService = rootService.gameService
         val playerService = rootService.playerService
@@ -36,13 +36,54 @@ class AIService(private val rootService: RootService) {
         if(possibleMoves.isEmpty()) return
         println("Total moves: ${possibleMoves.size}")
 
+        var bestMove: Pair<Int, Pair<Int, Int>>
+        val availableProcessors = Runtime.getRuntime().availableProcessors()
+
+        var chunkedBy = possibleMoves.size / availableProcessors
+        if(chunkedBy == 0) chunkedBy = 1
+        val dividedMoves = possibleMoves.chunked(chunkedBy)
+
+        coroutineScope{
+            //Map each chunk of moves to a thread and use Default Dispatcher to assure time limit is held
+            val moves = dividedMoves.map { moves ->
+                async(Dispatchers.Default){
+                    calculateBestMove(moves)
+                }
+            }
+            //Wait for all Threads to finish
+            val result = moves.awaitAll()
+            var bestResult = result.first()
+            println("First result: ${bestResult.first}")
+            for(i in 1 until result.size){
+                //println("$i Result : ${result[i].first}")
+                if(result[i].first > bestResult.first){
+                    bestResult = result[i]
+                }
+            }
+            println("bestscore: ${bestResult.first}")
+            bestMove = bestResult.second
+        }
+
+        println("bestMove: $bestMove")
+        // Execute the best move
+        for (i in 1..bestMove.first) playerService.rotateTile()
+        val x = bestMove.second.first
+        val y = bestMove.second.second
+
+        playerService.placeTile(x, y)
+    }
+
+    private fun calculateBestMove(possibleMoves: List<Pair<Int, Pair<Int, Int>>>):
+            Pair<Int,Pair<Int, Pair<Int, Int>>> {
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Pair<Int, Int>>? = null
         var moveCounter = 0
 
         val maxDuration: Duration = 10000.milliseconds
         val startTime = System.currentTimeMillis()
-
         for (move in possibleMoves) {
             if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
                 break
@@ -62,7 +103,7 @@ class AIService(private val rootService: RootService) {
             // Evaluate the move
             val score = minimax(
                 newGame,
-                depth = 3,
+                depth = 2,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
                 playerIndex = currentGame.activePlayerID,
@@ -75,17 +116,13 @@ class AIService(private val rootService: RootService) {
                 bestMove = Pair(rotation, Pair(x, y))
             }
         }
+
+        println("Did $moveCounter out of ${possibleMoves.size} possible moves")
         checkNotNull(bestMove)
-        println("bestMove: $bestMove with score: $bestScore")
-        // Execute the best move
-        for (i in 1..bestMove.first) playerService.rotateTile()
-        val x = bestMove.second.first
-        val y = bestMove.second.second
-        println("moveCounter: $moveCounter")
-        playerService.placeTile(x, y)
+        return Pair(bestScore, bestMove)
     }
 
-    /**
+        /**
      *  The minimax function is a recursive algorithm used for optimizing the move of the AI player.
      *  Function evaluates the best possible move for the AI player in the game "Indigo",
      *  considering multiple players.
@@ -256,7 +293,7 @@ class AIService(private val rootService: RootService) {
         val simGame : IndigoGame = game.deepCopy()
         val nextGame = placeTile(simGame, x, y)
 
-        val tile = nextGame.undoStack.last().placedTile
+        //val tile = nextGame.undoStack.last().placedTile
 
         val gemMovements = nextGame.undoStack.last().gemMovements
 
@@ -747,7 +784,6 @@ class AIService(private val rootService: RootService) {
         }
         return Pair(tile, currentConnection)
     }
-
 
     /**
      * Function which focuses on checking whether there are collisions between
