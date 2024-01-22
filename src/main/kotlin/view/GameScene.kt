@@ -1,8 +1,9 @@
 package view
 
-
 import entity.*
+import kotlinx.coroutines.runBlocking
 import service.RootService
+import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
 import tools.aqua.bgw.components.ComponentView
 import tools.aqua.bgw.components.container.Area
@@ -24,6 +25,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 import service.ConnectionState
+import kotlin.system.measureTimeMillis
 
 /**
  * Displays the actual gameplay.
@@ -361,6 +363,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
 
         setButtonsIfNetworkGame()
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        when(currentGame.playerList[0].playerType){
+            PlayerType.RANDOMAI -> {
+                rootService.aiService.randomNextTurn()
+            }
+            PlayerType.SMARTAI -> {
+                val timeTaken = measureTimeMillis {
+                    //Blocking current Thread until coroutine in calculateNextTurn() is finished
+                    runBlocking {
+                        rootService.aiService.calculateNextTurn()
+                    }
+                }
+                println("Took : ${timeTaken/1000} sec")
+            }
+            else -> return
+        }
     }
 
     private fun setButtonsIfNetworkGame() {
@@ -794,8 +814,28 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val view = tileMap.forward(Pair(x, y))
 
         val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
-        view.visual = newVisual
+
         view.rotation = tile.rotationOffset * 60.0
+
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        //Delay the placement of random tile
+        if(currentGame.playerList[turn.playerID].playerType == PlayerType.RANDOMAI){
+            val gameScene = this
+            gameScene.lock()
+            this.playAnimation(
+                DelayAnimation(500).apply {
+                    onFinished = {
+                        view.visual = newVisual
+                        gameScene.unlock()
+                    }
+                }
+            )
+        }
+        else{
+            view.visual = newVisual
+        }
 
         renderGemsForPathOrTreasureTile(tile, view)
 

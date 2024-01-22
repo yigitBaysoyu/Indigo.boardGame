@@ -1,5 +1,6 @@
 package service
 import entity.*
+import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -7,6 +8,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
+import kotlin.system.measureTimeMillis
 
 
 /**
@@ -235,7 +237,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-
+        println("Ende kein empty tile")
         return false
     }
 
@@ -1008,5 +1010,33 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         game.simulationSpeed = newSpeed
 
         onAllRefreshables { refreshAfterSimulationSpeedChange(newSpeed) }
+    }
+
+    /**
+     * Function which simply switches the player and allows
+     * for additional features to be added in between turns
+     * Also checks if the game has ended
+     */
+    fun switchPlayer(){
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame)
+
+        checkIfGameEnded()
+        currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
+
+        when(currentGame.getActivePlayer().playerType){
+            PlayerType.RANDOMAI -> {
+                rootService.aiService.randomNextTurn()
+            }
+            PlayerType.SMARTAI -> {
+                val timeTaken = measureTimeMillis {
+                    runBlocking {
+                        rootService.aiService.calculateNextTurn()
+                    }
+                }
+                println("Took : ${timeTaken/1000} sec")
+            }
+            else -> return
+        }
     }
 }
