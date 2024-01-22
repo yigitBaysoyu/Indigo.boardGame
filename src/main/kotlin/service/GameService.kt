@@ -43,11 +43,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
+        if (isNetworkGame ==false){
+            for(player in players) {
+                player.playHand.clear()
+                player.playHand.add(drawPile.removeLast())
+            } }
 
-        for(player in players) {
-            player.playHand.clear()
-            player.playHand.add(drawPile.removeLast())
-        }
 
         setDefaultGameLayout()
         setSimulationSpeed(simulationSpeed)
@@ -121,65 +122,65 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Only used as helper function in setDefaultGameLayout.
      * Fills the GameLayout with the correct treasureTiles to start a new Game.
      */
-     private fun  setTreasureTiles(){
-         val treasureTile1 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 0, xCoordinate = 4, yCoordinate = 0,
-             gemPositions = mutableListOf(
-                 GemType.NONE, GemType.NONE, GemType.NONE,
-                 GemType.NONE, GemType.AMBER, GemType.NONE )
-         )
-         setTileFromAxialCoordinates(4, 0, treasureTile1)
+    private fun  setTreasureTiles(){
+        val treasureTile1 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 0, xCoordinate = 4, yCoordinate = 0,
+            gemPositions = mutableListOf(
+                GemType.NONE, GemType.NONE, GemType.NONE,
+                GemType.NONE, GemType.AMBER, GemType.NONE )
+        )
+        setTileFromAxialCoordinates(4, 0, treasureTile1)
 
-         val treasureTile2 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 1, xCoordinate = 0, yCoordinate = 4,
-             gemPositions = mutableListOf(
-                 GemType.NONE, GemType.NONE, GemType.NONE,
-                 GemType.NONE, GemType.NONE, GemType.AMBER )
-         )
-         rotateConnections(treasureTile2)
-         setTileFromAxialCoordinates(0, 4, treasureTile2)
+        val treasureTile2 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 1, xCoordinate = 0, yCoordinate = 4,
+            gemPositions = mutableListOf(
+                GemType.NONE, GemType.NONE, GemType.NONE,
+                GemType.NONE, GemType.NONE, GemType.AMBER )
+        )
+        rotateConnections(treasureTile2)
+        setTileFromAxialCoordinates(0, 4, treasureTile2)
 
-         val treasureTile3 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 2, xCoordinate = -4, yCoordinate = 4,
-             gemPositions = mutableListOf(
-                 GemType.AMBER, GemType.NONE, GemType.NONE,
-                 GemType.NONE, GemType.NONE, GemType.NONE )
-         )
-         rotateConnections(treasureTile3)
-         setTileFromAxialCoordinates(-4, 4, treasureTile3)
+        val treasureTile3 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 2, xCoordinate = -4, yCoordinate = 4,
+            gemPositions = mutableListOf(
+                GemType.AMBER, GemType.NONE, GemType.NONE,
+                GemType.NONE, GemType.NONE, GemType.NONE )
+        )
+        rotateConnections(treasureTile3)
+        setTileFromAxialCoordinates(-4, 4, treasureTile3)
 
-         val treasureTile4 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 3, xCoordinate = -4, yCoordinate = 0,
-             gemPositions = mutableListOf(
-                 GemType.NONE, GemType.AMBER, GemType.NONE,
-                 GemType.NONE, GemType.NONE, GemType.NONE )
-         )
-         rotateConnections(treasureTile4)
-         setTileFromAxialCoordinates(-4, 0, treasureTile4)
+        val treasureTile4 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 3, xCoordinate = -4, yCoordinate = 0,
+            gemPositions = mutableListOf(
+                GemType.NONE, GemType.AMBER, GemType.NONE,
+                GemType.NONE, GemType.NONE, GemType.NONE )
+        )
+        rotateConnections(treasureTile4)
+        setTileFromAxialCoordinates(-4, 0, treasureTile4)
 
-         val treasureTile5 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 4, xCoordinate = 0, yCoordinate = -4,
-             gemPositions = mutableListOf(
-                 GemType.NONE, GemType.NONE, GemType.AMBER,
-                 GemType.NONE, GemType.NONE, GemType.NONE )
-         )
-         rotateConnections(treasureTile5)
-         setTileFromAxialCoordinates(0, -4, treasureTile5)
+        val treasureTile5 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 4, xCoordinate = 0, yCoordinate = -4,
+            gemPositions = mutableListOf(
+                GemType.NONE, GemType.NONE, GemType.AMBER,
+                GemType.NONE, GemType.NONE, GemType.NONE )
+        )
+        rotateConnections(treasureTile5)
+        setTileFromAxialCoordinates(0, -4, treasureTile5)
 
-         val treasureTile6 = TreasureTile(
-             connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
-             rotationOffset = 5, xCoordinate = 4, yCoordinate = -4,
-             gemPositions = mutableListOf(
-                 GemType.NONE, GemType.NONE, GemType.NONE,
-                 GemType.AMBER, GemType.NONE, GemType.NONE )
-         )
-         rotateConnections(treasureTile6)
-         setTileFromAxialCoordinates(4, -4, treasureTile6)
+        val treasureTile6 = TreasureTile(
+            connections = mutableMapOf(Pair(3, 5), Pair(5, 3), Pair(4, 4)),
+            rotationOffset = 5, xCoordinate = 4, yCoordinate = -4,
+            gemPositions = mutableListOf(
+                GemType.NONE, GemType.NONE, GemType.NONE,
+                GemType.AMBER, GemType.NONE, GemType.NONE )
+        )
+        rotateConnections(treasureTile6)
+        setTileFromAxialCoordinates(4, -4, treasureTile6)
     }
 
     /**
@@ -342,7 +343,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * @param threePlayerVariant if false gates are alternated between players,
      * else each player has one exclusive gate and shares two with others.
      */
-     private fun setGates(threePlayerVariant: Boolean) {
+    private fun setGates(threePlayerVariant: Boolean) {
         val game = rootService.currentGame
         checkNotNull(game)
 
@@ -490,15 +491,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      *
      * @return [MutableList]<[PathTile]> containing all created Tiles
      */
+
     private fun loadTiles(): MutableList<PathTile> {
-        val file = GameService::class.java.getResource("/tiles.csv")
-        checkNotNull(file) { "No file in defined position" }
-
-        val bufferedReader = BufferedReader(InputStreamReader(file.openStream()))
-        val lines = bufferedReader.readLines().toMutableList()
-
-        lines.removeAt(0)   //Remove header line
-
+        val lines = loadTilesCsv()
         val playingTiles: MutableList<PathTile> = mutableListOf()
 
         for (line in lines) {
@@ -512,12 +507,23 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
 
             for (i in 0 until splitLine[1].toInt()) {
-                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf(), splitLine[0].toInt()))
+                playingTiles.add(PathTile(map, 0, 0, 0, mutableListOf(),
+                    splitLine[0].toInt()))
             }
         }
         return playingTiles
     }
+    fun loadTilesCsv(): MutableList<String> {
+        val file = GameService::class.java.getResource("/tiles.csv")
+        checkNotNull(file) { "No file in defined position" }
 
+        val bufferedReader = BufferedReader(InputStreamReader(file.openStream()))
+        val lines = bufferedReader.readLines().toMutableList()
+
+        lines.removeAt(0)   //Remove header line
+
+        return lines
+    }
     /**
      * Loads the current Game from the saveGame.ser file, this is achieved through the kotlinx serializable interface,
      * where the text in the file will be decoded into a Game Object
@@ -539,7 +545,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout 2d List,
+     * Checks if Axial Coordinates are valid. Coordinates are invalid if they are out of bounds of the gameLayout
+     * 2d List,
      * and if they are not inside the hexagonal play area.
      */
     fun checkIfValidAxialCoordinates(x: Int, y: Int): Boolean {

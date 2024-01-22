@@ -21,7 +21,7 @@ data class IndigoGame(
     val redoStack: ArrayDeque<Pair<Pair<Int,Int>,Int>> = ArrayDeque(),
     val playerList: MutableList<Player> = mutableListOf(),
     val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
-    val drawPile: MutableList<PathTile> = mutableListOf(),
+    var drawPile: MutableList<PathTile> = mutableListOf(),
     val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 ) {
     /**

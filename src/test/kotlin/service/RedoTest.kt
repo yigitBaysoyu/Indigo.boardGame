@@ -11,7 +11,9 @@ class RedoTest {
 
     private lateinit var gameService: GameService
     private lateinit var rootService: RootService
-
+    /**
+    * setUp stellt die benötigten Dienste bereit
+    */
     @BeforeEach
     fun setUp() {
         rootService = RootService()
