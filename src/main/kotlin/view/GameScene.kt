@@ -25,6 +25,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 import service.ConnectionState
+import tools.aqua.bgw.event.KeyCode
 import kotlin.system.measureTimeMillis
 
 /**
@@ -341,7 +342,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         )
 
         this.onKeyPressed = keyHandler@{
-            if(it.keyCode.name != "R") return@keyHandler
+            if(it.keyCode != KeyCode.R) return@keyHandler
 
             val game = rootService.currentGame
             checkNotNull(game) { "game is null" }
