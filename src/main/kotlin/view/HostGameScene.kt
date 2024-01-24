@@ -192,36 +192,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         isVisible = false
     }
 
-    private val addDummyDataButton = Button(
-        width = 350, height = 75,
-        posX = halfWidth - 730, posY = 900,
-        text = "add dummy data",
-        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
-        visual = Visual.EMPTY
-    ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
-            refreshAfterPlayerJoined("nick")
-            refreshAfterPlayerJoined("tom")
-            refreshAfterPlayerJoined("Alex")
-
-        }
-    }
-
-    private val deleteDummyData = Button(
-        width = 350, height = 75,
-        posX = halfWidth + 375, posY = 900,
-        text = "delete dummy data",
-        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
-        visual = Visual.EMPTY
-    ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
-            refreshAfterPlayerLeft(2)
-
-        }
-    }
-
     init {
         background = Constants.sceneBackgroundColorVisual
 
@@ -244,8 +214,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             startButton,
             randomOrderCheckbox,
             threePlayerVariantCheckBox,
-            addDummyDataButton,
-            deleteDummyData
         )
     }
     /*
