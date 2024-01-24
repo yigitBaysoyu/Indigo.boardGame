@@ -278,6 +278,37 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
+    private val returnToMenuWarning = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 1020 + menuAreaOffsetY,
+        text = "Progress will be lost!",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val returnToMenuButtonBackground = Button(
+        width = 300 + 50, height = 65 + 30,
+        posX = menuAreaMargin - 25, posY = 1070 + menuAreaOffsetY - 15,
+        visual = Visual.EMPTY
+    ).apply {
+        onMouseEntered = { returnToMenuWarning.isVisible = true }
+        onMouseExited = { returnToMenuWarning.isVisible = false }
+    }
+
+    val returnToMenuButton = Button(
+        width = 300, height = 65,
+        posX = menuAreaMargin, posY = 1070 + menuAreaOffsetY,
+        text = "Return to Menu",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseEntered = { returnToMenuWarning.isVisible = true }
+        onMouseExited = { returnToMenuWarning.isVisible = false }
+    }
+
     val quitGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 1150 + menuAreaOffsetY,
@@ -337,6 +368,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             redoButton,
             saveGameButton,
             loadGameButton,
+            returnToMenuWarning,
+            returnToMenuButtonBackground,
+            returnToMenuButton,
             quitGameButton,
             menuAreaArrow
         )
@@ -348,7 +382,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             checkNotNull(game) { "game is null" }
 
             if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) return@keyHandler
-
             rootService.playerService.rotateTile()
         }
     }

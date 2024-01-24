@@ -48,6 +48,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         gameEndedScene.quitButton.onMouseClicked = { exit() }
         gameEndedScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
         gameScene.quitGameButton.onMouseClicked = { exit() }
+        gameScene.returnToMenuButton.onMouseClicked = { showMenuScene(mainMenuScene) }
         startGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene) }
 
         showGameScene(gameScene)
