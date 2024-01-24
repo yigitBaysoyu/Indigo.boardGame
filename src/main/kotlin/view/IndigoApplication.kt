@@ -10,7 +10,6 @@ import tools.aqua.bgw.core.WindowMode
 /**
  * Implementation of the Indigo game using BoardGameWork.
  */
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode = WindowMode.FULLSCREEN), Refreshable {
 
     // Central service from which all others are created/accessed
@@ -23,7 +22,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
-     private val NETWORK_SECRET = "game23d"
+     private val networkSecret = "game23d"
 
     init {
         // all scenes and the application itself need to
@@ -73,7 +72,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         val sessionID = mainMenuScene.sessionIDInput.text
         val hostname = mainMenuScene.nameInput.text
-        rootService.networkService.hostGame(NETWORK_SECRET, sessionID,
+        rootService.networkService.hostGame(networkSecret, sessionID,
             hostname, PlayerColor.WHITE, gameMode)
         hostGameScene.hostName = hostname
         hostGameScene.resetAllComponents()
@@ -89,7 +88,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             2 -> PlayerType.SMARTAI
             else -> PlayerType.LOCALPLAYER
         }
-        rootService.networkService.joinGame(NETWORK_SECRET, sessionID, name, playerType)
+        rootService.networkService.joinGame(networkSecret, sessionID, name, playerType)
         showMenuScene(joinGameScene)
     }
 }
