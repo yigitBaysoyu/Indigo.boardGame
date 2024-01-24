@@ -672,6 +672,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val game = rootService.currentGame
         checkNotNull(game) { "no active game" }
+
+        // If Player cant place a tile because he is not a Local Player, don't show tile shadow
+        if(game.playerList[game.activePlayerID].playerType != PlayerType.LOCALPLAYER) {
+            return
+        }
+
         val tileInPlayersHand = game.playerList[game.activePlayerID].playHand[0]
 
         val hoverTileVisual = ImageVisual(Constants.pathTileImageList[tileInPlayersHand.type])
