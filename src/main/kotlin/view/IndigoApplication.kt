@@ -20,7 +20,6 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val mainMenuScene = MainMenuScene(rootService)
      private val gameScene = GameScene(rootService)
      private val startGameScene = StartGameScene(rootService)
-     private val loadGameScene = LoadGameScene(rootService)
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
@@ -34,7 +33,6 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             mainMenuScene,
             gameScene,
             startGameScene,
-            loadGameScene,
             hostGameScene,
             joinGameScene,
             gameEndedScene
@@ -43,7 +41,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
-        mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
+        mainMenuScene.loadGameButton.onMouseClicked = { /* TODO */ }
         mainMenuScene.hostGameButton.onMouseClicked = { hostGameLogic() }
         mainMenuScene.joinGameButton.onMouseClicked = { joinGameLogic() }
         hostGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}

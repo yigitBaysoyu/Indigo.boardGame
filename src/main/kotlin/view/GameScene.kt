@@ -68,7 +68,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val cornersBackground = TokenView(
         posX = 0, posY = 0,
-        width = 1920, height = 1080,
+        width = sceneWidth, height = sceneHeight,
         visual = ImageVisual(Constants.cornersBackground)
     )
 

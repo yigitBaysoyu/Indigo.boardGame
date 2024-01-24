@@ -14,12 +14,20 @@ import java.awt.Color
 /**
  * Displays the Main Menu of the Indigo Game
  */
-class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080), Refreshable {
+class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
-    private val sceneWidth = 1920
+    private val sceneWidth = Constants.SCENE_WIDTH
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
     private val offsetY = -90 // Used to Position all Elements vertically
-    private val offsetX = 50
+
+    private val cornersBackground = Button(
+        posX = 0, posY = 0,
+        width = sceneWidth, height = sceneHeight,
+        visual = ImageVisual(Constants.cornersBackground)
+    ).apply {
+        isDisabled = true
+    }
 
     private val localLabel = Label(
         width = 350, height = 75,
@@ -239,6 +247,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         background = Constants.sceneBackgroundColorVisual
 
         addComponents(
+            cornersBackground,
             localLabel,
             newGameButton,
             loadGameButton,
