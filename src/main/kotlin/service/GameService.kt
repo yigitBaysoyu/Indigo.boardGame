@@ -462,14 +462,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     }
                     else -> Unit // do nothing
                 }
-
             }
         }
 
         if (allGemsRemoved || allTilesPlaced ) {
             onAllRefreshables { refreshAfterEndGame() }
         }
-
     }
 
 
@@ -611,8 +609,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
 
     fun moveGems(turn: Turn): Turn{
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame){"No active Game"}
+        val currentGame = checkNotNull(rootService.currentGame){"No active Game"}
         val tile = turn.placedTile
 
         //Getting neighbours according to connection
@@ -637,8 +634,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is CenterTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is GateTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is TreasureTile -> collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
-                is EmptyTile -> 1+1 // do nothing
-                is InvisibleTile -> 1+1 // do nothing
+                is EmptyTile -> Unit // do nothing
+                is InvisibleTile -> Unit // do nothing
             }
         }
         createGemMovements(turn, neighbours)

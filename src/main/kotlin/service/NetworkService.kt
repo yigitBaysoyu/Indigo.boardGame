@@ -1,6 +1,5 @@
 package service
 import entity.*
-import tools.aqua.bgw.net.common.Message
 import view.*
 import java.lang.IllegalStateException
 import edu.udo.cs.sopra.ntf.*
@@ -245,7 +244,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
 
         // start new game and give the supply as a parameter.
-        rootService.gameService.startNewGame(player,ThreePlayer(message), simulationSpeed = simulationSpeed , isNetworkGame = true, )
+        rootService.gameService.startNewGame(player,extractThreePlayerVariant(message), simulationSpeed = simulationSpeed , isNetworkGame = true, )
         var game = rootService.currentGame
         checkNotNull(game)
         val playerNames = players.map { it.name }
@@ -292,7 +291,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     }
-       private fun ThreePlayer(message: GameInitMessage): Boolean {
+       private fun extractThreePlayerVariant(message: GameInitMessage): Boolean {
         val threePlayerVariant = when(message.gameMode) {
             GameMode.THREE_SHARED_GATEWAYS -> true
             GameMode.TWO_NOT_SHARED_GATEWAYS -> false
