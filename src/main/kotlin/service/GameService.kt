@@ -650,8 +650,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is InvisibleTile -> 1+1 // do nothing
             }
         }
+        createGemMovements(turn, neighbours)
 
+        return turn
+    }
+
+    private fun createGemMovements(turn: Turn, neighbours: MutableMap<Int, Tile>): Turn{
         var currentGem: GemType
+        val tile = turn.placedTile
         //Move all stones that are on my tile to the end of the respective path
         for(i in 0 until tile.gemPositions.size){
             if(tile.gemPositions[i] != GemType.NONE){
