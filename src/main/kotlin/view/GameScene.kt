@@ -151,6 +151,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
 
+
     private val menuArea = Pane<ComponentView>(
         width = 425, height = sceneHeight,
         posX = sceneWidth - 75, posY = 0,
@@ -338,6 +339,17 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             quitGameButton,
             menuAreaArrow
         )
+
+        this.onKeyPressed = keyHandler@{
+            if(it.keyCode.name != "R") return@keyHandler
+
+            val game = rootService.currentGame
+            checkNotNull(game) { "game is null" }
+
+            if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) return@keyHandler
+
+            rootService.playerService.rotateTile()
+        }
     }
 
     override fun refreshAfterStartNewGame() {
