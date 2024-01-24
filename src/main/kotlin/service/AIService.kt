@@ -403,7 +403,7 @@ class AIService(private val rootService: RootService) {
 
         // Updates the PlayHand for the current Player and then switches the Player
         if (game.drawPile.isNotEmpty()) {
-            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeFirst()
         } else {
             game.playerList[game.activePlayerID].playHand.clear()
         }

@@ -122,7 +122,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         for(player in player) {
             player.playHand.clear()
-            player.playHand.add(currentGame.drawPile.removeLast())
+            player.playHand.add(currentGame.drawPile.removeFirst())
         }
         val playerNames = player.map { it.name }
         val index = playerNames.indexOf(client!!.playerName)
@@ -223,8 +223,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         //Create connections map going both ways
         for (i in 2 until splitLine.size step 2) {
-            map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
-            map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
+            map[(splitLine[i].toInt()+5)%6] = (splitLine[i + 1].toInt()+5)%6
+            map[(splitLine[i + 1].toInt()+5)%6] = (splitLine[i].toInt()+5)%6
         }
 
         val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
@@ -255,7 +255,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         for (player in player) {
             player.playHand.clear()
-            player.playHand.add(game.drawPile.removeLast())
+            player.playHand.add(game.drawPile.removeFirst())
         }
 
         if( index == 0) {

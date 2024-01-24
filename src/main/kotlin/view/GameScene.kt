@@ -425,7 +425,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if (tile is PathTile) unRotatedGemPositions = tile.gemPositions
         if (tile is TreasureTile) unRotatedGemPositions = tile.gemPositions
 
-        val gemPositions = rotateListBackwards(unRotatedGemPositions, tile.rotationOffset)
+        val gemPositions = if(tile !is TreasureTile){
+            rotateListBackwards(unRotatedGemPositions, ((tile.rotationOffset+5)%6))
+        } else {
+            rotateListBackwards(unRotatedGemPositions, tile.rotationOffset)
+        }
         val gemList: MutableList<TokenView> = MutableList(6) { TokenView(visual = Visual.EMPTY) }
 
         for (i in 0..5) {
@@ -450,7 +454,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             gemY += hexagonHeight / 2
 
             // This gem is the one that starts on the Treasure tile
-            val correctedGemIndex = (i + tile.rotationOffset) % 6
+            val correctedGemIndex = if(tile !is TreasureTile){
+                (i + (tile.rotationOffset+5)) % 6
+            } else {
+                (i + tile.rotationOffset) % 6
+            }
+            //val correctedGemIndex = (i + (tile.rotationOffset+5)) % 6
             if (tile is TreasureTile && tile.connections[correctedGemIndex] == correctedGemIndex) {
                 // this moves the gems coordinates closer to the center of the tile
                 val centerX = hexagonWidth / 2
@@ -650,7 +659,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     area.onMouseExited = { handleOnMouseExited(area, x, y) }
                 }
 
-                area.rotate(tile.rotationOffset * 60)
+                if(tile !is TreasureTile){
+                    area.rotate(((tile.rotationOffset+5)%6) * 60)
+                }
+                else{
+                    area.rotate(tile.rotationOffset * 60)
+                }
 
                 if (tile is PathTile || tile is TreasureTile) renderGemsForPathOrTreasureTile(tile, area)
                 if (tile is CenterTile) renderGemsForCenterTile(tile, area)
@@ -680,7 +694,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             area.visual = CompoundVisual(hoverBackgroundImage, hoverTileVisual)
         }
 
-        area.rotation = tileInPlayersHand.rotationOffset * 60.0
+        area.rotation = ((tileInPlayersHand.rotationOffset+5)%6) * 60.0
     }
 
     private fun handleOnMouseExited(area: Area<TokenView>, x: Int, y: Int) {
@@ -773,7 +787,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             if (player.playHand.size > 0) {
                 val tileType = player.playHand[0].type
                 playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
-                playerHandList[index].rotation = player.playHand[0].rotationOffset * 60.0
+                playerHandList[index].rotation = ((player.playHand[0].rotationOffset+5)%6) * 60.0
             } else {
                 playerHandList[index].visual = Visual.EMPTY
             }
@@ -803,7 +817,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        val rotationOffset = game.playerList[game.activePlayerID].playHand[0].rotationOffset
+        val rotationOffset = ((game.playerList[game.activePlayerID].playHand[0].rotationOffset+5)%6)
         playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
     }
 
@@ -815,7 +829,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
 
-        view.rotation = tile.rotationOffset * 60.0
+        view.rotation = ((tile.rotationOffset+5)%6) * 60.0
 
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
@@ -895,7 +909,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if (player.playHand.isNotEmpty()) {
             val tileType = player.playHand[0].type
             playerHandList[turn.playerID].visual = ImageVisual(Constants.pathTileImageList[tileType])
-            playerHandList[turn.playerID].rotation = player.playHand[0].rotationOffset * 60.0
+            playerHandList[turn.playerID].rotation = ((player.playHand[0].rotationOffset+5)%6) * 60.0
         } else {
             playerHandList[turn.playerID].visual = Visual.EMPTY
         }

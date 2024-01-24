@@ -48,7 +48,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         if (isNetworkGame ==false){
             for(player in players) {
                 player.playHand.clear()
-                player.playHand.add(drawPile.removeLast())
+                player.playHand.add(drawPile.removeFirst())
             } }
 
 
@@ -504,8 +504,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
             //Create connections map going both ways
             for (i in 2 until splitLine.size step 2) {
-                map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
-                map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
+                map[(splitLine[i].toInt()+5)%6] = (splitLine[i + 1].toInt()+5)%6
+                map[(splitLine[i + 1].toInt()+5)%6] = (splitLine[i].toInt()+5)%6
             }
 
             for (i in 0 until splitLine[1].toInt()) {
@@ -816,7 +816,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             turn.gemMovements.add(collisionCenterTile)
 
             placedTile.gemPositions[currentConnection] = GemType.NONE
-            centerTile.availableGems.removeLast()
+            centerTile.availableGems.removeFirst()
         }
         else{
             val destination = placedTile.connections[currentConnection]
