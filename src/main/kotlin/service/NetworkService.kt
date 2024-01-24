@@ -338,10 +338,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
-    fun sendPlaceTile (TilePlacedMessage : TilePlacedMessage) {
+    fun sendPlaceTile (tilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
         val networkClient = checkNotNull(client){"No client connected."}//
-        client?.sendGameActionMessage(TilePlacedMessage)//
+        networkClient.sendGameActionMessage(tilePlacedMessage)//
         updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
     }
