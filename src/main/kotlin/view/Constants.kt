@@ -9,7 +9,7 @@ import javax.imageio.ImageIO
  */
 object Constants {
     // COLORS
-    val sceneBackgroundColorVisual = ColorVisual(44, 70, 127)
+    val sceneBackgroundColorVisual = ColorVisual(42, 59, 142)
     const val buttonBackgroundColor = "#211c4f"
 
     // Measurements

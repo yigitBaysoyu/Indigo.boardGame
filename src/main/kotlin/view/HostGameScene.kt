@@ -1,25 +1,16 @@
 package view
 
-import edu.udo.cs.sopra.ntf.GameMode
-import edu.udo.cs.sopra.ntf.PlayerColor
-import entity.Player
-import entity.PlayerType
-import service.ConnectionState
-import view.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.CheckBox
 import tools.aqua.bgw.components.uicomponents.Label
-import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
-import java.util.Random
 
 /**
  * Displays configuration for an online game.
@@ -37,8 +28,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
     var hostName = ""
-
-    private var selectedGameMode = 0
 
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),

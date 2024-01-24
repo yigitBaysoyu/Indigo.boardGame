@@ -2,6 +2,7 @@ package view
 
 import entity.*
 import service.RootService
+import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
@@ -16,11 +17,20 @@ import java.awt.Color
 class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
     private val listOffset = halfWidth - 75
     private val offsetY = 250
     private val offsetX = 50
     private val gemSize = 25
+
+    private val cornersBackground = Button(
+        posX = 0, posY = 0,
+        width = sceneWidth, height = sceneHeight,
+        visual = ImageVisual(Constants.cornersBackground)
+    ).apply {
+        isDisabled = true
+    }
 
     private val headerLabel = Label(
         width = 500, height = 100,
@@ -118,6 +128,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     init {
         background = Constants.sceneBackgroundColorVisual
         addComponents(
+            cornersBackground,
             headerLabel,
             playerNameInputList[0],
             playerNameInputList[1],

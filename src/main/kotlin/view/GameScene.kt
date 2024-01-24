@@ -25,6 +25,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 import service.ConnectionState
+import tools.aqua.bgw.event.KeyCode
 import kotlin.system.measureTimeMillis
 
 /**
@@ -68,7 +69,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val cornersBackground = TokenView(
         posX = 0, posY = 0,
-        width = 1920, height = 1080,
+        width = sceneWidth, height = sceneHeight,
         visual = ImageVisual(Constants.cornersBackground)
     )
 
@@ -149,6 +150,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-radius: 25px;"
         onMouseClicked = { rootService.playerService.rotateTile() }
     }
+
 
 
     private val menuArea = Pane<ComponentView>(
@@ -276,6 +278,37 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
+    private val returnToMenuWarning = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 1020 + menuAreaOffsetY,
+        text = "Progress will be lost!",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val returnToMenuButtonBackground = Button(
+        width = 300 + 50, height = 65 + 30,
+        posX = menuAreaMargin - 25, posY = 1070 + menuAreaOffsetY - 15,
+        visual = Visual.EMPTY
+    ).apply {
+        onMouseEntered = { returnToMenuWarning.isVisible = true }
+        onMouseExited = { returnToMenuWarning.isVisible = false }
+    }
+
+    val returnToMenuButton = Button(
+        width = 300, height = 65,
+        posX = menuAreaMargin, posY = 1070 + menuAreaOffsetY,
+        text = "Return to Menu",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        onMouseEntered = { returnToMenuWarning.isVisible = true }
+        onMouseExited = { returnToMenuWarning.isVisible = false }
+    }
+
     val quitGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 1150 + menuAreaOffsetY,
@@ -335,9 +368,22 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             redoButton,
             saveGameButton,
             loadGameButton,
+            returnToMenuWarning,
+            returnToMenuButtonBackground,
+            returnToMenuButton,
             quitGameButton,
             menuAreaArrow
         )
+
+        this.onKeyPressed = keyHandler@{
+            if(it.keyCode != KeyCode.R) return@keyHandler
+
+            val game = rootService.currentGame
+            checkNotNull(game) { "game is null" }
+
+            if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) return@keyHandler
+            rootService.playerService.rotateTile()
+        }
     }
 
     override fun refreshAfterStartNewGame() {
@@ -363,8 +409,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
 
         setButtonsIfNetworkGame()
+
+        handleUndoRedoButton()
+
+        handleAIPlayers()
+    }
+
+    private fun handleAIPlayers() {
         val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+        checkNotNull(currentGame) { "game is null" }
 
         when(currentGame.playerList[0].playerType){
             PlayerType.RANDOMAI -> {
@@ -407,7 +460,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             loadGameButton.isDisabled = false
         }
     }
-
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int): MutableList<GemType> {
         val copiedList = mutableListOf<GemType>()
@@ -666,6 +718,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val game = rootService.currentGame
         checkNotNull(game) { "no active game" }
+
+        // If Player cant place a tile because he is not a Local Player, don't show tile shadow
+        if(game.playerList[game.activePlayerID].playerType != PlayerType.LOCALPLAYER) {
+            return
+        }
+
         val tileInPlayersHand = game.playerList[game.activePlayerID].playHand[0]
 
         val hoverTileVisual = ImageVisual(Constants.pathTileImageList[tileInPlayersHand.type])
@@ -690,44 +748,53 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
 
-        if (  (rootService.currentGame!!.isNetworkGame == false) || (rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN) ){
-            val mouseX: Double = mouseEvent.posX.toDouble()
-
-            val mouseY: Double = mouseEvent.posY.toDouble()
-            val tileCoords = tileMap.backward(area)
-            var tileX = tileCoords.first
-            var tileY = tileCoords.second
-
-            // Check if player clicked top left or bottom left area that is outside the
-            // hexagon but inside the area rectangle
-            val maxPossibleWidth: Double = hexagonWidth / 2.0
-            val maxPossibleHeight: Double = hexagonHeight / 4.0
-
-            // used for top left corner
-            val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
-
-            // used for bottom left corner
-            val distanceFromMaxHeight =
-                (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
-            val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
-
-            // check if top left corner was clicked
-            if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
-                tileY -= 1
-            }
-
-            // check if bottom left corner was clicked
-            if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
-                tileX -= 1
-                tileY += 1
-            }
-
-
-            rootService.playerService.placeTile(tileX, tileY)
+        if (game.isNetworkGame && rootService.networkService.connectionState != ConnectionState.PLAYING_MY_TURN) {
+            return
         }
+        val mouseX: Double = mouseEvent.posX.toDouble()
+        val mouseY: Double = mouseEvent.posY.toDouble()
+        val tileCoords = tileMap.backward(area)
+        val tileX = tileCoords.first
+        val tileY = tileCoords.second
+
+        // Check if player clicked top left or bottom left area that is outside the
+        // hexagon but inside the area rectangle
+        val maxPossibleWidth: Double = hexagonWidth / 2.0
+        val maxPossibleHeight: Double = hexagonHeight / 4.0
+
+        // used for top left corner
+        val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+
+        // used for bottom left corner
+        val distanceFromMaxHeight =
+            (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
+        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+
+        // check if top left corner was clicked
+        if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
+            // tileY -= 1
+            return
+        }
+
+        // check if bottom left corner was clicked
+        if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
+            // tileX -= 1
+            // tileY += 1
+            return
+        }
+
+        rootService.playerService.placeTile(tileX, tileY)
     }
 
+    private fun handleUndoRedoButton() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
+        undoButton.isDisabled = game.undoStack.isEmpty()
+        redoButton.isDisabled = game.redoStack.isEmpty()
+    }
 
     private fun renderPlayerConfiguration() {
         val game = rootService.currentGame
@@ -832,8 +899,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     }
                 }
             )
-        }
-        else{
+        } else {
             view.visual = newVisual
         }
 
@@ -843,6 +909,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         updatePlayerScores()
         renderCollectedGemsLists()
         setRotateButtonHeight()
+        handleUndoRedoButton()
 
         for (gemMovement in turn.gemMovements) {
             refreshAfterGemMoved(gemMovement)
@@ -950,19 +1017,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         tileView.clear()
         // remove entry from gemMap
         gemMap.removeForward(tileView)
+
+        handleUndoRedoButton()
     }
 
+    override fun refreshConnectionState(newState: ConnectionState) {
 
-    override fun refreshConnectionState(newState: service.ConnectionState) {
-
-        if (newState == service.ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
+        if (newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
 
             rotateButton.isDisabled = true
             rotateButton.isVisible = false
 
 
 
-        } else if (newState == service.ConnectionState.PLAYING_MY_TURN) {
+        } else if (newState == ConnectionState.PLAYING_MY_TURN) {
 
             rotateButton.isDisabled = false
             rotateButton.isVisible = true
