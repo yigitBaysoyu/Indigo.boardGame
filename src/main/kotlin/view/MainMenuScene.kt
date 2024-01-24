@@ -72,8 +72,9 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     ).apply {
         onKeyTyped = {
             val sessionID = text
+            val name = nameInput.text
 
-            if(sessionID == "") {
+            if(sessionID == "" || name.length !in 1..16) {
                 hostGameButton.isDisabled = true
                 joinGameButton.isDisabled = true
             } else {
@@ -94,8 +95,9 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     ).apply {
         onKeyTyped = {
             val name = text
+            val sessionID = sessionIDInput.text
 
-            if(name.length in 3..16) {
+            if(name.length in 1..16 && sessionID != "") {
                 hostGameButton.isDisabled = false
                 joinGameButton.isDisabled = false
             } else {
