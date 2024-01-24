@@ -437,24 +437,15 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * and if they have been removed, the game ends.
      */
     fun checkIfGameEnded() {
-
-        val game = rootService.currentGame
-        checkNotNull(game)
+        val game = checkNotNull(rootService.currentGame) {"No game found."}
 
         var allGemsRemoved = true
-
         var allTilesPlaced = true
 
         for (row in game.gameLayout){
             for(tile in row){
                 when(tile){
-                    is PathTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is TreasureTile -> {
+                    is TraverseAbleTile -> {
                         if (!tile.gemPositions.all{ it == GemType.NONE}) {
                             allGemsRemoved = false
                             break
@@ -469,7 +460,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     is EmptyTile -> {
                         allTilesPlaced =false
                     }
-                    else -> 1 + 1 // do nothing
+                    else -> Unit // do nothing
                 }
 
             }
