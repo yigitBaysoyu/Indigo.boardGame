@@ -27,7 +27,7 @@ class AIService(private val rootService: RootService) {
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+        checkNotNull(currentGame) {"No game found."}
         gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
@@ -158,7 +158,7 @@ class AIService(private val rootService: RootService) {
         startTime: Long,
         maxDuration: Duration
     ): Int {
-        if (depth == 0 || checkIfGameEnded(game)
+        if (depth == 0 || rootService.gameService.checkIfGameEnded(game)
             || (System.currentTimeMillis() - startTime).milliseconds > maxDuration)
         {
             return evaluateGameState(game, mainIndex)
@@ -460,50 +460,6 @@ class AIService(private val rootService: RootService) {
         }
 
         return false
-    }
-
-    /**
-     * Function that checks whether all stones have been removed from the game field,
-     * and if they have been removed, the game ends.
-     */
-    private fun checkIfGameEnded(game: IndigoGame) : Boolean {
-
-        var allGemsRemoved = true
-
-        var allTilesPlaced = true
-
-        for (row in game.gameLayout){
-            for(tile in row){
-                when(tile){
-                    is PathTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is TreasureTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is CenterTile ->{
-                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is EmptyTile -> {
-                        allTilesPlaced =false
-                    }
-                    else -> 1 + 1 // do nothing
-                }
-
-            }
-        }
-
-        return allGemsRemoved || allTilesPlaced
-
     }
 
     /**

@@ -436,8 +436,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function that checks whether all stones have been removed from the game field,
      * and if they have been removed, the game ends.
      */
-    fun checkIfGameEnded() {
-        val game = checkNotNull(rootService.currentGame) {"No game found."}
+    fun checkIfGameEnded(game: IndigoGame? = rootService.currentGame): Boolean {
+        checkNotNull(game) {"No game found."}
 
         var allGemsRemoved = true
         var allTilesPlaced = true
@@ -465,9 +465,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        if (allGemsRemoved || allTilesPlaced ) {
-            onAllRefreshables { refreshAfterEndGame() }
-        }
+        return (allGemsRemoved || allTilesPlaced)
     }
 
 
@@ -1033,7 +1031,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
 
-        checkIfGameEnded()
+        if (checkIfGameEnded()) onAllRefreshables { refreshAfterEndGame() }
         currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
 
         when(currentGame.getActivePlayer().playerType){
