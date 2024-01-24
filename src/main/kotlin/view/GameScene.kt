@@ -690,14 +690,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     private fun handleTileClick(mouseEvent: MouseEvent, area: Area<TokenView>) {
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
 
-        if (  (rootService.currentGame!!.isNetworkGame == false) || (rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN) ){
+        if (game.isNetworkGame && rootService.networkService.connectionState != ConnectionState.PLAYING_MY_TURN) {
             val mouseX: Double = mouseEvent.posX.toDouble()
-
             val mouseY: Double = mouseEvent.posY.toDouble()
             val tileCoords = tileMap.backward(area)
-            var tileX = tileCoords.first
-            var tileY = tileCoords.second
+            val tileX = tileCoords.first
+            val tileY = tileCoords.second
 
             // Check if player clicked top left or bottom left area that is outside the
             // hexagon but inside the area rectangle
@@ -714,15 +715,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
             // check if top left corner was clicked
             if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
-                tileY -= 1
+                // tileY -= 1
+                return
             }
 
             // check if bottom left corner was clicked
             if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
-                tileX -= 1
-                tileY += 1
+                // tileX -= 1
+                // tileY += 1
+                return
             }
-
 
             rootService.playerService.placeTile(tileX, tileY)
         }
@@ -832,8 +834,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     }
                 }
             )
-        }
-        else{
+        } else {
             view.visual = newVisual
         }
 
@@ -952,17 +953,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         gemMap.removeForward(tileView)
     }
 
+    override fun refreshConnectionState(newState: ConnectionState) {
 
-    override fun refreshConnectionState(newState: service.ConnectionState) {
-
-        if (newState == service.ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
+        if (newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
 
             rotateButton.isDisabled = true
             rotateButton.isVisible = false
 
 
 
-        } else if (newState == service.ConnectionState.PLAYING_MY_TURN) {
+        } else if (newState == ConnectionState.PLAYING_MY_TURN) {
 
             rotateButton.isDisabled = false
             rotateButton.isVisible = true
