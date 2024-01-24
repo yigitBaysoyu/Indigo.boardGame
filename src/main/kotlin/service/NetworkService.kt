@@ -15,7 +15,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     var connectionState: ConnectionState = ConnectionState.DISCONNECTED
-    var playersList: MutableList<String> = mutableListOf()
+    var playerList: MutableList<String> = mutableListOf()
     var threePlayerVariant: Boolean = false
 
     companion object {
@@ -33,7 +33,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     var simulationSpeed : Double = 1.0
     var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
-    val players_list: MutableList<edu.udo.cs.sopra.ntf.Player> = mutableListOf()
+    val ntfPlayerList: MutableList<edu.udo.cs.sopra.ntf.Player> = mutableListOf()
 
     /**
      * Connects to server and creates a new game session.
@@ -48,11 +48,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         if (!connect(secret, hostPlayerName,PlayerType.NETWORKPLAYER)) {
             error("Connection failed")
         }
-        this.playersList.add(hostPlayerName)
+        this.playerList.add(hostPlayerName)
         this.gameMode =  gameMode
 
         val newPlayer = edu.udo.cs.sopra.ntf.Player(hostPlayerName, color)
-        players_list.add(newPlayer)
+        ntfPlayerList.add(newPlayer)
 
         // updateConnectionState(ConnectionState.CONNECTED) add in the method connect.
         val networkClient = checkNotNull(client){"No client connected."}
@@ -96,7 +96,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         check(connectionState == ConnectionState.WAITING_FOR_GUESTS)
         { "currently not prepared to start a new hosted game." }
-        val players = this.playersList
+        val players = this.playerList
 
         // playerNames
         val player = players.map { entity.Player( name = it)}.toMutableList()
@@ -190,7 +190,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
         // create game GameInitMessage
-        val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(players_list, gameMode , formatedDrawPile)
+        val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(ntfPlayerList, gameMode , formatedDrawPile)
 
         // send message
         val networkClient = checkNotNull(client){"No client connected."}

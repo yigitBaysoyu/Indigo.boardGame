@@ -103,7 +103,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
 
 
-            val players = networkService.playersList
+            val players = networkService.playerList
 
             val isNameNotUnique = players.contains(notification.sender)
 
@@ -124,7 +124,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 players.add(notification.sender)
                 var lastColor = colorList.last()
                 var newGuest = Player(notification.sender, lastColor)
-                networkService.players_list.add(newGuest)
+                networkService.ntfPlayerList.add(newGuest)
                 colorList.removeAt(colorList.lastIndex)
 
             }else {
