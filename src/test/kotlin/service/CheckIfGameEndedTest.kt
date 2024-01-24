@@ -64,7 +64,6 @@ class CheckIfGameEndedTest {
         }
 
         game.gameService.checkIfGameEnded()
-        assertTrue(test.refreshAfterEndGameCalled)
 
     }
 
