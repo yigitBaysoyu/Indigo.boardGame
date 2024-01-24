@@ -140,7 +140,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     )
     private val gameModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(
-            posX = halfWidth - 350/2 - 75, posY = offsetY + 815,
+            posX = halfWidth - 350/2 - 75, posY = offsetY + 815 + 2,
             width = 70, height = 70,
             visual = Visual.EMPTY
         )
@@ -171,7 +171,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     }
 
     // 0 = LOCAL_PLAYER, 1 = RANDOM_AI, 2 = SMART_AI
-
     var selectedPlayerType = 0
     private val playerTypeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -180,7 +179,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     )
     private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(
-            posX = halfWidth - 350/2 - 75, posY = offsetY + 675,
+            posX = halfWidth + 350/2 + 5, posY = offsetY + 815 + 2,
             width = 70, height = 70,
             visual = Visual.EMPTY
         )
