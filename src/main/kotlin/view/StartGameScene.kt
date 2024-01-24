@@ -391,11 +391,6 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerList.add(player)
         }
 
-        //CHeck
-        for(player in playerList){
-            println("Name: ${player.name} and type: ${player.playerType}")
-        }
-
         if(randomOrderCheckbox.isChecked) playerList.shuffle()
 
         rootService.gameService.startNewGame(
