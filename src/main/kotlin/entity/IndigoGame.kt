@@ -1,5 +1,6 @@
 package entity
 
+import PairDequeSerializer
 import kotlinx.serialization.Serializable
 
 
@@ -17,7 +18,7 @@ data class IndigoGame(
     val isNetworkGame: Boolean = false,
     @Serializable(with = ArrayDequeSerializer::class)
     val undoStack: ArrayDeque<Turn> = ArrayDeque(),
-    @Serializable(with = ArrayDequeSerializer::class)
+    @Serializable(with = PairDequeSerializer::class)
     val redoStack: ArrayDeque<Pair<Pair<Int,Int>,Int>> = ArrayDeque(),
     val playerList: MutableList<Player> = mutableListOf(),
     val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
