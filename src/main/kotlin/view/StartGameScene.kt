@@ -63,7 +63,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             val playerNameInput: TextField = TextField(
                 width = 500, height = 75,
                 posX = halfWidth - 500 / 2 + offsetX, posY = 150*i + offsetY,
-                prompt = "name ...",
+                prompt = "Name ...",
                 font = Font(size = 35, Color(0, 0, 0)),
                 visual = Visual.EMPTY
             ).apply {

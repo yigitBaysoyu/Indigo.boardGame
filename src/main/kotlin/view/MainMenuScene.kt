@@ -66,7 +66,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     val sessionIDInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 640,
-        /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
         prompt = "Session ID ...",
         font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY
@@ -91,7 +90,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         posX = halfWidth - 350 / 2, posY = offsetY + 725,
         font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY,
-        text = "Name"
+        prompt = "Name ..."
     ).apply {
         onKeyTyped = {
             val name = text
