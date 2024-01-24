@@ -16,4 +16,18 @@ class CenterTile(
     override val yCoordinate: Int,
     @Serializable(with = ArrayDequeGemTypeSerializer::class)
     val availableGems: ArrayDeque<GemType>
-): Tile()
+): Tile(){
+
+    /**
+     *  This function assists the deepCopy function in IndigoGame to create a deep copy of the game state.
+     */
+    override fun copy(): CenterTile {
+        return CenterTile(
+            connections = this.connections.toMap(),
+            rotationOffset = this.rotationOffset,
+            xCoordinate = this.xCoordinate,
+            yCoordinate = this.yCoordinate,
+            availableGems = ArrayDeque(this.availableGems)
+        )
+    }
+}

@@ -2,6 +2,7 @@ package entity
 
 import kotlinx.serialization.Serializable
 
+
 /**
  * Main Entity. Holds all the data used during a Game.
  *
@@ -20,7 +21,7 @@ data class IndigoGame(
     val redoStack: ArrayDeque<Pair<Pair<Int,Int>,Int>> = ArrayDeque(),
     val playerList: MutableList<Player> = mutableListOf(),
     val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()},
-    val drawPile: MutableList<PathTile> = mutableListOf(),
+    var drawPile: MutableList<PathTile> = mutableListOf(),
     val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 ) {
     /**
@@ -29,4 +30,22 @@ data class IndigoGame(
     fun getActivePlayer(): Player {
         return playerList[activePlayerID]
     }
+
+    /**
+     *  creates a deep copy of the game state for the AIService to simulate possible game states.
+     */
+    fun deepCopy(): IndigoGame {
+        return IndigoGame(
+            activePlayerID = this.activePlayerID,
+            simulationSpeed = this.simulationSpeed,
+            isNetworkGame = this.isNetworkGame,
+            undoStack = ArrayDeque(),
+            redoStack = ArrayDeque(),
+            playerList = this.playerList.map { it.deepCopy() }.toMutableList(),
+            gateList = this.gateList.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList(),
+            drawPile = this.drawPile.map { it.copy() }.toMutableList(),
+            gameLayout = this.gameLayout.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList()
+        )
+    }
+
 }

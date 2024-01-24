@@ -6,4 +6,6 @@ package entity
  */
 interface TraverseAbleTile {
     val gemPositions: MutableList<GemType>
+    val xCoordinate: Int
+    val yCoordinate: Int
 }

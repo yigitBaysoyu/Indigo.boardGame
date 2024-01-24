@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class PlayerType {
     LOCALPLAYER,
-    NETWORKPLAYER,
     RANDOMAI,
-    SMARTAI
+    SMARTAI,
+    NETWORKPLAYER,
 }

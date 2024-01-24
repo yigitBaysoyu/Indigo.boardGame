@@ -3,6 +3,10 @@ package service
 import kotlin.test.*
 import entity.*
 
+/**
+ * This test class verifies the functionality of the `moveGems` method in the Game service.
+ */
+
 class MoveGemTest {
 
     /**

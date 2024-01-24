@@ -11,10 +11,26 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Player(
     val name: String = "",
-    val color: Int = 0,
+    var color: Int = 0,
     val playerType: PlayerType = PlayerType.LOCALPLAYER,
     var score: Int = 0,
     var amountOfGems: Int = 0,
     val playHand: MutableList<PathTile> = mutableListOf(),
     val gateList: MutableList<GateTile> = mutableListOf()
-)
+){
+
+    /**
+     *  creates a deep copy of the player object for the AIService to simulate possible game states.
+     */
+    fun deepCopy(): Player {
+        return Player(
+            name = this.name,
+            color = this.color,
+            playerType = this.playerType,
+            score = this.score,
+            amountOfGems = this.amountOfGems,
+            playHand = this.playHand.map { it.copy() }.toMutableList(),
+            gateList = this.gateList.map { it.copy() }.toMutableList()
+        )
+    }
+}
