@@ -363,8 +363,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         refreshAfterSimulationSpeedChange(game.simulationSpeed)
 
         setButtonsIfNetworkGame()
+
+        handleUndoRedoButton()
+
+        handleAIPlayers()
+    }
+
+    private fun handleAIPlayers() {
         val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+        checkNotNull(currentGame) { "game is null" }
 
         when(currentGame.playerList[0].playerType){
             PlayerType.RANDOMAI -> {
@@ -407,7 +414,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             loadGameButton.isDisabled = false
         }
     }
-
 
     private fun rotateListBackwards(list: MutableList<GemType>, offset: Int): MutableList<GemType> {
         val copiedList = mutableListOf<GemType>()
@@ -694,42 +700,49 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "game is null" }
 
         if (game.isNetworkGame && rootService.networkService.connectionState != ConnectionState.PLAYING_MY_TURN) {
-            val mouseX: Double = mouseEvent.posX.toDouble()
-            val mouseY: Double = mouseEvent.posY.toDouble()
-            val tileCoords = tileMap.backward(area)
-            val tileX = tileCoords.first
-            val tileY = tileCoords.second
-
-            // Check if player clicked top left or bottom left area that is outside the
-            // hexagon but inside the area rectangle
-            val maxPossibleWidth: Double = hexagonWidth / 2.0
-            val maxPossibleHeight: Double = hexagonHeight / 4.0
-
-            // used for top left corner
-            val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
-
-            // used for bottom left corner
-            val distanceFromMaxHeight =
-                (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
-            val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
-
-            // check if top left corner was clicked
-            if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
-                // tileY -= 1
-                return
-            }
-
-            // check if bottom left corner was clicked
-            if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
-                // tileX -= 1
-                // tileY += 1
-                return
-            }
-
-            rootService.playerService.placeTile(tileX, tileY)
+            return
         }
+        val mouseX: Double = mouseEvent.posX.toDouble()
+        val mouseY: Double = mouseEvent.posY.toDouble()
+        val tileCoords = tileMap.backward(area)
+        val tileX = tileCoords.first
+        val tileY = tileCoords.second
+
+        // Check if player clicked top left or bottom left area that is outside the
+        // hexagon but inside the area rectangle
+        val maxPossibleWidth: Double = hexagonWidth / 2.0
+        val maxPossibleHeight: Double = hexagonHeight / 4.0
+
+        // used for top left corner
+        val maxAllowedWidth = (-maxPossibleWidth / maxPossibleHeight * mouseY).toInt() + maxPossibleWidth.toInt()
+
+        // used for bottom left corner
+        val distanceFromMaxHeight =
+            (-maxPossibleHeight / maxPossibleWidth * mouseX).toInt() + maxPossibleHeight.toInt()
+        val minNeededHeight = hexagonHeight / 4 - distanceFromMaxHeight + hexagonHeight * 3 / 4
+
+        // check if top left corner was clicked
+        if (mouseX.toInt() in 0..maxAllowedWidth && mouseY.toInt() in 0..hexagonHeight / 4) {
+            // tileY -= 1
+            return
+        }
+
+        // check if bottom left corner was clicked
+        if (mouseX.toInt() in 0..hexagonWidth / 2 && mouseY.toInt() in minNeededHeight..hexagonHeight) {
+            // tileX -= 1
+            // tileY += 1
+            return
+        }
+
+        rootService.playerService.placeTile(tileX, tileY)
     }
 
+    private fun handleUndoRedoButton() {
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
+        undoButton.isDisabled = game.undoStack.isEmpty()
+        redoButton.isDisabled = game.redoStack.isEmpty()
+    }
 
     private fun renderPlayerConfiguration() {
         val game = rootService.currentGame
@@ -844,6 +857,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         updatePlayerScores()
         renderCollectedGemsLists()
         setRotateButtonHeight()
+        handleUndoRedoButton()
 
         for (gemMovement in turn.gemMovements) {
             refreshAfterGemMoved(gemMovement)
@@ -951,6 +965,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         tileView.clear()
         // remove entry from gemMap
         gemMap.removeForward(tileView)
+
+        handleUndoRedoButton()
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
