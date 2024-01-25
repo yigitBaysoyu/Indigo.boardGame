@@ -18,6 +18,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     var connectionState: ConnectionState = ConnectionState.DISCONNECTED
     var playersList: MutableList<String> = mutableListOf()
     var threePlayerVariant: Boolean = false
+    var sessionID: String? =null
 
     companion object {
 
@@ -62,6 +63,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             networkClient.createGame(GAME_ID, "Welcome!")
         } else {
             networkClient.createGame(GAME_ID, sessionID, "Welcome!")
+            this.sessionID=sessionID
         }
         updateConnectionState(ConnectionState.HOST_WAITING_FOR_CONFIRMATION)
     }
@@ -205,6 +207,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         for(tileType in message.tileList) {
             drawPile.add(tileTypeToPathTile(tileType))
         }
+        println(drawPile.size)
         return drawPile
     }
     private fun tileTypeToPathTile(type: TileType): PathTile {
@@ -217,7 +220,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             TileType.TYPE_3 -> 3
             TileType.TYPE_4 -> 4
         }
-
+        println(typeAsInt)
         val splitLine = lines[typeAsInt].split(";")
         val map: MutableMap<Int, Int> = mutableMapOf()
 
@@ -226,7 +229,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
             map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
         }
-
+        print(map.toString())
         val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
         return pathTile
     }
