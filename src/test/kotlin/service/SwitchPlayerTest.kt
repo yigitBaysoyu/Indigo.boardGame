@@ -33,9 +33,11 @@ class SwitchPlayerTest {
         //SmartAi has currently no functionality, so it isn't tested
         //Make turn for normalPlayer
         playerService.placeTile(-1, 0)
+        // call switchPlayer because it is only called in view after delay
+        gameService.switchPlayer()
 
-        assert(game.activePlayerID == 0)
-        assert(game.undoStack.size == 3)
+        assert(game.activePlayerID == 2)
+        assert(game.undoStack.size == 2)
 
 
         var placedTileIndex = 0
@@ -47,7 +49,7 @@ class SwitchPlayerTest {
             }
         }
 
-        assert(placedTileIndex == 3)
+        assert(placedTileIndex == 2)
 
     }
 
@@ -72,6 +74,8 @@ class SwitchPlayerTest {
         //Make turn for normalPlayer
         game.activePlayerID = 1
         playerService.placeTile(1, 1)
+        // call switchPlayer because it is only called in view after delay
+        gameService.switchPlayer()
 
         assert(game.activePlayerID == 0)
         assert(game.undoStack.size == 2)
