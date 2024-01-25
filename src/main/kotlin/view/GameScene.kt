@@ -25,6 +25,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 import service.ConnectionState
+import tools.aqua.bgw.animation.RotationAnimation
 import tools.aqua.bgw.event.KeyCode
 import kotlin.system.measureTimeMillis
 
@@ -886,8 +887,18 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        val rotationOffset = game.playerList[game.activePlayerID].playHand[0].rotationOffset
-        playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+        val animation = RotationAnimation(
+            componentView = playerHandList[game.activePlayerID],
+            byAngle = 60.0,
+            duration = 50
+        )
+        animation.onFinished = {
+            val rotationOffset = game.playerList[game.activePlayerID].playHand[0].rotationOffset
+            playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            unlock()
+        }
+        lock()
+        playAnimation(animation)
     }
 
     override fun refreshAfterTilePlaced(turn: Turn) {
