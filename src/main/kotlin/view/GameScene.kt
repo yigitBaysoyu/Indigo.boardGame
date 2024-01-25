@@ -754,6 +754,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if (game.isNetworkGame && rootService.networkService.connectionState != ConnectionState.PLAYING_MY_TURN) {
             return
         }
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) return
+
         val mouseX: Double = mouseEvent.posX.toDouble()
         val mouseY: Double = mouseEvent.posY.toDouble()
         val tileCoords = tileMap.backward(area)
@@ -892,7 +894,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
-        val duration = if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) 750 else 0
+        var duration = 0
+        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) duration = 750
         val animation = DelayAnimation(duration)
 
         animation.onFinished = {
@@ -920,7 +923,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             unlock()
 
             rootService.gameService.checkIfGameEnded()
-            rootService.gameService.switchPlayer()
+
+            // If next player is SmartAI, delay its turn
+            duration = 0
+            if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
+            val delayAnimation = DelayAnimation(duration)
+            delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+            playAnimation(delayAnimation)
         }
 
         lock()
