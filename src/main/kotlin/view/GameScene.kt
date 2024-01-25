@@ -889,45 +889,39 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshAfterTilePlaced(turn: Turn) {
-        val tile = turn.placedTile
-        val x = tile.xCoordinate
-        val y = tile.yCoordinate
-        val view = tileMap.forward(Pair(x, y))
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
 
-        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+        val duration = if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) 750 else 0
+        val animation = DelayAnimation(duration)
 
-        view.rotation = tile.rotationOffset * 60.0
+        animation.onFinished = {
+            val tile = turn.placedTile
+            val x = tile.xCoordinate
+            val y = tile.yCoordinate
+            val view = tileMap.forward(Pair(x, y))
 
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+            val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
 
-        //Delay the placement of random tile
-        if(currentGame.playerList[turn.playerID].playerType == PlayerType.RANDOMAI){
-            val gameScene = this
-            gameScene.lock()
-            this.playAnimation(
-                DelayAnimation(500).apply {
-                    onFinished = {
-                        view.visual = newVisual
-                        gameScene.unlock()
-                    }
-                }
-            )
-        } else {
             view.visual = newVisual
+            view.rotation = tile.rotationOffset * 60.0
+
+            renderGemsForPathOrTreasureTile(tile, view)
+            renderPlayerHands(turn)
+            updatePlayerScores()
+            renderCollectedGemsLists()
+            setRotateButtonHeight()
+            handleUndoRedoButton()
+
+            for (gemMovement in turn.gemMovements) {
+                refreshAfterGemMoved(gemMovement)
+            }
+
+            unlock()
         }
 
-        renderGemsForPathOrTreasureTile(tile, view)
-
-        renderPlayerHands(turn)
-        updatePlayerScores()
-        renderCollectedGemsLists()
-        setRotateButtonHeight()
-        handleUndoRedoButton()
-
-        for (gemMovement in turn.gemMovements) {
-            refreshAfterGemMoved(gemMovement)
-        }
+        lock()
+        playAnimation(animation)
     }
 
     override fun refreshAfterGemMoved(movement: GemMovement) {

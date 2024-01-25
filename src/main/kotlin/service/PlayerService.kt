@@ -189,11 +189,13 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
             rootService.networkService.sendPlaceTile(tilePMessage)
         }
 
-        gameService.switchPlayer()
+        // switch the active player
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
         onAllRefreshables { refreshAfterTilePlaced(turn) }
+
         rootService.gameService.checkIfGameEnded()
-
-
+        gameService.switchPlayer()
     }
 
     /**
