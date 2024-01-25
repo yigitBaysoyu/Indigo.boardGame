@@ -73,6 +73,11 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
                     setStartButtonState()
                 }
                 text = "Player ${i + 1}"
+                onMouseClicked = {
+                    if(text == "Player ${i + 1}") {
+                        text = ""
+                    }
+                }
             }
             add(playerNameInput)
         }
