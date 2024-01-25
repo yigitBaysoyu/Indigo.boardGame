@@ -227,7 +227,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
+        onMouseClicked = onMouseClicked@{
+            if(simulationSpeedBinary == "") return@onMouseClicked
             val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
             rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
             simulationSpeedBinary = ""
