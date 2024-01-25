@@ -918,6 +918,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
 
             unlock()
+
+            rootService.gameService.checkIfGameEnded()
+            rootService.gameService.switchPlayer()
         }
 
         lock()
