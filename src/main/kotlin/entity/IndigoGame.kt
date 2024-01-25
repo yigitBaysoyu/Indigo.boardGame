@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndigoGame(
     var activePlayerID: Int = 0,
-    var simulationSpeed: Double = 1.0,
+    var simulationSpeed: Double = 50.0,
     val isNetworkGame: Boolean = false,
     @Serializable(with = ArrayDequeSerializer::class)
     val undoStack: ArrayDeque<Turn> = ArrayDeque(),

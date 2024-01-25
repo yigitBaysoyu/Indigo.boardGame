@@ -396,7 +396,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         rootService.gameService.startNewGame(
             players = playerList,
             threePlayerVariant = threePlayerVariantCheckBox.isChecked && playerList.size == 3,
-            simulationSpeed = 10.0,
+            simulationSpeed = 50.0,
             isNetworkGame = false
         )
 

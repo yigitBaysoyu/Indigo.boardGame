@@ -895,7 +895,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "game is null" }
 
         var duration = 0
-        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) duration = 750
+        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
+            duration = when {
+                game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
+                game.simulationSpeed < 50 -> (10000 - (10000 - 750) * (game.simulationSpeed * 2 / 100)).toInt()
+                else -> 750
+            }
+        }
         val animation = DelayAnimation(duration)
 
         animation.onFinished = {
