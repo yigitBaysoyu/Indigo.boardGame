@@ -160,32 +160,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ColorVisual(0, 0, 0, 60)
     ).apply {
         onMouseEntered = {
-            playAnimation(
-                MovementAnimation(
-                    componentView = this,
-                    toX = sceneWidth - 425,
-                    duration = 100
-                ).apply {
-                    onFinished = {
-                        posX = sceneWidth - 425.0
-                    }
-                }
+            val animation = MovementAnimation(
+                componentView = this,
+                toX = sceneWidth - 425,
+                duration = 100
             )
-
+            animation.onFinished = { posX = sceneWidth - 425.0 }
+            playAnimation(animation)
         }
 
-        onMouseExited = {
-            playAnimation(
-                MovementAnimation(
-                    componentView = this,
-                    toX = sceneWidth - 75,
-                    duration = 100
-                ).apply {
-                    onFinished = {
-                        posX = sceneWidth - 75.0
-                    }
-                }
+        onMouseExited = onMouseExited@{
+            if(it.posX.toInt() >= 10) return@onMouseExited
+            val animation = MovementAnimation(
+                componentView = this,
+                toX = sceneWidth - 75,
+                duration = 100
             )
+            animation.onFinished = { posX = sceneWidth - 75.0 }
+            playAnimation(animation)
         }
     }
 
