@@ -832,19 +832,33 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         }
     }
 
-    private fun renderPlayerHands() {
+    private fun renderPlayerHands(turn: Turn? = null) {
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
         game.playerList.forEachIndexed { index, player ->
-            if (player.playHand.size > 0) {
-                val tileType = player.playHand[0].type
-                playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
-                playerHandList[index].rotation = player.playHand[0].rotationOffset * 60.0
-            } else {
+            if (player.playHand.size <= 0) {
                 playerHandList[index].visual = Visual.EMPTY
+                return@forEachIndexed
             }
 
+            if(turn != null && turn.playerID == index) {
+                playerHandList[index].posX -= 500
+                val animation = MovementAnimation(
+                    componentView = playerHandList[index],
+                    byX = 500,
+                    duration = 200
+                )
+                animation.onFinished = {
+                    playerHandList[index].posX += 500
+                    unlock()
+                }
+                lock()
+                playAnimation(animation)
+            }
+            val tileType = player.playHand[0].type
+            playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
+            playerHandList[index].rotation = player.playHand[0].rotationOffset * 60.0
         }
     }
 
@@ -905,7 +919,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         renderGemsForPathOrTreasureTile(tile, view)
 
-        renderPlayerHands()
+        renderPlayerHands(turn)
         updatePlayerScores()
         renderCollectedGemsLists()
         setRotateButtonHeight()
