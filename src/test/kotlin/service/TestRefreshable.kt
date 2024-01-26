@@ -116,7 +116,7 @@ class TestRefreshable : Refreshable {
 
     }
 
-    override fun refreshAfterPlayerLeft(color: Int) {
+    override fun refreshAfterPlayerLeft(name: String) {
         refreshAfterPlayerLeftCalled = true
 
     }
