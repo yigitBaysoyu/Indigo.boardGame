@@ -24,7 +24,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
-    var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
      * Handles a [CreateGameResponse] received from the server. It waits for the guest player when its
@@ -112,21 +111,19 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 disconnectAndError("Player names are not unique!")
             }
 
-            var numPlayers = 0
+            var maxPlayers = 0
             if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
-                numPlayers = 2
+                maxPlayers = 2
             } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
-                numPlayers = 3
+                maxPlayers = 3
             }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
-                numPlayers = 4
+                maxPlayers = 4
             }
 
-            if(players.size < numPlayers ) {
+            if(players.size < maxPlayers ) {
                 players.add(notification.sender)
-                var lastColor = colorList.last()
-                var newGuest = Player(notification.sender, lastColor)
+                var newGuest = Player(notification.sender, PlayerColor.WHITE)
                 networkService.playerList.add(newGuest)
-                colorList.removeAt(colorList.lastIndex)
 
             }else {
                 error("maximum number of players has been reached.")
@@ -135,7 +132,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
 
             println( players.size)
-            if (players.size == numPlayers){
+            if (players.size == maxPlayers){
                 // when lobby is full enable startButton
                 networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
