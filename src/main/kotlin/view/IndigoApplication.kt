@@ -43,7 +43,10 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         mainMenuScene.loadGameButton.onMouseClicked = { rootService.gameService.loadGame() }
         mainMenuScene.hostGameButton.onMouseClicked = { hostGameLogic() }
         mainMenuScene.joinGameButton.onMouseClicked = { joinGameLogic() }
-        hostGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}
+        hostGameScene.backButton.onMouseClicked = {
+            showMenuScene(mainMenuScene)
+            rootService.networkService.disconnect()
+        }
         joinGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}
         gameEndedScene.quitButton.onMouseClicked = { exit() }
         gameEndedScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
