@@ -1016,14 +1016,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     /**
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
-     * Also checks if the game has ended
      */
     fun switchPlayer(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-
-        checkIfGameEnded()
-        currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
 
         when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {

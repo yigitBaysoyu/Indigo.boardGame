@@ -133,7 +133,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      *  @param yCoordinate the y Coordinate, in the Axial System
      */
     fun placeTile(xCoordinate: Int, yCoordinate: Int){
-        val gameService = rootService.gameService
         val game = rootService.currentGame
         checkNotNull(game)
 
@@ -189,11 +188,14 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
             rootService.networkService.sendPlaceTile(tilePMessage)
         }
 
-        gameService.switchPlayer()
+        // switch the active player
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
         onAllRefreshables { refreshAfterTilePlaced(turn) }
-        rootService.gameService.checkIfGameEnded()
 
-
+        // Moved to GameScene.refreshAfterTilePlaced to make AI delay work properly
+        // rootService.gameService.checkIfGameEnded()
+        // rootService.gameService.switchPlayer()
     }
 
     /**
