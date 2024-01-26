@@ -33,6 +33,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         simulationSpeed: Double,
         isNetworkGame: Boolean
     ) {
+        //Initialize placeableTiles after starting newGame
+        rootService.aiService.initializePlaceableTiles()
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}

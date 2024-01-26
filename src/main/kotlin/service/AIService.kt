@@ -1028,7 +1028,7 @@ class AIService(private val rootService: RootService) {
 
 
 
-    private val placeableTiles: MutableList<Pair<Int,Int>> = mutableListOf()
+    val placeableTiles: MutableList<Pair<Int,Int>> = mutableListOf()
 
     /**
      * Function to decide on a random move for the [PlayerType.RANDOMAI]
@@ -1095,7 +1095,7 @@ class AIService(private val rootService: RootService) {
         playerService.placeTile(selectedPos.first, selectedPos.second)
     }
 
-    private fun initializePlaceableTiles(){
+    fun initializePlaceableTiles(){
         if (placeableTiles.isNotEmpty()){
             return
         }
