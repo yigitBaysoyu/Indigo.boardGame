@@ -1,6 +1,7 @@
 package view
 
 import service.RootService
+import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
@@ -46,7 +47,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
     }
 
-    val loadGameButton = Button(
+    private val loadGameButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 350 / 2, posY = offsetY + 400,
         text = "Load Game",
@@ -54,7 +55,20 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        onMouseClicked = { rootService.gameService.loadGame() }
     }
+
+    private val fileNotFoundMessage = Label(
+        width = 350, height = 50,
+        posX = halfWidth - 350 / 2, posY = offsetY + 400 + 85,
+        text = "File was not found.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+
 
     private val onlineLabel = Label(
         width = 350, height = 75,
@@ -251,6 +265,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             localLabel,
             newGameButton,
             loadGameButton,
+            fileNotFoundMessage,
             onlineLabel,
             sessionIDInput,
             nameInput,
@@ -262,5 +277,12 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             playerModeIconList[0],
             gameModeIconList[0]
         )
+    }
+
+    override fun refreshAfterFileNotFound() {
+        fileNotFoundMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
     }
 }

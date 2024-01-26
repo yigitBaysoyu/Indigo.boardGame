@@ -272,6 +272,26 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
+    private val fileNotFoundMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "File was not found.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val gameLoadedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "Game was loaded.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     private val returnToMenuWarning = Label(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 1020 + menuAreaOffsetY,
@@ -362,6 +382,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             redoButton,
             saveGameButton,
             loadGameButton,
+            gameLoadedMessage,
+            fileNotFoundMessage,
             returnToMenuWarning,
             returnToMenuButtonBackground,
             returnToMenuButton,
@@ -1063,6 +1085,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         gemMap.removeForward(tileView)
 
         handleUndoRedoButton()
+    }
+
+    override fun refreshAfterLoadGame() {
+        gameLoadedMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { gameLoadedMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterFileNotFound() {
+        fileNotFoundMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
