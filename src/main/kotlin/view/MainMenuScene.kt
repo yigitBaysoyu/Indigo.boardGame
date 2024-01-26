@@ -53,7 +53,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: #211c4f; -fx-ba ckground-radius: 25px;"
     }
 
     private val onlineLabel = Label(

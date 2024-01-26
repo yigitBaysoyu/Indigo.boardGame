@@ -207,7 +207,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         for(tileType in message.tileList) {
             drawPile.add(tileTypeToPathTile(tileType))
         }
-        println(drawPile.size)
         return drawPile
     }
     private fun tileTypeToPathTile(type: TileType): PathTile {
@@ -229,7 +228,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
             map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
         }
-        print(map.toString())
         val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
         return pathTile
     }
