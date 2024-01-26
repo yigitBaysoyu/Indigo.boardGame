@@ -32,6 +32,13 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         ImageVisual(Constants.purpleGate)
     )
 
+    private val modeImageList = listOf(
+        ImageVisual(Constants.modeIconPlayer),
+        ImageVisual(Constants.modeIconRandom),
+        ImageVisual(Constants.modeIconAI),
+        ImageVisual(Constants.modeIconNetwork)
+    )
+
     private val cornersBackground = Button(
         posX = 0, posY = 0,
         width = sceneWidth, height = sceneHeight,
@@ -121,6 +128,35 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
     }
 
+    private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
+        for (i in 0 until 4) {
+            val pane = Pane<Button>(
+                posX = listOffset - 500 / 2 - offsetX - 100, posY = 150*i + offsetY,
+                width = 75, height = 75,
+                visual = Visual.EMPTY
+            )
+
+            val playerModeIconBackground = Button(
+                width = 75, height = 75,
+                posX = 0, posY = 0,
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
+            }
+
+            val playerModeIcon = Button(
+                width = 60, height = 60,
+                posX = 7, posY = 7,
+                visual = ImageVisual(Constants.modeIconPlayer)
+            ).apply {
+                isDisabled = true
+            }
+            pane.add(playerModeIconBackground)
+            pane.add(playerModeIcon)
+            add(pane)
+        }
+    }
+
     private val playerGemLayoutListList = mutableListOf<MutableList<Button>>().apply {
         for (i in 0 until 4) {
             val gems= mutableListOf<Button>()
@@ -187,6 +223,10 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerWonIcon,
             quitButton,
             newGameButton,
+            playerModeIconList[0],
+            playerModeIconList[1],
+            playerModeIconList[2],
+            playerModeIconList[3],
         )
         playerGemLayoutListList.forEach {
             for(button in it) {
@@ -218,6 +258,15 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPointsInputList[i].isVisible = true
             playerColorIconList[i].visual = colorImageList[player.color]
             playerColorIconList[i].isVisible = true
+
+            val playerTypeAsInt = when(player.playerType) {
+                PlayerType.LOCALPLAYER -> 0
+                PlayerType.RANDOMAI -> 1
+                PlayerType.SMARTAI -> 2
+                PlayerType.NETWORKPLAYER -> 3
+            }
+            playerModeIconList[i].visual = modeImageList[playerTypeAsInt]
+            playerModeIconList[i].isVisible = true
         }
     }
 
@@ -230,6 +279,8 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPosInputList[i].text = "1"
             playerPointsInputList[i].isVisible = false
             playerPointsInputList[i].text = "0"
+            playerColorIconList[i].isVisible = false
+            playerModeIconList[i].isVisible = false
             for(j in 0 until 12) {
                 playerGemLayoutListList[i][j].visual = Visual.EMPTY
                 playerGemLayoutListList[i][j].isVisible = false
