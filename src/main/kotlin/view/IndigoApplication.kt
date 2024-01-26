@@ -14,7 +14,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
 
     // Central service from which all others are created/accessed
     // also holds the currently active game
-    private val rootService = RootService()
+    val rootService = RootService()
 
      private val mainMenuScene = MainMenuScene(rootService)
      private val gameScene = GameScene(rootService)
@@ -44,8 +44,8 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         mainMenuScene.hostGameButton.onMouseClicked = { hostGameLogic() }
         mainMenuScene.joinGameButton.onMouseClicked = { joinGameLogic() }
         hostGameScene.backButton.onMouseClicked = {
-            showMenuScene(mainMenuScene)
             rootService.networkService.disconnect()
+            showMenuScene(mainMenuScene)
         }
         joinGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}
         gameEndedScene.quitButton.onMouseClicked = { exit() }
