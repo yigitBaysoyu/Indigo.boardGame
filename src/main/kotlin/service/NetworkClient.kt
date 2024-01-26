@@ -101,7 +101,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-
+            println("onPlayerJoined called")
 
 
             val players = networkService.playersList
@@ -132,13 +132,13 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 error("maximum number of players has been reached.")
             }
 
+            networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
+
             println( players.size)
             if (players.size == numPlayers){
                 // when lobby is full enable startButton
                 networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
-
-
 
         }
     }
