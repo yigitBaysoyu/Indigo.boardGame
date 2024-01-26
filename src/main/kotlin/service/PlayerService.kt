@@ -52,6 +52,10 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      * If there are no moves left to undo, it prints a message indicating so.
      */
     fun undo() {
+        /*if(!rootService.aiService.isPaused){
+            println("Ai Service needs to be paused to use undo")
+        }*/
+
         val game = rootService.currentGame
         checkNotNull(game)
         if(game.undoStack.isEmpty()) return

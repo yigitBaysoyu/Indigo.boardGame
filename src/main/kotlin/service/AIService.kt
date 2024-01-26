@@ -15,6 +15,7 @@ class AIService(private val rootService: RootService) {
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
     private var positiveScore : Int = 0
     private var negativeScore : Int = 0
+    var isPaused: Boolean = false
 
 
     /**
@@ -23,6 +24,9 @@ class AIService(private val rootService: RootService) {
      *  maximizes the AI's position in the game.
      */
     suspend fun calculateNextTurn() {
+        if(isPaused){
+            return
+        }
         println("Starting calculation")
         val gameService = rootService.gameService
         val playerService = rootService.playerService
@@ -1039,6 +1043,9 @@ class AIService(private val rootService: RootService) {
      * [PlayerType.RANDOMAI]
      */
     fun randomNextTurn() {
+        if(isPaused){
+            return
+        }
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
