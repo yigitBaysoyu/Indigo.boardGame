@@ -7,6 +7,7 @@ import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
 import tools.aqua.bgw.net.common.annotations.GameActionReceiver
 import tools.aqua.bgw.net.common.notification.PlayerJoinedNotification
+import tools.aqua.bgw.net.common.notification.PlayerLeftNotification
 import tools.aqua.bgw.net.common.response.*
 
 
@@ -133,8 +134,8 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
             println( players.size)
             if (players.size == numPlayers){
-
-            networkService.startNewHostedGame()
+                // when lobby is full enable startButton
+                networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
 
 
@@ -174,6 +175,15 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         }
     }
 
+    /**
+     * on player left
+     */
+    override fun onPlayerLeft(message: PlayerLeftNotification) {
+        println(message.message)
+        println(message.sender + "joined")
+        networkService.playersList.remove(message.sender)
+        networkService.onAllRefreshables { refreshAfterPlayerLeft(message.sender) }
+    }
 
     /**
      * disconnects the client

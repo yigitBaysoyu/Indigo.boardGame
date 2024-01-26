@@ -28,6 +28,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
     var hostName = ""
+    var lobbyFull = false
 
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -136,6 +137,12 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             pane.add(playerColorIconBackground)
             pane.add(playerColorIcon)
             add(pane)
+
+            playerColorIconBackground.onMouseClicked = {
+                selectedColors[i] = (selectedColors[i] + 1) % 4
+                playerColorIcon.visual = colorImageList[selectedColors[i]]
+                setStartButtonState()
+            }
         }
     }
 
@@ -205,23 +212,46 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             threePlayerVariantCheckBox,
         )
     }
-    /*
-        // a refreshable for the moment when the game is ready to play
-        private fun refreshAfterGameIsReady() {
-            startButton.isDisabled = false
+    private fun checkForSamePlayerColors(): Boolean {
+        for(i in 0 until 4) {
+            playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
         }
 
-        // or just use this method ? question the ConnectionStates
-        override fun refreshConnectionState(newState: ConnectionState){
-            if(newState == ConnectionState.READY_FOR_GAME) {
-                startButton.isDisabled = false
-            }
-        }*/
+        val copiedSelectColors = mutableListOf<Int>()
+        for(i in 0 until 4) {
+            if(!playerNameInputList[i].isVisible) break
+            copiedSelectColors.add(selectedColors[i])
+        }
 
+        var returnValue = false
+        for(i in 0 until copiedSelectColors.size) {
+            for(j in 0 until copiedSelectColors.size) {
+                if(copiedSelectColors[i] == copiedSelectColors[j] && i != j) {
+                    playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+                    returnValue = true
+                }
+            }
+        }
+        return returnValue
+    }
+
+    private fun setStartButtonState() {
+        val validColor = !checkForSamePlayerColors()
+        if(!validColor) {
+            startButton.isDisabled = true
+            return
+        }
+
+        startButton.isDisabled = false
+    }
     private fun handleStartClick() {
-        rootService.networkService.startNewHostedGame()
+        rootService.networkService.startNewHostedGame(selectedColors)
 
         resetAllComponents()
+    }
+
+    override fun refreshAfterLastPlayerJoined(){
+        lobbyFull = true
     }
 
     fun resetAllComponents() {
@@ -277,10 +307,14 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
     }
 
-    override fun refreshAfterPlayerLeft(color: Int){
+    override fun refreshAfterPlayerLeft(name: String){
+
+        val listIndex = playerNameInputList.indexOfFirst { label ->
+            label.text == name
+        }
         println("refreshAfterPlayerLeft called")
         for(i in 1 until 4) {
-            if(selectedColors[i] == color) {
+            if(selectedColors[i] == listIndex) {
                 playerNameInputList[i].isVisible = false
                 playerModeIconList[i].isVisible = false
                 playerColorIconList[i].isVisible = false

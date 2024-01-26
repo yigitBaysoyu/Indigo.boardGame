@@ -93,7 +93,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
      */
 
-    fun startNewHostedGame() {
+    fun startNewHostedGame(selectedColors: MutableList<Int>) {
 
         check(connectionState == ConnectionState.WAITING_FOR_GUESTS)
         { "currently not prepared to start a new hosted game." }
@@ -102,7 +102,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         // playerNames
         val player = players.map { entity.Player( name = it)}.toMutableList()
         for (i in players.indices) {
-            player[i].color = i
+            player[i].color = selectedColors[i]
         }
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
