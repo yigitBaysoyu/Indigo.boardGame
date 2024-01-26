@@ -241,8 +241,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             startButton.isDisabled = true
             return
         }
-
-        startButton.isDisabled = false
+        if(lobbyFull)startButton.isDisabled = false
     }
     private fun handleStartClick() {
         rootService.networkService.startNewHostedGame(selectedColors)
@@ -252,9 +251,11 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
     override fun refreshAfterLastPlayerJoined(){
         lobbyFull = true
+        setStartButtonState()
     }
 
     fun resetAllComponents() {
+        lobbyFull = false
 
         for(i in 0 until 4) {
             selectedColors[i] = i
