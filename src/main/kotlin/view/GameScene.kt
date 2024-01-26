@@ -705,7 +705,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     area.onMouseExited = { handleOnMouseExited(area, x, y) }
                 }
 
-                if(tile !is TreasureTile){
+                if(tile !is TreasureTile && tile !is CenterTile){
                     area.rotate(((tile.rotationOffset+5)%6) * 60)
                 }
                 else{
