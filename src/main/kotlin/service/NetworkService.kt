@@ -104,7 +104,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             player[i].color = i
         }
         // start new game and give the supply as a parameter.
-        rootService.gameService.startNewGame(player,threePlayerVariant, simulationSpeed = simulationSpeed , isNetworkGame = true)
+        rootService.gameService.startNewGame(
+                                            player,
+                                            threePlayerVariant,
+                                            simulationSpeed = simulationSpeed,
+                                            isNetworkGame = true)
 
         // startGame from the gameService to start the game
         // send game init message to server
@@ -232,7 +236,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     /**
      * Calls the startNewGame function in the gameServices
-     * with the paramter which came from the host which is in [message]
+     * with the parameter which came from the host which is in [message]
      * */
     fun startNewJoinedGame(message: edu.udo.cs.sopra.ntf.GameInitMessage) {
 
@@ -250,7 +254,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(player,extractThreePlayerVariant(message), simulationSpeed = simulationSpeed , isNetworkGame = true, )
-        var game = rootService.currentGame
+        val game = rootService.currentGame
         checkNotNull(game)
         val playerNames = players.map { it.name }
         val index = playerNames.indexOf(client!!.playerName)
@@ -343,6 +347,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
+    /**
+     * Sends every Network Player the [tilePlacedMessage] and sets the connection State
+     * to Waiting_For_Opponents_Turn
+     */
     fun sendPlaceTile (tilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
         val networkClient = checkNotNull(client){"No client connected."}//
@@ -351,7 +359,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     }
 
-
+    /**
+     * For Player that are waiting for their turn this function turns the [message]
+     * into an actual player Move and places the Tile and updates the connection State
+     */
     fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
 
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
@@ -361,7 +372,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         for (i in 1..rotationSteps) {
             rootService.playerService.rotateTile()
         }
-        var game = rootService.currentGame
+        val game = rootService.currentGame
         checkNotNull(game)
         val networkClient = checkNotNull(client){"No client connected."}//
         rootService.playerService.placeTile(message.qcoordinate,message.rcoordinate)
@@ -375,7 +386,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     }
 
-
+    /**
+     * disconnects the client from the game Session
+     */
     fun disconnect() {
         client?.apply {
             if (sessionID != null) leaveGame("Goodbye!")

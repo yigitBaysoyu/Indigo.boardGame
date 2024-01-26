@@ -235,6 +235,9 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         resetAllComponents()
     }
 
+    /**
+     *  loads the Players Names, Colors and Player-modes
+     */
     fun resetAllComponents() {
 
         for(i in 0 until 4) {
