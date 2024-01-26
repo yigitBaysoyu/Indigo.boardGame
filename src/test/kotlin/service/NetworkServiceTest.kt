@@ -60,6 +60,8 @@ class NetworkServiceTest {
             error("Nach dem Warten nicht im Zustand angekommen")
         }
 
+        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1,2,3))
+
         assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)) {
             error("connectionState of the host must be PLAYING_TURN")
         }
