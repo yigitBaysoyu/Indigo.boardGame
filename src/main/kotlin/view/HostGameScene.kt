@@ -313,7 +313,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         val listIndex = playerNameInputList.indexOfFirst { label ->
             label.text == name
         }
-        println("refreshAfterPlayerLeft called")
+        println("refreshAfterPlayerLeft called with listIndex: $listIndex")
         for(i in 1 until 4) {
             if(selectedColors[i] == listIndex) {
                 playerNameInputList[i].isVisible = false

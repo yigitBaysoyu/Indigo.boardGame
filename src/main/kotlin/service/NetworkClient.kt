@@ -179,10 +179,12 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      * on player left
      */
     override fun onPlayerLeft(message: PlayerLeftNotification) {
-        println(message.message)
-        println(message.sender + "joined")
-        networkService.playerList.removeIf { it.name == message.sender }
-        networkService.onAllRefreshables { refreshAfterPlayerLeft(message.sender) }
+        BoardGameApplication.runOnGUIThread {
+            println(message.message)
+            println(message.sender + "joined")
+            networkService.playerList.removeIf { it.name == message.sender }
+            networkService.onAllRefreshables { refreshAfterPlayerLeft(message.sender) }
+        }
     }
 
     /**
