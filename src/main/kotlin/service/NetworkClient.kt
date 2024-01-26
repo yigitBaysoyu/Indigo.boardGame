@@ -104,7 +104,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             println("onPlayerJoined called")
 
 
-            val players = networkService.playersList
+            val players = networkService.playerList.map { player -> player.name}.toMutableList()
 
             val isNameNotUnique = players.contains(notification.sender)
 
@@ -125,7 +125,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 players.add(notification.sender)
                 var lastColor = colorList.last()
                 var newGuest = Player(notification.sender, lastColor)
-                networkService.players_list.add(newGuest)
+                networkService.playerList.add(newGuest)
                 colorList.removeAt(colorList.lastIndex)
 
             }else {
@@ -181,7 +181,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     override fun onPlayerLeft(message: PlayerLeftNotification) {
         println(message.message)
         println(message.sender + "joined")
-        networkService.playersList.remove(message.sender)
+        networkService.playerList.removeIf { it.name == message.sender }
         networkService.onAllRefreshables { refreshAfterPlayerLeft(message.sender) }
     }
 
