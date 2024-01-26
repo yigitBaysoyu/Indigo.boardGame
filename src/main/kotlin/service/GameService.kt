@@ -532,6 +532,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     fun loadGame() {
         val file = File("saveGame.ser")
+        if(!file.exists()) return
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
         onAllRefreshables { refreshAfterStartNewGame() }
     }

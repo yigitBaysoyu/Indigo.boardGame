@@ -6,6 +6,7 @@ import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
+import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
 
@@ -17,8 +18,14 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val sceneWidth = Constants.SCENE_WIDTH
     private  val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
-    private val offsetY = 250
-    private val offsetX = 50
+
+    private val cornersBackground = Button(
+        posX = 0, posY = 0,
+        width = sceneWidth, height = sceneHeight,
+        visual = ImageVisual(Constants.cornersBackground)
+    ).apply {
+        isDisabled = true
+    }
 
     private val headerLabel = Label(
         width = 1000, height = 100,
@@ -41,6 +48,7 @@ class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.
         background = Constants.sceneBackgroundColorVisual
 
         addComponents(
+            cornersBackground,
             headerLabel,
             backButton
         )

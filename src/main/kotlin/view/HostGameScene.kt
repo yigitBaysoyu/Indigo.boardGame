@@ -1,25 +1,16 @@
 package view
 
-import edu.udo.cs.sopra.ntf.GameMode
-import edu.udo.cs.sopra.ntf.PlayerColor
-import entity.Player
-import entity.PlayerType
-import service.ConnectionState
-import view.Constants
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.CheckBox
 import tools.aqua.bgw.components.uicomponents.Label
-import tools.aqua.bgw.components.uicomponents.TextField
 import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
-import java.util.Random
 
 /**
  * Displays configuration for an online game.
@@ -37,8 +28,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
     var hostName = ""
-
-    private var selectedGameMode = 0
 
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -192,36 +181,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         isVisible = false
     }
 
-    private val addDummyDataButton = Button(
-        width = 350, height = 75,
-        posX = halfWidth - 730, posY = 900,
-        text = "add dummy data",
-        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
-        visual = Visual.EMPTY
-    ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
-            refreshAfterPlayerJoined("nick")
-            refreshAfterPlayerJoined("tom")
-            refreshAfterPlayerJoined("Alex")
-
-        }
-    }
-
-    private val deleteDummyData = Button(
-        width = 350, height = 75,
-        posX = halfWidth + 375, posY = 900,
-        text = "delete dummy data",
-        font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
-        visual = Visual.EMPTY
-    ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
-            refreshAfterPlayerLeft(2)
-
-        }
-    }
-
     init {
         background = Constants.sceneBackgroundColorVisual
 
@@ -244,8 +203,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             startButton,
             randomOrderCheckbox,
             threePlayerVariantCheckBox,
-            addDummyDataButton,
-            deleteDummyData
         )
     }
     /*
