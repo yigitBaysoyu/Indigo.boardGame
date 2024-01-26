@@ -164,6 +164,10 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     }
 
+    /**
+     * forwards the given [message] that holds the information about the Placed Tile
+     * and forwards the [sender] who is the player that placed this Tile
+     */
     @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {

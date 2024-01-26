@@ -229,6 +229,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
         return pathTile
     }
+
+    /**
+     * Calls the startNewGame function in the gameServices
+     * with the paramter which came from the host which is in [message]
+     * */
     fun startNewJoinedGame(message: edu.udo.cs.sopra.ntf.GameInitMessage) {
 
         // check if we are waiting for gameInitMessage. if not then there is no game to start

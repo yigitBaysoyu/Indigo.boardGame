@@ -10,7 +10,7 @@ import view.Refreshable
  * of changes to refresh via the [onAllRefreshables] method.
  *
  */
-abstract class AbstractRefreshingService {
+abstract class  AbstractRefreshingService {
 
     val refreshables = mutableListOf<Refreshable>()
 
@@ -22,6 +22,9 @@ abstract class AbstractRefreshingService {
         refreshables += newRefreshable
     }
 
+    /**
+     * calls [method] function on object "it"
+     */
     fun onAllRefreshables(method: Refreshable.() -> Unit) =
         refreshables.forEach { it.method() }
 
