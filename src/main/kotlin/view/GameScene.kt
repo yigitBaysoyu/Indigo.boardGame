@@ -251,6 +251,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.playerService.redo() }
     }
 
+    private val gameSavedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 800 + menuAreaOffsetY - 50 + 5,
+        text = "Game was saved.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     private val saveGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 800 + menuAreaOffsetY,
@@ -259,7 +269,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = { rootService.gameService.saveGame() }
+        onMouseClicked = {
+            gameSavedMessage.isVisible = true
+            val animation = DelayAnimation(2750)
+            animation.onFinished = { gameSavedMessage.isVisible = false }
+            playAnimation(animation)
+            rootService.gameService.saveGame()
+        }
     }
 
     private val loadGameButton = Button(
@@ -271,6 +287,26 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.gameService.loadGame() }
+    }
+
+    private val fileNotFoundMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "File was not found.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val gameLoadedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "Game was loaded.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
     }
 
     private val returnToMenuWarning = Label(
@@ -380,8 +416,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             resumeAiButton,
             undoButton,
             redoButton,
+            gameSavedMessage,
             saveGameButton,
             loadGameButton,
+            gameLoadedMessage,
+            fileNotFoundMessage,
             returnToMenuWarning,
             returnToMenuButtonBackground,
             returnToMenuButton,
@@ -553,7 +592,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val gemList = mutableListOf<TokenView>()
 
-        for (i in 0 until tile.availableGems.size - 1) {
+        // Green emerald gems
+        for (i in 0 until 5) {
             var gemX = hexagonWidth / 2
             var gemY = hexagonHeight / 2
 
@@ -564,21 +604,22 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 gemSize, gemSize,
                 ImageVisual(Constants.emeraldImage)
             )
+            if(i >= tile.availableGems.size - 1) gemView.visual = Visual.EMPTY
             area.add(gemView)
             gemList.add(gemView)
         }
 
-        if (tile.availableGems.size >= 1) {
-            val gemX = hexagonWidth / 2
-            val gemY = hexagonHeight / 2
-            val gemView = TokenView(
-                gemX - gemSize / 2, gemY - gemSize / 2,
-                gemSize, gemSize,
-                ImageVisual(Constants.sapphireImage)
-            )
-            area.add(gemView)
-            gemList.add(0, gemView)
-        }
+        // Blue sapphire gem in center
+        val gemX = hexagonWidth / 2
+        val gemY = hexagonHeight / 2
+        val gemView = TokenView(
+            gemX - gemSize / 2, gemY - gemSize / 2,
+            gemSize, gemSize,
+            ImageVisual(Constants.sapphireImage)
+        )
+        if (tile.availableGems.size == 1) gemView.visual = Visual.EMPTY
+        area.add(gemView)
+        gemList.add(0, gemView)
 
         gemMap.add(area, gemList)
     }
@@ -725,7 +766,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     area.onMouseExited = { handleOnMouseExited(area, x, y) }
                 }
 
-                if(tile !is TreasureTile){
+                if(tile !is TreasureTile && tile !is CenterTile){
                     area.rotate(((tile.rotationOffset+5)%6) * 60)
                 }
                 else{
@@ -1066,12 +1107,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             // put gem back on start tile
             val startX = movement.startTile.xCoordinate
             val startY = movement.startTile.yCoordinate
+            val startTile = rootService.gameService.getTileFromAxialCoordinates(startX, startY)
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
 
-            val gemView = if (movement.startTile is CenterTile) {
-                gemViews[movement.startTile.availableGems.size - 1]
+            val gemView = if (startTile is CenterTile) {
+                gemViews[startTile.availableGems.size - 1]
             } else {
                 gemViews[movement.positionOnStartTile]
             }
@@ -1100,6 +1142,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         gemMap.removeForward(tileView)
 
         handleUndoRedoButton()
+    }
+
+    override fun refreshAfterLoadGame() {
+        gameLoadedMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { gameLoadedMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterFileNotFound() {
+        fileNotFoundMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
