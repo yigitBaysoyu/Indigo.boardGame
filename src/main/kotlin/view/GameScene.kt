@@ -250,6 +250,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.playerService.redo() }
     }
 
+    private val gameSavedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 800 + menuAreaOffsetY - 50 + 5,
+        text = "Game was saved.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     private val saveGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 800 + menuAreaOffsetY,
@@ -258,7 +268,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = { rootService.gameService.saveGame() }
+        onMouseClicked = {
+            gameSavedMessage.isVisible = true
+            val animation = DelayAnimation(2750)
+            animation.onFinished = { gameSavedMessage.isVisible = false }
+            playAnimation(animation)
+            rootService.gameService.saveGame()
+        }
     }
 
     private val loadGameButton = Button(
@@ -380,6 +396,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             setButton,
             undoButton,
             redoButton,
+            gameSavedMessage,
             saveGameButton,
             loadGameButton,
             gameLoadedMessage,
