@@ -50,6 +50,13 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         isDisabled = true
     }
 
+    private val sessionIDLabel = Label(
+        width = 750, height = 100,
+        posX = halfWidth - 750/2, posY = 800,
+        text = "Session ID: ",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240))
+    )
+
     private val headerLabel = Label(
         width = 500, height = 100,
         posX = halfWidth - 500 / 2, posY = 75,
@@ -187,6 +194,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         addComponents(
             cornersBackground,
             headerLabel,
+            sessionIDLabel,
             playerNameInputList[0],
             playerNameInputList[1],
             playerNameInputList[2],
@@ -230,6 +238,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             selectedColors[i] = i
             selectedModes[i] = if (i == 0) 0 else 3
         }
+
+        sessionIDLabel.text = "Session ID: "
 
         // host specific configuration
         playerNameInputList[0].isVisible = true
@@ -316,4 +326,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         println("color could not be found")
     }
 
+    override fun refreshAfterSessionIDReceived(sessionID: String) {
+        sessionIDLabel.text = "Session ID: $sessionID"
+    }
 }

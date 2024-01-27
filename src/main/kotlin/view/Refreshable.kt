@@ -96,4 +96,8 @@ interface Refreshable {
      */
     fun refreshConnectionState(newState: ConnectionState){}
 
+    /**
+     * performs refreshes after a sessionID is received in a createGame message
+     */
+    fun refreshAfterSessionIDReceived(sessionID: String) {}
 }
