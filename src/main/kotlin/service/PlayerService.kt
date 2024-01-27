@@ -52,12 +52,11 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      * If there are no moves left to undo, it prints a message indicating so.
      */
     fun undo() {
-        rootService.aiService.initializePlaceableTiles()
-        rootService.aiService.isPaused = true
-
         val game = rootService.currentGame
         checkNotNull(game)
         if(game.undoStack.isEmpty()) return
+
+        rootService.aiService.isPaused = true
 
         val lastTurn = game.undoStack.removeLast()
 
@@ -211,10 +210,9 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val game = rootService.currentGame
         checkNotNull(game) { "no active game" }
 
-        rootService.aiService.initializePlaceableTiles()
-        rootService.aiService.isPaused = true
-
         if(game.redoStack.isEmpty()) return
+
+        rootService.aiService.isPaused = true
 
         val coordinatesAndRotation = game.redoStack.last()
         val coords = coordinatesAndRotation.first

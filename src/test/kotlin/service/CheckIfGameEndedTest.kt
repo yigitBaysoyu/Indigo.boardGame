@@ -43,7 +43,7 @@ class CheckIfGameEndedTest {
             0, deque
         )
         //check if the assertion are working
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile1) }
 
         val player = mutableListOf(
@@ -63,7 +63,7 @@ class CheckIfGameEndedTest {
             newGame.gameLayout[i] = mutableListOf()
         }
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertTrue(test.refreshAfterEndGameCalled)
 
     }
@@ -86,7 +86,7 @@ class CheckIfGameEndedTest {
             0, mutableListOf()
         )
         //check if the assertion are working
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile) }
 
         val player = mutableListOf(
@@ -122,14 +122,14 @@ class CheckIfGameEndedTest {
         newGame.gameLayout[2] = mutableListOf(tile2)
         newGame.gameLayout[0] = mutableListOf(tile3)
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
         for (i in 3 until newGame.gameLayout.size) {
             newGame.gameLayout[i] = mutableListOf(tile1)
         }
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertTrue(test.refreshAfterEndGameCalled)
 
     }
@@ -153,7 +153,7 @@ class CheckIfGameEndedTest {
             0, mutableListOf()
         )
         //check if the assertion are working
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile) }
 
         val player = mutableListOf(
@@ -189,17 +189,17 @@ class CheckIfGameEndedTest {
             newGame.gameLayout[i] = mutableListOf(EmptyTile(mutableMapOf(),0,0,0))
         }
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
         newGame.gameLayout[1] = mutableListOf(tile2)
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
         newGame.gameLayout[2] = mutableListOf(tile3)
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
         newGame.gameLayout[0] = mutableListOf(PathTile(
@@ -217,7 +217,7 @@ class CheckIfGameEndedTest {
             0, ArrayDeque()
         ))
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertTrue(test.refreshAfterEndGameCalled)
 
 
@@ -242,7 +242,7 @@ class CheckIfGameEndedTest {
             0, mutableListOf()
         )
 
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile) }
 
         val player = mutableListOf(
@@ -283,7 +283,7 @@ class CheckIfGameEndedTest {
             newGame.gameLayout[i] = mutableListOf(tile4)
         }
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
 
@@ -306,7 +306,7 @@ class CheckIfGameEndedTest {
             0, mutableListOf()
         )
         //check if the assertion are working
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile) }
 
         val player = mutableListOf(
@@ -324,7 +324,7 @@ class CheckIfGameEndedTest {
         )
 
 
-        game.gameService.checkIfGameEnded()
+        game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
 
 
