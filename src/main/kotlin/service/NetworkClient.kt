@@ -40,6 +40,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 CreateGameResponseStatus.SUCCESS -> {
                     networkService.updateConnectionState(ConnectionState.WAITING_FOR_GUESTS)
                     sessionID = response.sessionID
+                    networkService.onAllRefreshables { sessionID?.let { refreshAfterSessionIDReceived(it) } }
                 }
 
                 else -> disconnectAndError(response.status)
