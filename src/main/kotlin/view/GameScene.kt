@@ -355,6 +355,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.menuAreaArrow)
     )
 
+    private val resumeAiButton =  Button(
+        width = 300, height = 65,
+        posX = menuAreaMargin, posY = 450 + menuAreaOffsetY,
+        text = "Resume AI",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        isVisible = false
+        isDisabled = true
+        onMouseClicked = {
+            rootService.aiService.isPaused = false
+            handleAIPlayers()
+            isDisabled = true
+            isVisible = false
+        }
+    }
+
     init {
         background = Constants.sceneBackgroundColorVisual
         addComponents(
@@ -394,6 +412,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             zeroButton,
             oneButton,
             setButton,
+            resumeAiButton,
             undoButton,
             redoButton,
             gameSavedMessage,
@@ -452,7 +471,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game is null" }
 
-        when(currentGame.playerList[0].playerType){
+        when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
@@ -769,7 +788,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "no active game" }
 
         // If Player cant place a tile because he is not a Local Player, don't show tile shadow
-        if(game.playerList[game.activePlayerID].playerType != PlayerType.LOCALPLAYER) {
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
             return
         }
 
@@ -792,6 +811,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun handleOnMouseExited(area: Area<TokenView>, x: Int, y: Int) {
         if (rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game" }
+
+        // If Player cant place a tile because he is not a Local Player, don't show tile shadow
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
+            return
+        }
+
         area.visual = ImageVisual(Constants.emptyTileImage)
         area.rotation = 0.0
     }
@@ -837,6 +865,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             return
         }
 
+        rootService.aiService.isPaused = false
+        resumeAiButton.isVisible = false
+        resumeAiButton.isDisabled = true
         rootService.playerService.placeTile(tileX, tileY)
     }
 
@@ -904,7 +935,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     playerHandList[index].posX += 500
                     unlock()
                 }
-                lock()
+                // lock()
                 playAnimation(animation)
             }
             val tileType = player.playHand[0].type
@@ -915,7 +946,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun resetAllComponents() {
         outerArea.clear()
-
         for (label in playerLabelList) label.isVisible = false
         for (color in playerColorList) color.isVisible = false
         for (aiIcon in playerAIIconList) aiIcon.isVisible = false
@@ -923,8 +953,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         for (gemLayout in playerGemLayoutList) gemLayout.isVisible = false
         for (gemLayout in playerGemLayoutList) gemLayout.clear()
         for (playerScore in playerScoreList) playerScore.isVisible = false
+        resumeAiButton.isVisible = false
+        resumeAiButton.isDisabled = true
         tileMap.clear()
         gemMap.clear()
+        menuArea.posX = sceneWidth - 75.0
     }
 
     override fun refreshAfterSimulationSpeedChange(speed: Double) {
@@ -941,8 +974,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             duration = 50
         )
         animation.onFinished = {
-            val rotationOffset = (game.playerList[game.activePlayerID].playHand[0].rotationOffset + 5) % 6
-            playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            if(game.getActivePlayer().playHand.isNotEmpty()) {
+                val rotationOffset = (game.getActivePlayer().playHand[0].rotationOffset + 5) % 6
+                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            }
             unlock()
         }
         lock()
@@ -953,7 +988,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
+        val tile = turn.placedTile
+        val x = tile.xCoordinate
+        val y = tile.yCoordinate
+        val view = tileMap.forward(Pair(x, y))
+
+        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+
+        view.visual = newVisual
+        view.rotation = (tile.rotationOffset+5) % 6 * 60.0
+
+        renderGemsForPathOrTreasureTile(tile, view)
+        renderPlayerHands(turn)
+        updatePlayerScores()
+        renderCollectedGemsLists()
+        setRotateButtonHeight()
+        handleUndoRedoButton()
+
+        for (gemMovement in turn.gemMovements) {
+            refreshAfterGemMoved(gemMovement)
+        }
+
+        rootService.gameService.endGameIfEnded()
+
+        // Don't call AI if it is paused anyway
+        if(rootService.aiService.isPaused) return
+
+        // Delay the turn if next player is AI
         var duration = 0
+        if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
         if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
             duration = when {
                 game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
@@ -961,44 +1024,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 else -> 750
             }
         }
-        val animation = DelayAnimation(duration)
-
-        animation.onFinished = {
-            val tile = turn.placedTile
-            val x = tile.xCoordinate
-            val y = tile.yCoordinate
-            val view = tileMap.forward(Pair(x, y))
-
-            val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
-
-            view.visual = newVisual
-            view.rotation = (tile.rotationOffset+5) % 6 * 60.0
-
-            renderGemsForPathOrTreasureTile(tile, view)
-            renderPlayerHands(turn)
-            updatePlayerScores()
-            renderCollectedGemsLists()
-            setRotateButtonHeight()
-            handleUndoRedoButton()
-
-            for (gemMovement in turn.gemMovements) {
-                refreshAfterGemMoved(gemMovement)
-            }
-
-            unlock()
-
-            rootService.gameService.checkIfGameEnded()
-
-            // If next player is SmartAI, delay its turn
-            duration = 0
-            if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
-            val delayAnimation = DelayAnimation(duration)
-            delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
-            playAnimation(delayAnimation)
-        }
-
-        lock()
-        playAnimation(animation)
+        val delayAnimation = DelayAnimation(duration)
+        delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+        playAnimation(delayAnimation)
     }
 
     override fun refreshAfterGemMoved(movement: GemMovement) {
@@ -1038,6 +1066,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     override fun refreshAfterUndo(turn: Turn) {
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
+
+        // Activate resumeAi Button
+        if(game.playerList.any { it.playerType == PlayerType.RANDOMAI || it.playerType == PlayerType.SMARTAI }) {
+            resumeAiButton.isVisible = true
+            resumeAiButton.isDisabled = false
+        }
 
         // render reverted scores
         updatePlayerScores()

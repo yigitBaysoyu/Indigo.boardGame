@@ -45,12 +45,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        if (isNetworkGame ==false){
+        if (!isNetworkGame) {
             for(player in players) {
                 player.playHand.clear()
                 player.playHand.add(drawPile.removeFirst())
-            } }
+            }
+        }
 
+        rootService.aiService.isPaused = false
 
         setDefaultGameLayout()
         setSimulationSpeed(simulationSpeed)
@@ -237,7 +239,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-        println("Ende kein empty tile")
         return false
     }
 
@@ -433,16 +434,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Function that checks whether all stones have been removed from the game field,
-     * and if they have been removed, the game ends.
+     * Function that checks whether all stones have been removed from the game field
      */
-    fun checkIfGameEnded() {
-
+    fun checkIfGameEnded(): Boolean {
         val game = rootService.currentGame
         checkNotNull(game)
 
         var allGemsRemoved = true
-
         var allTilesPlaced = true
 
         for (row in game.gameLayout){
@@ -471,14 +469,20 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     }
                     else -> 1 + 1 // do nothing
                 }
-
             }
         }
 
-        if (allGemsRemoved || allTilesPlaced ) {
+        return allGemsRemoved || allTilesPlaced
+    }
+
+    /**
+     * Function that checks whether all stones have been removed from the game field,
+     * and if they have been removed, the game ends.
+     */
+    fun endGameIfEnded() {
+        if(checkIfGameEnded()) {
             onAllRefreshables { refreshAfterEndGame() }
         }
-
     }
 
 

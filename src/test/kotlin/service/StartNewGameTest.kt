@@ -33,7 +33,7 @@ class StartNewGameTest {
             0, mutableListOf()
         )
         //check if the assertion are working
-        assertThrows<IllegalStateException> { game.gameService.checkIfGameEnded() }
+        assertThrows<IllegalStateException> { game.gameService.endGameIfEnded() }
         assertThrows<IllegalStateException> { game.gameService.isPlaceAble(0, 0, tile1) }
 
         val player = mutableListOf(
