@@ -100,7 +100,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val playerWhoPlacedTile = game.playerList[lastTurn.playerID]
         if (playerWhoPlacedTile.playHand.isNotEmpty()) {
             val tileToReturn = playerWhoPlacedTile.playHand.removeLast()
-            game.drawPile.add(tileToReturn)
+            game.drawPile.add(0, tileToReturn)
         }
 
         // Remove placed tile from board
