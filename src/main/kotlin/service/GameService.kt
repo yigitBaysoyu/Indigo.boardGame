@@ -436,7 +436,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function that checks whether all stones have been removed from the game field,
      * and if they have been removed, the game ends.
      */
-    fun checkIfGameEnded(game: IndigoGame? = rootService.currentGame): Boolean {
+    fun checkIfGameEnded() {
+        val game = rootService.currentGame
         checkNotNull(game) {"No game found."}
 
         var allGemsRemoved = true
@@ -465,7 +466,9 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        return (allGemsRemoved || allTilesPlaced)
+        if (allGemsRemoved || allTilesPlaced ) {
+            onAllRefreshables { refreshAfterEndGame() }
+        }
     }
 
 
@@ -525,25 +528,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     fun loadGame() {
         val file = File("saveGame.ser")
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
-
-        //Convert object from player.gateList to equal counterparts in IndigoGame.gateList
-        val loadedGame = rootService.currentGame
-        checkNotNull(loadedGame)
-
-        for(player in loadedGame.playerList){
-            val playerGates = player.gateList
-            for((index, gate) in playerGates.withIndex()){
-                gate@ for(gateList in loadedGame.gateList){
-                    val identicalObject = gateList.find {
-                        it.xCoordinate == gate.xCoordinate && it.yCoordinate == gate.yCoordinate
-                    } ?: break@gate
-                    player.gateList[index] =  identicalObject
-                    require(player.gateList[index] in gateList)
-                }
-            }
-        }
         onAllRefreshables { refreshAfterStartNewGame() }
-
     }
 
     /**
@@ -612,7 +597,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
 
     fun moveGems(turn: Turn): Turn{
-        val currentGame = checkNotNull(rootService.currentGame){"No active Game"}
         val tile = turn.placedTile
 
         //Getting neighbours according to connection
@@ -646,7 +630,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         return turn
     }
 
-    private fun createGemMovements(turn: Turn, neighbours: MutableMap<Int, Tile>): Turn{
+    private fun createGemMovements(turn: Turn, neighbours: MutableMap<Int, Tile>) {
         var currentGem: GemType
         val tile = turn.placedTile
         //Move all stones that are on my tile to the end of the respective path
@@ -668,8 +652,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         currentGem,
                         turn
                     )
-                }
-                else {
+                } else {
                     val gemMovement = GemMovement(
                         currentGem,
                         originTile,
@@ -683,7 +666,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 }
             }
         }
-        return turn
     }
 
     /**
@@ -1036,7 +1018,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
 
-        if (checkIfGameEnded()) onAllRefreshables { refreshAfterEndGame() }
+        checkIfGameEnded()
         currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
 
         when(currentGame.getActivePlayer().playerType){

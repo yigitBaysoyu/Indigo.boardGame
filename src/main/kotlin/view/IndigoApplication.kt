@@ -10,7 +10,6 @@ import tools.aqua.bgw.core.WindowMode
 /**
  * Implementation of the Indigo game using BoardGameWork.
  */
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode = WindowMode.FULLSCREEN), Refreshable {
 
     // Central service from which all others are created/accessed
@@ -20,6 +19,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val mainMenuScene = MainMenuScene(rootService)
      private val gameScene = GameScene(rootService)
      private val startGameScene = StartGameScene(rootService)
+     private val loadGameScene = LoadGameScene(rootService)
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
@@ -33,6 +33,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             mainMenuScene,
             gameScene,
             startGameScene,
+            loadGameScene,
             hostGameScene,
             joinGameScene,
             gameEndedScene
@@ -41,18 +42,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
-        mainMenuScene.loadGameButton.onMouseClicked = {
-            rootService.gameService.loadGame()
-            //showMenuScene(loadGameScene)
-        }
-        mainMenuScene.hostGameButton.onMouseClicked = {
-            // host game logic
-            showMenuScene(hostGameScene)
-        }
-        mainMenuScene.joinGameButton.onMouseClicked = {
-            // join game logic
-            showMenuScene(joinGameScene)
-        }
+        mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
         mainMenuScene.hostGameButton.onMouseClicked = { hostGameLogic() }
         mainMenuScene.joinGameButton.onMouseClicked = { joinGameLogic() }
         hostGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}

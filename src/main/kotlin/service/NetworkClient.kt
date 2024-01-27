@@ -18,14 +18,13 @@ import tools.aqua.bgw.net.common.response.*
  * @param secret A secret key for secure communication.
  */
 
-class NetworkClient
-    (playerName: String,
-     host: String,
-     secret: String,
-     val networkService: NetworkService,
-     val playerType: PlayerType):
-    BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE) {
-
+class NetworkClient(
+    playerName: String,
+    host: String,
+    secret: String,
+    val networkService: NetworkService,
+    val playerType: PlayerType): BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE
+) {
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
     private var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
@@ -118,14 +117,10 @@ class NetworkClient
             }
 
             var numPlayers = 0
-            if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
-                numPlayers = 2
-            } else if
-                    (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS ||
-                     networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
-                numPlayers = 3
-            }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
-                numPlayers = 4
+            numPlayers = when (networkService.gameMode) {
+                GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
+                GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
+                GameMode.FOUR_SHARED_GATEWAYS -> 4
             }
 
             if(players.size < numPlayers ) {
@@ -176,7 +171,6 @@ class NetworkClient
      * forwards the given [message] that holds the information about the Placed Tile
      * and forwards the [sender] who is the player that placed this Tile
      */
-    @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
         check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
