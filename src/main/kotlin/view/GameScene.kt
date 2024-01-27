@@ -27,7 +27,6 @@ import kotlin.math.sqrt
 import service.ConnectionState
 import tools.aqua.bgw.animation.RotationAnimation
 import tools.aqua.bgw.event.KeyCode
-import tools.aqua.bgw.event.MouseButtonType
 import kotlin.system.measureTimeMillis
 
 /**
