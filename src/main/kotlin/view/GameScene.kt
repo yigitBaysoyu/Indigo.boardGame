@@ -555,7 +555,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val gemList = mutableListOf<TokenView>()
 
-        for (i in 0 until tile.availableGems.size - 1) {
+        // Green emerald gems
+        for (i in 0 until 5) {
             var gemX = hexagonWidth / 2
             var gemY = hexagonHeight / 2
 
@@ -566,21 +567,22 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 gemSize, gemSize,
                 ImageVisual(Constants.emeraldImage)
             )
+            if(i >= tile.availableGems.size - 1) gemView.visual = Visual.EMPTY
             area.add(gemView)
             gemList.add(gemView)
         }
 
-        if (tile.availableGems.size >= 1) {
-            val gemX = hexagonWidth / 2
-            val gemY = hexagonHeight / 2
-            val gemView = TokenView(
-                gemX - gemSize / 2, gemY - gemSize / 2,
-                gemSize, gemSize,
-                ImageVisual(Constants.sapphireImage)
-            )
-            area.add(gemView)
-            gemList.add(0, gemView)
-        }
+        // Blue sapphire gem in center
+        val gemX = hexagonWidth / 2
+        val gemY = hexagonHeight / 2
+        val gemView = TokenView(
+            gemX - gemSize / 2, gemY - gemSize / 2,
+            gemSize, gemSize,
+            ImageVisual(Constants.sapphireImage)
+        )
+        if (tile.availableGems.size == 1) gemView.visual = Visual.EMPTY
+        area.add(gemView)
+        gemList.add(0, gemView)
 
         gemMap.add(area, gemList)
     }
@@ -1051,12 +1053,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             // put gem back on start tile
             val startX = movement.startTile.xCoordinate
             val startY = movement.startTile.yCoordinate
+            val startTile = rootService.gameService.getTileFromAxialCoordinates(startX, startY)
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
 
-            val gemView = if (movement.startTile is CenterTile) {
-                gemViews[movement.startTile.availableGems.size - 1]
+            val gemView = if (startTile is CenterTile) {
+                gemViews[startTile.availableGems.size - 1]
             } else {
                 gemViews[movement.positionOnStartTile]
             }
