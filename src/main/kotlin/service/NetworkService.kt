@@ -374,6 +374,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
         val game = rootService.currentGame
         checkNotNull(game)
+
         val networkClient = checkNotNull(client){"No client connected."}//
         rootService.playerService.placeTile(message.qcoordinate,message.rcoordinate)
 
