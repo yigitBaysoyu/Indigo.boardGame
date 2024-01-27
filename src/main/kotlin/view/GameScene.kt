@@ -325,6 +325,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.menuAreaArrow)
     )
 
+    private val resumeAiButton =  Button(
+        width = 300, height = 65,
+        posX = menuAreaMargin, posY = 450 + menuAreaOffsetY,
+        text = "Resume AI",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        isVisible = false
+        isDisabled = true
+        onMouseClicked = {
+            rootService.aiService.isPaused = false
+            handleAIPlayers()
+            isDisabled = true
+            isVisible = false
+        }
+    }
+
     init {
         background = Constants.sceneBackgroundColorVisual
         addComponents(
@@ -364,6 +382,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             zeroButton,
             oneButton,
             setButton,
+            resumeAiButton,
             undoButton,
             redoButton,
             saveGameButton,
@@ -419,7 +438,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game is null" }
 
-        when(currentGame.playerList[0].playerType){
+        when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
@@ -967,6 +986,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     override fun refreshAfterUndo(turn: Turn) {
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
+
+        //Activate resumeAi Button
+        resumeAiButton.isVisible = true
+        resumeAiButton.isDisabled = false
 
         // render reverted scores
         updatePlayerScores()
