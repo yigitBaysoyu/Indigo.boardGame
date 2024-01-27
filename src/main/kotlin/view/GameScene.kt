@@ -933,7 +933,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     playerHandList[index].posX += 500
                     unlock()
                 }
-                lock()
+                // lock()
                 playAnimation(animation)
             }
             val tileType = player.playHand[0].type
@@ -978,7 +978,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             unlock()
         }
-        lock()
+        // lock()
         playAnimation(animation)
     }
 
@@ -1030,7 +1030,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playAnimation(delayAnimation)
         }
 
-        lock()
+        // lock()
         playAnimation(animation)
     }
 
