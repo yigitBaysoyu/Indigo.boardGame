@@ -25,6 +25,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 import service.ConnectionState
+import tools.aqua.bgw.animation.RotationAnimation
 import tools.aqua.bgw.event.KeyCode
 import kotlin.system.measureTimeMillis
 
@@ -159,32 +160,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ColorVisual(0, 0, 0, 60)
     ).apply {
         onMouseEntered = {
-            playAnimation(
-                MovementAnimation(
-                    componentView = this,
-                    toX = sceneWidth - 425,
-                    duration = 100
-                ).apply {
-                    onFinished = {
-                        posX = sceneWidth - 425.0
-                    }
-                }
+            val animation = MovementAnimation(
+                componentView = this,
+                toX = sceneWidth - 425,
+                duration = 100
             )
-
+            animation.onFinished = { posX = sceneWidth - 425.0 }
+            playAnimation(animation)
         }
 
-        onMouseExited = {
-            playAnimation(
-                MovementAnimation(
-                    componentView = this,
-                    toX = sceneWidth - 75,
-                    duration = 100
-                ).apply {
-                    onFinished = {
-                        posX = sceneWidth - 75.0
-                    }
-                }
+        onMouseExited = onMouseExited@{
+            if(it.posX.toInt() >= 10) return@onMouseExited
+            val animation = MovementAnimation(
+                componentView = this,
+                toX = sceneWidth - 75,
+                duration = 100
             )
+            animation.onFinished = { posX = sceneWidth - 75.0 }
+            playAnimation(animation)
         }
     }
 
@@ -226,7 +219,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = {
+        onMouseClicked = onMouseClicked@{
+            if(simulationSpeedBinary == "") return@onMouseClicked
             val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
             rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
             simulationSpeedBinary = ""
@@ -787,6 +781,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if (game.isNetworkGame && rootService.networkService.connectionState != ConnectionState.PLAYING_MY_TURN) {
             return
         }
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) return
+
         val mouseX: Double = mouseEvent.posX.toDouble()
         val mouseY: Double = mouseEvent.posY.toDouble()
         val tileCoords = tileMap.backward(area)
@@ -865,19 +861,33 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         }
     }
 
-    private fun renderPlayerHands() {
+    private fun renderPlayerHands(turn: Turn? = null) {
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
         game.playerList.forEachIndexed { index, player ->
-            if (player.playHand.size > 0) {
-                val tileType = player.playHand[0].type
-                playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
-                playerHandList[index].rotation = ((player.playHand[0].rotationOffset+5)%6) * 60.0
-            } else {
+            if (player.playHand.size <= 0) {
                 playerHandList[index].visual = Visual.EMPTY
+                return@forEachIndexed
             }
 
+            if(turn != null && turn.playerID == index) {
+                playerHandList[index].posX -= 500
+                val animation = MovementAnimation(
+                    componentView = playerHandList[index],
+                    byX = 500,
+                    duration = 200
+                )
+                animation.onFinished = {
+                    playerHandList[index].posX += 500
+                    unlock()
+                }
+                lock()
+                playAnimation(animation)
+            }
+            val tileType = player.playHand[0].type
+            playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
+            playerHandList[index].rotation = (player.playHand[0].rotationOffset+5)%6 * 60.0
         }
     }
 
@@ -903,50 +913,70 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "Game is null" }
 
-        val rotationOffset = ((game.playerList[game.activePlayerID].playHand[0].rotationOffset+5)%6)
-        playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+        val animation = RotationAnimation(
+            componentView = playerHandList[game.activePlayerID],
+            byAngle = 60.0,
+            duration = 50
+        )
+        animation.onFinished = {
+            val rotationOffset = (game.playerList[game.activePlayerID].playHand[0].rotationOffset + 5) % 6
+            playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            unlock()
+        }
+        lock()
+        playAnimation(animation)
     }
 
     override fun refreshAfterTilePlaced(turn: Turn) {
-        val tile = turn.placedTile
-        val x = tile.xCoordinate
-        val y = tile.yCoordinate
-        val view = tileMap.forward(Pair(x, y))
+        val game = rootService.currentGame
+        checkNotNull(game) { "game is null" }
 
-        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+        var duration = 0
+        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
+            duration = when {
+                game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
+                game.simulationSpeed < 50 -> (10000 - (10000 - 750) * (game.simulationSpeed * 2 / 100)).toInt()
+                else -> 750
+            }
+        }
+        val animation = DelayAnimation(duration)
 
-        view.rotation = ((tile.rotationOffset+5)%6) * 60.0
+        animation.onFinished = {
+            val tile = turn.placedTile
+            val x = tile.xCoordinate
+            val y = tile.yCoordinate
+            val view = tileMap.forward(Pair(x, y))
 
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+            val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
 
-        //Delay the placement of random tile
-        if(currentGame.playerList[turn.playerID].playerType == PlayerType.RANDOMAI){
-            val gameScene = this
-            gameScene.lock()
-            this.playAnimation(
-                DelayAnimation(500).apply {
-                    onFinished = {
-                        view.visual = newVisual
-                        gameScene.unlock()
-                    }
-                }
-            )
-        } else {
             view.visual = newVisual
+            view.rotation = (tile.rotationOffset+5) % 6 * 60.0
+
+            renderGemsForPathOrTreasureTile(tile, view)
+            renderPlayerHands(turn)
+            updatePlayerScores()
+            renderCollectedGemsLists()
+            setRotateButtonHeight()
+            handleUndoRedoButton()
+
+            for (gemMovement in turn.gemMovements) {
+                refreshAfterGemMoved(gemMovement)
+            }
+
+            unlock()
+
+            rootService.gameService.checkIfGameEnded()
+
+            // If next player is SmartAI, delay its turn
+            duration = 0
+            if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
+            val delayAnimation = DelayAnimation(duration)
+            delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+            playAnimation(delayAnimation)
         }
 
-        renderGemsForPathOrTreasureTile(tile, view)
-
-        renderPlayerHands()
-        updatePlayerScores()
-        renderCollectedGemsLists()
-        setRotateButtonHeight()
-        handleUndoRedoButton()
-
-        for (gemMovement in turn.gemMovements) {
-            refreshAfterGemMoved(gemMovement)
-        }
+        lock()
+        playAnimation(animation)
     }
 
     override fun refreshAfterGemMoved(movement: GemMovement) {
