@@ -153,7 +153,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         )
 
         if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)){
-            println("Not Placable")
             return
         }
 

@@ -239,7 +239,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-        println("Ende kein empty tile")
         return false
     }
 
