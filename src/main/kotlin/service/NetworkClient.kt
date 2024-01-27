@@ -105,9 +105,6 @@ class NetworkClient(
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-
-
-
             val players = networkService.playerList
 
             val isNameNotUnique = players.contains(notification.sender)
@@ -116,8 +113,7 @@ class NetworkClient(
                 disconnectAndError("Player names are not unique!")
             }
 
-            var numPlayers = 0
-            numPlayers = when (networkService.gameMode) {
+            val numPlayers = when (networkService.gameMode) {
                 GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
                 GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
                 GameMode.FOUR_SHARED_GATEWAYS -> 4
@@ -130,18 +126,13 @@ class NetworkClient(
                 networkService.ntfPlayerList.add(newGuest)
                 colorList.removeAt(colorList.lastIndex)
 
-            }else {
+            } else {
                 error("maximum number of players has been reached.")
             }
 
-            println( players.size)
             if (players.size == numPlayers){
-
-            networkService.startNewHostedGame()
+                networkService.startNewHostedGame()
             }
-
-
-
         }
     }
 
