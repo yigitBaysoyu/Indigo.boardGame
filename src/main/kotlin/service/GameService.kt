@@ -537,6 +537,34 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             return
         }
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
+        val game = checkNotNull(rootService.currentGame) { "game is null" }
+
+        // Set gates in Player.gateList to the right object
+        for(player in game.playerList) {
+            for(i in 0 until player.gateList.size) {
+                val x = player.gateList[i].xCoordinate
+                val y = player.gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                player.gateList[i] = gateTileFromBoard
+            }
+        }
+
+        // Set gates in IndigoGame.gateList to the right object
+        for(gateList in game.gateList) {
+            for(i in 0 until gateList.size) {
+                val x = gateList[i].xCoordinate
+                val y = gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                gateList[i] = gateTileFromBoard
+            }
+        }
+
         onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
     }
