@@ -217,6 +217,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             TileType.TYPE_3 -> 3
             TileType.TYPE_4 -> 4
         }
+
         val splitLine = lines[typeAsInt].split(";")
         val map: MutableMap<Int, Int> = mutableMapOf()
 
