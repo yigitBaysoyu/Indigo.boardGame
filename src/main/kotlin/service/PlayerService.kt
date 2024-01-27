@@ -16,7 +16,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
-    fun rotateTile() {
+    fun rotateTile(suppressRefresh: Boolean = false) {
         val game = rootService.currentGame
         checkNotNull(game) {"game is null"}
 
@@ -39,7 +39,9 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // set the connections to the tile connections
         tile.connections = newConnections
 
-        onAllRefreshables { refreshAfterTileRotated() }
+        if(!suppressRefresh) {
+            onAllRefreshables { refreshAfterTileRotated() }
+        }
     }
 
     /**

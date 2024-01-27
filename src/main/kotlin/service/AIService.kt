@@ -71,7 +71,7 @@ class AIService(private val rootService: RootService) {
 
         println("bestMove: $bestMove")
         // Execute the best move
-        for (i in 1..bestMove.first) playerService.rotateTile()
+        for (i in 1..bestMove.first) playerService.rotateTile(true)
         val x = bestMove.second.first
         val y = bestMove.second.second
 
@@ -1060,7 +1060,7 @@ class AIService(private val rootService: RootService) {
         //Rotate the tile by a random amount
         val randomRotation = Random.nextInt(0, 6)
         for (i in 0 until randomRotation){
-            playerService.rotateTile()
+            playerService.rotateTile(true)
         }
 
         var selectedPos: Pair<Int,Int> ?= null

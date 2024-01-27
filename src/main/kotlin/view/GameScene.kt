@@ -866,6 +866,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             return
         }
 
+        rootService.aiService.isPaused = false
+        resumeAiButton.isVisible = false
+        resumeAiButton.isDisabled = true
         rootService.playerService.placeTile(tileX, tileY)
     }
 
@@ -978,7 +981,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             unlock()
         }
-        // lock()
+        lock()
         playAnimation(animation)
     }
 
@@ -986,7 +989,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
+        val tile = turn.placedTile
+        val x = tile.xCoordinate
+        val y = tile.yCoordinate
+        val view = tileMap.forward(Pair(x, y))
+
+        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+
+        view.visual = newVisual
+        view.rotation = (tile.rotationOffset+5) % 6 * 60.0
+
+        renderGemsForPathOrTreasureTile(tile, view)
+        renderPlayerHands(turn)
+        updatePlayerScores()
+        renderCollectedGemsLists()
+        setRotateButtonHeight()
+        handleUndoRedoButton()
+
+        for (gemMovement in turn.gemMovements) {
+            refreshAfterGemMoved(gemMovement)
+        }
+
+        rootService.gameService.endGameIfEnded()
+
+        // Don't call AI if it is paused anyway
+        if(rootService.aiService.isPaused) return
+
+        // Delay the turn if next player is AI
         var duration = 0
+        if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
         if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
             duration = when {
                 game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
@@ -994,44 +1025,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 else -> 750
             }
         }
-        val animation = DelayAnimation(duration)
-
-        animation.onFinished = {
-            val tile = turn.placedTile
-            val x = tile.xCoordinate
-            val y = tile.yCoordinate
-            val view = tileMap.forward(Pair(x, y))
-
-            val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
-
-            view.visual = newVisual
-            view.rotation = (tile.rotationOffset+5) % 6 * 60.0
-
-            renderGemsForPathOrTreasureTile(tile, view)
-            renderPlayerHands(turn)
-            updatePlayerScores()
-            renderCollectedGemsLists()
-            setRotateButtonHeight()
-            handleUndoRedoButton()
-
-            for (gemMovement in turn.gemMovements) {
-                refreshAfterGemMoved(gemMovement)
-            }
-
-            unlock()
-
-            rootService.gameService.endGameIfEnded()
-
-            // If next player is SmartAI, delay its turn
-            duration = 0
-            if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
-            val delayAnimation = DelayAnimation(duration)
-            delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
-            playAnimation(delayAnimation)
-        }
-
-        // lock()
-        playAnimation(animation)
+        val delayAnimation = DelayAnimation(duration)
+        delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+        playAnimation(delayAnimation)
     }
 
     override fun refreshAfterGemMoved(movement: GemMovement) {
@@ -1072,9 +1068,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
-        //Activate resumeAi Button
-        resumeAiButton.isVisible = true
-        resumeAiButton.isDisabled = false
+        // Activate resumeAi Button
+        if(game.playerList.any { it.playerType == PlayerType.RANDOMAI || it.playerType == PlayerType.SMARTAI }) {
+            resumeAiButton.isVisible = true
+            resumeAiButton.isDisabled = false
+        }
 
         // render reverted scores
         updatePlayerScores()
