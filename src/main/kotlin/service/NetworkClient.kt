@@ -171,6 +171,7 @@ class NetworkClient(
      * forwards the given [message] that holds the information about the Placed Tile
      * and forwards the [sender] who is the player that placed this Tile
      */
+    @Suppress("unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
         check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
