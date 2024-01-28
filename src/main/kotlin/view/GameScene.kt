@@ -231,7 +231,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         }
     }
 
-
     private val undoButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 525 + menuAreaOffsetY,
