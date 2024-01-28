@@ -561,6 +561,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
         val game = checkNotNull(rootService.currentGame) { "game is null" }
 
+        rootService.aiService.isPaused = true
+
         // Set gates in Player.gateList to the right object
         for(player in game.playerList) {
             for(i in 0 until player.gateList.size) {

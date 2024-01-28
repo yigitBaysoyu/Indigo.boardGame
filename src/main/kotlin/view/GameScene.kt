@@ -1137,6 +1137,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshAfterLoadGame() {
+        resumeAiButton.isVisible = true
+        resumeAiButton.isDisabled = false
         gameLoadedMessage.isVisible = true
         val animation = DelayAnimation(2750)
         animation.onFinished = { gameLoadedMessage.isVisible = false }
