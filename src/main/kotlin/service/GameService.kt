@@ -493,6 +493,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     fun endGameIfEnded() {
         if(checkIfGameEnded()) {
+            rootService.aiService.isPaused = true
+            rootService.networkService.disconnect()
             onAllRefreshables { refreshAfterEndGame() }
         }
     }
