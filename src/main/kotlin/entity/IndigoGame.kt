@@ -40,7 +40,7 @@ data class IndigoGame(
             activePlayerID = this.activePlayerID,
             simulationSpeed = this.simulationSpeed,
             isNetworkGame = this.isNetworkGame,
-            undoStack = ArrayDeque(),
+            undoStack = ArrayDeque(this.undoStack.map { it.deepCopy() }),
             redoStack = ArrayDeque(),
             playerList = this.playerList.map { it.deepCopy() }.toMutableList(),
             gateList = this.gateList.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList(),

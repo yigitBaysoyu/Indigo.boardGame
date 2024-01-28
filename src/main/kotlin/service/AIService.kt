@@ -3,27 +3,18 @@ package service
 import entity.*
 import java.lang.IndexOutOfBoundsException
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.*
 
 class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
-    private var positiveScore : Int = 0
-    private var negativeScore : Int = 0
-
 
     /**
-     *  Function calculates and executes the next best move for the AI player.
-     *  It utilizes the minimax function to evaluate and choose the move that
-     *  maximizes the AI's position in the game.
+     * Function to calculate and execute the best possible move for a SMARTAI player.
      */
-    suspend fun calculateNextTurn() {
-        println("Starting calculation")
+    fun calculateNextTurn() {
+
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
@@ -35,264 +26,113 @@ class AIService(private val rootService: RootService) {
 
         initializePossibleCoordinates(currentGame)
 
-        val possibleMoves = possibleMovesInGameState(currentGame)
-        if(possibleMoves.isEmpty()) return
-        println("Total moves: ${possibleMoves.size}")
+        val moves = tryPossibleMoves(currentGame, possibleCoordinates)
 
-        var bestMove: Pair<Int, Pair<Int, Int>>
-        val availableProcessors = Runtime.getRuntime().availableProcessors()
+        val bestMove = moves.maxBy { it.first }
 
-        var chunkedBy = possibleMoves.size / availableProcessors
-        if(chunkedBy == 0) chunkedBy = 1
-        val dividedMoves = possibleMoves.chunked(chunkedBy)
+        val rotation = bestMove.second.first
+        val x = bestMove.second.second.first
+        val y = bestMove.second.second.second
 
-        coroutineScope{
-            //Map each chunk of moves to a thread and use Default Dispatcher to assure time limit is held
-            val moves = dividedMoves.map { moves ->
-                async(Dispatchers.Default){
-                    calculateBestMove(moves)
-                }
-            }
-            //Wait for all Threads to finish
-            val result = moves.awaitAll()
-            var bestResult = result.first()
-            println("First result: ${bestResult.first}")
-            for(i in 1 until result.size){
-                //println("$i Result : ${result[i].first}")
-                if(result[i].first > bestResult.first){
-                    bestResult = result[i]
-                }
-            }
-            println("bestscore: ${bestResult.first}")
-            bestMove = bestResult.second
-        }
 
-        println("bestMove: $bestMove")
-        // Execute the best move
-        for (i in 1..bestMove.first) playerService.rotateTile()
-        val x = bestMove.second.first
-        val y = bestMove.second.second
-
+        for(r in 1..rotation) playerService.rotateTile()
         playerService.placeTile(x, y)
 
     }
 
-    private fun calculateBestMove(possibleMoves: List<Pair<Int, Pair<Int, Int>>>):
-            Pair<Int,Pair<Int, Pair<Int, Int>>> {
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
-
-        var bestScore = Int.MIN_VALUE
-        var bestMove: Pair<Int, Pair<Int, Int>>? = null
-        var moveCounter = 0
-
-        val posScore : Int = positiveScore
-        val negScore : Int = negativeScore
-
-        val maxDuration: Duration = 10000.milliseconds
-        val startTime = System.currentTimeMillis()
-        for (move in possibleMoves) {
-            if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
-                break
-            }
-            moveCounter++
-            val simGame: IndigoGame = currentGame.deepCopy()
-            val x = move.second.first
-            val y = move.second.second
-            val rotation = move.first
-
-            // Apply rotation
-            for (i in 1..rotation) rotateTile(simGame)
-
-            // Simulate placing the tile
-            val newGame = placeTile(simGame, x, y)
-
-            // Evaluate the move
-            val score = minimax(
-                newGame,
-                depth = 3,
-                initialAlpha = Int.MIN_VALUE,
-                initialBeta = Int.MAX_VALUE,
-                playerIndex = currentGame.activePlayerID,
-                mainIndex = currentGame.activePlayerID,
-                startTime = startTime,
-                maxDuration = maxDuration
-            )
-            if (score > bestScore) {
-                bestScore = score
-                bestMove = Pair(rotation, Pair(x, y))
-            }
-        }
-
-        positiveScore = posScore
-        negativeScore = negScore
-
-        println("Did $moveCounter out of ${possibleMoves.size} possible moves")
-        checkNotNull(bestMove)
-        return Pair(bestScore, bestMove)
-    }
 
     /**
-     *  The minimax function is a recursive algorithm used for optimizing the move of the AI player.
-     *  Function evaluates the best possible move for the AI player in the game "Indigo",
-     *  considering multiple players.
+     * Function, which tries every possible move in the current game state to determine which move is the best.
      *
-     *  @param [game] The current state of the game.
-     *  @param [depth] The depth of the search tree. A larger depth results in a more thorough search
-     *  but requires more computation.
-     *  @param [initialAlpha] The initial value of alpha for alpha-beta pruning. Typically set to Int.MIN_VALUE.
-     *  @param [initialBeta] The initial value of beta for alpha-beta pruning. Typically set to Int.MAX_VALUE.
-     *  @param [playerIndex] The index of the current player. This determines whether the function is
-     *  maximizing or minimizing.
-     *  @param [mainIndex] The index of the player minimax algorithm serves to.
+     * @param [game] IndigoGame Object, the function will be applied to.
+     * @param [possibleCoordinates] possible coordinates the moves can be tried on.
      *
-     *  @return The score of the best move found for the current player at the given depth.
+     * @return a Mutable list consists pairs of rotations and coordinates (possible moves).
      */
-    private fun minimax(
-        game: IndigoGame,
-        depth: Int,
-        initialAlpha: Int,
-        initialBeta: Int,
-        playerIndex: Int,
-        mainIndex: Int,
-        startTime: Long,
-        maxDuration: Duration
-    ): Int {
-        if (depth == 0 || checkIfGameEnded(game)
-            || (System.currentTimeMillis() - startTime).milliseconds > maxDuration)
-        {
-            return evaluateGameState(game, mainIndex)
-        }
+    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates : MutableList<Pair<Int,Int>> )
+    : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
-        var alpha = initialAlpha
-        var beta = initialBeta
+        val moves : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
+        val tile = game.getActivePlayer().playHand.first()
 
-        if (playerIndex == mainIndex) {
-            var maxEval = Int.MIN_VALUE
-            for (move in possibleMovesInGameState(game)) {
-                val simGame: IndigoGame = game.deepCopy()
-                val x = move.second.first
-                val y = move.second.second
-
-                for(i in 1..move.first) rotateTile(simGame)
-
-                val newGame = placeTile(simGame, x, y)
-                val nextPlayerIndex = newGame.activePlayerID
-                val evaluation = minimax(newGame, depth - 1, alpha,
-                    beta, nextPlayerIndex, mainIndex, startTime, maxDuration)
-                maxEval = max(maxEval, evaluation)
-                alpha = max(alpha, evaluation)
-                if (beta <= alpha) {
-                    break
-                }
-            }
-            return maxEval
-        } else {
-            var minEval = Int.MAX_VALUE
-            for (move in possibleMovesInGameState(game)) {
-                val simGame: IndigoGame = game.deepCopy()
-                val x = move.second.first
-                val y = move.second.second
-
-                for(i in 1..move.first) rotateTile(simGame)
-
-                val newGame = placeTile(simGame, x, y)
-                val nextPlayerIndex = newGame.activePlayerID
-                val evaluation = minimax(newGame, depth - 1, alpha, beta, nextPlayerIndex, mainIndex, startTime, maxDuration)
-                minEval = min(minEval, evaluation)
-                beta = min(beta, evaluation)
-                if (beta <= alpha) {
-                    break
-                }
-            }
-            return minEval
-        }
-    }
-
-
-
-    /**
-     *  Function to get all possible moves in a game state of a given IndigoGame object.
-     *
-     *  @param [game] The IndigoGame object in which the function will be implemented
-     *
-     *  @return a list of Pair<Int, Pair<Int, Int>> which contains the possible rotations and tile coordinates
-     */
-    private fun possibleMovesInGameState(game: IndigoGame): List<Pair<Int, Pair<Int, Int>>> {
-
-        val allPossibleMoves : MutableList<Pair<Int, Pair<Int, Int>>> = mutableListOf()
-
-        for(r in 1..6){
+        for(rot in 1..6) {
 
             rotateTile(game)
-            val tile = game.playerList[game.activePlayerID].playHand[0]
             val rotation = tile.rotationOffset
 
-            for(coordinate in possibleCoordinates){
+            for(coordinate in possibleCoordinates) {
 
-                if(isPlaceAble(game, coordinate.first, coordinate.second, tile) &&
-                    gemIsMoved(game,coordinate.first, coordinate.second))
-                {
-                    allPossibleMoves.add(Pair(rotation, coordinate))
+                val x = coordinate.first
+                val y = coordinate.second
+
+                if( isPlaceAble(game, coordinate.first, coordinate.second, tile) ) {
+                    val simGame = game.deepCopy()
+                    placeTile(simGame, coordinate.first, coordinate.second)
+
+                    val score = evaluateGameState(simGame)
+                    moves.add(Pair(score, Pair(rotation, Pair(x, y))))
                 }
-
             }
         }
-        return allPossibleMoves
+        return moves
     }
 
     /**
-     *  Function to evaluate the game state of the IndigoGame it receives as parameter.
+     *  Function to evaluate the current game state of the IndigoGame object given as the parameter.
+     *  Uses simple heuristic evaluation statements to determine the score.
      *
-     *  @param [game] The IndigoGame object in which the function will be implemented
+     *  @param [game] IndigoGame Object, the function will be applied to.
+     *  @return Int, heuristic sore of the game state.
      */
-    private fun evaluateGameState(game : IndigoGame, mainPlayerIndex: Int) : Int {
+    private fun evaluateGameState(game: IndigoGame) : Int {
 
-        val gemMovements = game.undoStack.last().gemMovements
-        val playerIndex = game.undoStack.last().playerID
-        for(movement in gemMovements){
-            val start = movement.startTile
-            val end = movement.endTile
-            val next = getAdjacentTileByConnection(game, end, movement.positionOnEndTile) ?: end
+        var heuristicScore = 0
 
-            if( minDistance(game.playerList[playerIndex], next) < minDistance(game.playerList[playerIndex], start)){
+        if(game.undoStack.isNotEmpty()) {
 
-                val point = when(next){
-                    is GateTile -> movement.gemType.toInt() * 10
-                    else -> movement.gemType.toInt()
+            val previousTurn = game.undoStack.last()
+            val player = game.playerList[previousTurn.playerID]
+
+            for((index, scoreChange) in previousTurn.scoreChanges.withIndex()){
+                if(index == previousTurn.playerID){
+                    heuristicScore += scoreChange * 100
                 }
+                else {
+                    heuristicScore -= scoreChange * 200
+                }
+            }
 
-                if( game.undoStack.last().playerID == mainPlayerIndex )
-                    positiveScore += point
-                else
-                    negativeScore += point
+            val gemMovements = previousTurn.gemMovements
+            if(gemMovements.isNotEmpty()){
+
+                for(movement in gemMovements) {
+                    val (startTile, endTile) = movement.run { startTile to endTile }
+                    val nextTile = getAdjacentTileByConnection(game, endTile, movement.positionOnEndTile) ?: endTile
+
+                    val endTileDistance = minDistance(player, endTile)
+                    val startTileDistance = minDistance(player, startTile)
+                    val nextTileDistance = minDistance(player, nextTile)
+
+                    var improvementFactor = 0
+                    if (endTileDistance < startTileDistance) improvementFactor += 1
+                    if (nextTileDistance < endTileDistance) improvementFactor += 1
+                    if (movement.didCollide) improvementFactor = -1
+
+                    heuristicScore += (movement.gemType.toInt() * improvementFactor)
+                }
             }
 
         }
-        return positiveScore - negativeScore
+        return heuristicScore
     }
 
 
-    private fun gemIsMoved(game: IndigoGame, x: Int, y: Int) : Boolean {
-
-        val simGame : IndigoGame = game.deepCopy()
-        val nextGame = placeTile(simGame, x, y)
-
-        val gemMovements = nextGame.undoStack.last().gemMovements
-
-        for(movement in gemMovements){
-
-            val end = movement.endTile
-            val next = getAdjacentTileByConnection(nextGame, end, movement.positionOnEndTile) ?: end
-
-            if(minDistance(game.getActivePlayer(), next) <= minDistance(game.getActivePlayer(), end) )
-                return true
-        }
-        return false
-
-    }
-
-
+    /**
+     *  Function to calculate the minimum distance between a given tile and the gates of given player.
+     *
+     *  @param [player] Player object.
+     *  @param [tile] Tile to check the distance of.
+     */
     private fun minDistance(player : Player, tile: Tile) : Int {
 
         val pointA: Pair<Int, Int> = Pair(tile.xCoordinate, tile.yCoordinate)
@@ -307,6 +147,12 @@ class AIService(private val rootService: RootService) {
 
     }
 
+
+    /**
+     *  Function to calculate the distance between two pairs of coordinates.
+     *  @param [a] Pair of x and y coordinates of point a .
+     *  @param [b] Pair of x and y coordinates of point b .
+     */
     private fun axialDistance(a: Pair<Int,Int>, b: Pair<Int, Int>): Int{
         return (abs(a.first - b.first)
                 + abs(a.first + a.second - b.first - b.second)
@@ -332,9 +178,6 @@ class AIService(private val rootService: RootService) {
             }
         }
     }
-
-
-
 
     /**
      * Function to rotate the tile in the current players hand.
@@ -462,49 +305,6 @@ class AIService(private val rootService: RootService) {
         return false
     }
 
-    /**
-     * Function that checks whether all stones have been removed from the game field,
-     * and if they have been removed, the game ends.
-     */
-    private fun checkIfGameEnded(game: IndigoGame) : Boolean {
-
-        var allGemsRemoved = true
-
-        var allTilesPlaced = true
-
-        for (row in game.gameLayout){
-            for(tile in row){
-                when(tile){
-                    is PathTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is TreasureTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is CenterTile ->{
-                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
-                            allGemsRemoved = false
-                            break
-                        }
-                    }
-                    is EmptyTile -> {
-                        allTilesPlaced =false
-                    }
-                    else -> 1 + 1 // do nothing
-                }
-
-            }
-        }
-
-        return allGemsRemoved || allTilesPlaced
-
-    }
 
     /**
      * Sets the Tile passed as argument at the specified Axial Coordinates.
@@ -989,6 +789,11 @@ class AIService(private val rootService: RootService) {
         }
     }
 
+    /**
+     * Function to check if there was a scoring move directly after a tile is placed
+     *
+     * @param [game] The IndigoGame object in which the function will be implemented.
+     */
     private fun scoringAction(game : IndigoGame,
                               startTile: Tile,
                               startConnection: Int,
