@@ -48,5 +48,4 @@ data class IndigoGame(
             gameLayout = this.gameLayout.map { innerList -> innerList.map { it.copy() }.toMutableList() }.toMutableList()
         )
     }
-
 }
