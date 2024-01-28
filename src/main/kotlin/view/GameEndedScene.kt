@@ -242,11 +242,12 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
         val players = game.playerList
 
-        renderCollectedGemsLists()
-
         //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
+        players.forEachIndexed {index, player ->
+            renderCollectedGemsForPlayer(player, index)
+        }
 
         players.forEachIndexed { i, player ->
             playerNameInputList[i].text = player.name
@@ -287,15 +288,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
 
         playerWonIcon.visual = ImageVisual(Constants.wonIcon)
-    }
-
-    private fun renderCollectedGemsLists() {
-        val game = rootService.currentGame
-        checkNotNull(game) { "Game is null" }
-
-        game.playerList.forEachIndexed {index, player ->
-            renderCollectedGemsForPlayer(player, index)
-        }
     }
 
     private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
