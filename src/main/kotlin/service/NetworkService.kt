@@ -1,6 +1,5 @@
 package service
 import entity.*
-import tools.aqua.bgw.net.common.Message
 import view.*
 import java.lang.IllegalStateException
 import edu.udo.cs.sopra.ntf.*
@@ -18,7 +17,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     var connectionState: ConnectionState = ConnectionState.DISCONNECTED
-    var threePlayerVariant: Boolean = false
+    private var threePlayerVariant: Boolean = false
 
     companion object {
 
@@ -32,10 +31,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     /** Network client. Nullable for offline games. */
     var client: NetworkClient? = null
-    var simulationSpeed : Double = 1.0
+    private var simulationSpeed : Double = 1.0
     var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
-    val playerList: MutableList<edu.udo.cs.sopra.ntf.Player> = mutableListOf()
+    val playerList: MutableList<Player> = mutableListOf()
 
     /**
      * Connects to server and creates a new game session.
@@ -87,7 +86,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
     /**
      * set up the game using [GameService.startNewGame] and send the game init message
-     * Called when  [ConnectionState.READY_FOR_GAME] and the host wants to start the game.
+     * Called when ConnectionState.READY_FOR_GAME and the host wants to start the game.
      * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
      */
 
@@ -118,8 +117,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
         println(currentGame.drawPile)
-
-        checkNotNull(currentGame) { "game should not be null right after starting it." }
 
         val networkClient = checkNotNull(client){"No client connected."}
 
@@ -164,7 +161,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         // check not null supply.
 
         val formatedDrawPile = drawPile.map{
-                it ->
             when (it.type) {
                 0 -> {
                     TileType.TYPE_0
@@ -192,7 +188,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
         // create game GameInitMessage
-        val initMessage = edu.udo.cs.sopra.ntf.GameInitMessage(playerList, gameMode , formatedDrawPile)
+        val initMessage = GameInitMessage(playerList, gameMode , formatedDrawPile)
 
         // send message
         val networkClient = checkNotNull(client){"No client connected."}
@@ -231,7 +227,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         val pathTile = PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
         return pathTile
     }
-    fun startNewJoinedGame(message: edu.udo.cs.sopra.ntf.GameInitMessage) {
+    fun startNewJoinedGame(message: GameInitMessage) {
 
         // check if we are waiting for gameInitMessage. if not then there is no game to start
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
@@ -250,7 +246,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
 
         // start new game and give the supply as a parameter.
-        rootService.gameService.startNewGame(player,extractThreePlayerVariant(message), simulationSpeed = simulationSpeed , isNetworkGame = true, )
+        rootService.gameService.startNewGame(
+            player,
+            extractThreePlayerVariant(message),
+            simulationSpeed = simulationSpeed,
+            isNetworkGame = true,
+        )
         val game = rootService.currentGame
         checkNotNull(game)
         val playerNames = players.map { it.name }
@@ -258,9 +259,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         game.drawPile = extractDrawPile(message)
 
-        for (player in player) {
-            player.playHand.clear()
-            player.playHand.add(game.drawPile.removeFirst())
+        for (currentPlayer in player) {
+            currentPlayer.playHand.clear()
+            currentPlayer.playHand.add(game.drawPile.removeFirst())
         }
 
         if( index == 0) {
@@ -297,7 +298,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
 
     }
-       private fun ThreePlayer(message: GameInitMessage): Boolean {
+       private fun extractThreePlayerVariant(message: GameInitMessage): Boolean {
         val threePlayerVariant = when(message.gameMode) {
             GameMode.THREE_SHARED_GATEWAYS -> true
             GameMode.TWO_NOT_SHARED_GATEWAYS -> false
@@ -317,7 +318,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @throws IllegalStateException when ConnectionState is not [ConnectionState.DISCONNECTED]
      * @throws IllegalArgumentException when secret or name is blank
      */
-    fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
+    private fun connect(secret: String, name: String, playerType:PlayerType): Boolean {
 
         require(connectionState == ConnectionState.DISCONNECTED && client == null)
         { "already connected to another game" }
@@ -360,7 +361,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * For Player that are waiting for their turn this function turns the [message]
      * into an actual player Move and places the Tile and updates the connection State
      */
-    fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
+    fun tilePlacedMessage(message: TilePlacedMessage ) {
 
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
         val rotationSteps = message.rotation

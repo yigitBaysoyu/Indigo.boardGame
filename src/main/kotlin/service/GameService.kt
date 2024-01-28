@@ -434,12 +434,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Function that checks whether all stones have been removed from the game field,
-     * and if they have been removed, the game ends.
+     * Function that checks whether all stones have been removed from the game field
      */
-    fun checkIfGameEnded() {
+    fun checkIfGameEnded(): Boolean {
         val game = rootService.currentGame
-        checkNotNull(game) {"No game found."}
+        checkNotNull(game)
 
         var allGemsRemoved = true
         var allTilesPlaced = true
@@ -447,7 +446,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         for (row in game.gameLayout){
             for(tile in row){
                 when(tile){
-                    is TraverseAbleTile -> {
+                    is PathTile -> {
+                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is TreasureTile -> {
                         if (!tile.gemPositions.all{ it == GemType.NONE}) {
                             allGemsRemoved = false
                             break
@@ -462,16 +467,23 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     is EmptyTile -> {
                         allTilesPlaced =false
                     }
-                    else -> Unit // do nothing
+                    else -> 1 + 1 // do nothing
                 }
             }
         }
 
-        if (allGemsRemoved || allTilesPlaced ) {
+        return allGemsRemoved || allTilesPlaced
+    }
+
+    /**
+     * Function that checks whether all stones have been removed from the game field,
+     * and if they have been removed, the game ends.
+     */
+    fun endGameIfEnded() {
+        if(checkIfGameEnded()) {
             onAllRefreshables { refreshAfterEndGame() }
         }
     }
-
 
     /**
      * Function to read the given csv File, which defines the different
