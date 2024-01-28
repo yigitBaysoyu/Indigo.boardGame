@@ -50,6 +50,7 @@ tasks.distZip {
         from(".")
         include("How-to-Play.pdf")
      }
+
     destinationDirectory.set(layout.projectDirectory.dir("public"))
 }
 
