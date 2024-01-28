@@ -361,7 +361,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * For Player that are waiting for their turn this function turns the [message]
      * into an actual player Move and places the Tile and updates the connection State
      */
-    fun tilePlacedMessage(message: TilePlacedMessage ) {
+    fun tilePlacedMessage(message: TilePlacedMessage ,sender:String) {
 
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
         val rotationSteps = message.rotation
