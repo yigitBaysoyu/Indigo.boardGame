@@ -553,7 +553,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * where the text in the file will be decoded into a Game Object
      */
     fun loadGame() {
-        val file = File("saveGame.ser")
+        val file = File("saveGame.json")
         if(!file.exists()) {
             onAllRefreshables { refreshAfterFileNotFound() }
             return
@@ -597,7 +597,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * then saving that String in the .ser file
      */
     fun saveGame() {
-        val file = File("saveGame.ser")
+        val file = File("saveGame.json")
         file.writeText(Json.encodeToString(rootService.currentGame))
     }
 
