@@ -1022,8 +1022,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         // Delay the turn if next player is AI
         var duration = 0
-        if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
-        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
+        val playerType = game.playerList[turn.playerID].playerType
+        if(playerType == PlayerType.RANDOMAI || playerType == PlayerType.SMARTAI) {
             duration = when {
                 game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
                 game.simulationSpeed < 50 -> (10000 - (10000 - 750) * (game.simulationSpeed * 2 / 100)).toInt()
