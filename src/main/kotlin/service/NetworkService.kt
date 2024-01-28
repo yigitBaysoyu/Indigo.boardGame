@@ -81,7 +81,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * Called when  [ConnectionState.WAITING_FOR_GUESTS] and the host wants to start the game.
      * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
      */
-    fun startNewHostedGame(selectedColors: MutableList<Int>, hostType: PlayerType) {
+    fun startNewHostedGame(selectedColors: MutableList<Int>, hostType: PlayerType, randomOrder: Boolean = false) {
         if(connectionState != ConnectionState.WAITING_FOR_GUESTS) return
         val client = checkNotNull(client) { "no active client" }
 
@@ -105,7 +105,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             }
         }
 
-        indigoPlayers.shuffle()
+        if(randomOrder) indigoPlayers.shuffle()
 
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(
@@ -120,7 +120,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * This methode sends [GameInitMessage] to server
      * @throws IllegalStateException when players is not yet initialized
      */
-    fun sendGameInitMessage(){
+    fun sendGameInitMessage(playerList: MutableList<entity.Player>) {
         val game = checkNotNull(rootService.currentGame) { "Game not found" }
         val drawPile = game.drawPile
 
@@ -134,8 +134,15 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             }
         }.toMutableList()
 
+        val playerListForMessage = playerList.map { Player(it.name, when(it.color) {
+            0 -> PlayerColor.WHITE
+            1 -> PlayerColor.RED
+            2 -> PlayerColor.BLUE
+            else -> PlayerColor.PURPLE
+        }) }
+
         // create game GameInitMessage
-        val initMessage = GameInitMessage(ntfPlayerList, gameMode , formattedDrawPile)
+        val initMessage = GameInitMessage(playerListForMessage, gameMode , formattedDrawPile)
 
         // send message
         val networkClient = checkNotNull(client) { "No client connected." }
