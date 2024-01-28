@@ -126,7 +126,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),lastTurn.placedTile.rotationOffset))
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate, lastTurn.placedTile.yCoordinate),
+            lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 
