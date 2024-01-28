@@ -658,7 +658,89 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        //Moving gems of neighbours and checking for collisions
+        checkCollisions(tile, neighbours, turn)
+        moveStonesToEndOfPath(tile, neighbours, turn)
+
+        return turn
+    }
+
+    private fun moveStonesToEndOfPath(tile: PathTile, neighbours: MutableMap<Int, Tile>, turn: Turn){
+        var currentGem: GemType
+        //Move all stones that are on my tile to the end of the respective path
+        for(i in 0 until tile.gemPositions.size){
+            if(tile.gemPositions[i] != GemType.NONE){
+                currentGem = tile.gemPositions[i]
+                val originTile = neighbours[tile.connections[i]]
+                val originConnection = tile.connections[i]
+                checkNotNull(originConnection)
+                checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
+
+                val endPos = findEndPosition(tile, i, false)
+                if(endPos.third){
+                    val trueOrigin = originTile.connections[(originConnection +3)%6]
+                    checkNotNull(trueOrigin)
+                    handleComplexCollision(turn, originTile, trueOrigin, endPos, currentGem)
+                }
+
+                else if(endPos.first is GateTile){
+                    val startCon = (originConnection+3) %6
+                    scoringAction(
+                        originTile, startCon, endPos.first, endPos.second, currentGem, turn)
+                }
+                else {
+                    val startCon = (originConnection + 3) % 6
+                    val gemMovement = GemMovement(
+                        currentGem, originTile, startCon,endPos.first, endPos.second, false
+                    )
+
+                    turn.gemMovements.add(gemMovement)
+                }
+            }
+        }
+    }
+
+    private fun handleComplexCollision(turn: Turn, originTile: Tile, originConnection: Int,
+                                       endPos: Triple<Tile, Int, Boolean>, gem: GemType){
+        val collisionTile = endPos.first
+
+        val collisionMovement1 = GemMovement(
+            gem,
+            originTile,
+            originConnection,
+            collisionTile,
+            endPos.second,
+            true
+        )
+        if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+
+        val secondStartConnection = endPos.first.connections[endPos.second]
+        checkNotNull(secondStartConnection)
+
+        val secondOriginTile = getAdjacentTileByConnection(endPos.first, secondStartConnection)
+        checkNotNull(secondOriginTile)
+
+        val collisionMovement2 = GemMovement(
+            collisionTile.gemPositions[endPos.second],
+            secondOriginTile,
+            (secondStartConnection +3) % 6,
+            collisionTile,
+            endPos.second,
+            true
+        )
+
+        collisionTile.gemPositions[endPos.second] = GemType.NONE
+        if(originTile is TraverseAbleTile){
+            originTile.gemPositions[originConnection] = GemType.NONE
+        }
+
+        turn.gemMovements.add(collisionMovement1)
+        turn.gemMovements.add(collisionMovement2)
+    }
+
+    /**
+     * Function to check for Collisions and move the gems if there are none (in a movement of size 1)
+     */
+    private fun checkCollisions(tile: PathTile, neighbours: MutableMap<Int, Tile>, turn: Turn ){
         for(i in 0 until 6){
             val currentNeighbour = neighbours[i]
             val currentConnection = (i+3)%6
@@ -675,81 +757,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is InvisibleTile -> 1+1 // do nothing
             }
         }
-
-        var currentGem: GemType
-        //Move all stones that are on my tile to the end of the respective path
-        for(i in 0 until tile.gemPositions.size){
-            if(tile.gemPositions[i] != GemType.NONE){
-                currentGem = tile.gemPositions[i]
-                val originTile = neighbours[tile.connections[i]]
-                val originConnection = tile.connections[i]
-                checkNotNull(originConnection)
-                checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
-
-                val endPos = findEndPosition(tile, i, false)
-                if(endPos.third){
-                    val collisionTile = endPos.first
-                    val trueOrigin = originTile.connections[(originConnection +3)%6]
-                    checkNotNull(trueOrigin)
-                    val collisionMovement1 = GemMovement(
-                        currentGem,
-                        originTile,
-                        trueOrigin,
-                        collisionTile,
-                        endPos.second,
-                        true
-                    )
-                    if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
-
-                    val secondStartConnection = endPos.first.connections[endPos.second]
-                    checkNotNull(secondStartConnection)
-
-                    val secondOriginTile = getAdjacentTileByConnection(endPos.first, secondStartConnection)
-                    checkNotNull(secondOriginTile)
-
-                    val collisionMovement2 = GemMovement(
-                        collisionTile.gemPositions[endPos.second],
-                        secondOriginTile,
-                        (secondStartConnection +3) % 6,
-                        collisionTile,
-                        endPos.second,
-                        true
-                    )
-
-                    collisionTile.gemPositions[endPos.second] = GemType.NONE
-                    if(originTile is TraverseAbleTile){
-                        originTile.gemPositions[trueOrigin] = GemType.NONE
-                    }
-
-                    turn.gemMovements.add(collisionMovement1)
-                    turn.gemMovements.add(collisionMovement2)
-                }
-
-                else if(endPos.first is GateTile){
-                    scoringAction(
-                        originTile,
-                        (originConnection+3)%6,
-                        endPos.first,
-                        endPos.second,
-                        currentGem,
-                        turn
-                    )
-                }
-                else {
-                    val gemMovement = GemMovement(
-                        currentGem,
-                        originTile,
-                        (originConnection + 3) % 6,
-                        endPos.first,
-                        endPos.second,
-                        false
-                    )
-
-                    turn.gemMovements.add(gemMovement)
-                }
-            }
-        }
-        return turn
     }
 
     /**
