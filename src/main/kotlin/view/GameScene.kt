@@ -30,7 +30,8 @@ import tools.aqua.bgw.event.KeyCode
 /**
  * Displays the actual gameplay.
  */
-class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
+class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
+    Refreshable {
 
     // Constants / Measurements
     private val sceneWidth = Constants.SCENE_WIDTH
