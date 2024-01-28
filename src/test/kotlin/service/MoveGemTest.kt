@@ -81,12 +81,14 @@ class MoveGemTest {
 
         val centerTileGems = ArrayDeque<GemType>()
         centerTileGems.add(GemType.SAPPHIRE)
-        for (i in 0..4) centerTileGems.add(GemType.EMERALD)
+        repeat(5){
+            centerTileGems.add(GemType.EMERALD)
+        }
 
         //Creating tiles
         val centerTile = CenterTile(centerConnections, 0, 0, 0, centerTileGems)
-        val placedTile = PathTile(placedTileConnections, 0, 1, 0, mutableListOf<GemType>())
-        val treasureTile = TreasureTile(treasureTileConn, 0, 4, 0, mutableListOf<GemType>())
+        val placedTile = PathTile(placedTileConnections, 0, 1, 0, mutableListOf())
+        val treasureTile = TreasureTile(treasureTileConn, 0, 4, 0, mutableListOf())
 
         val tile1 = PathTile(c1, xCoordinate = 1, yCoordinate = -1)
         val tile2 = PathTile(c2, xCoordinate = 1, yCoordinate = 1)
@@ -97,7 +99,7 @@ class MoveGemTest {
         val tile7 = PathTile(c7, xCoordinate = 3, yCoordinate = 0)
 
         //Filling gem list of each tile
-        for(i in 0..5){
+        repeat(6){
             placedTile.gemPositions.add(GemType.NONE)
             treasureTile.gemPositions.add(GemType.NONE)
             tile1.gemPositions.add(GemType.NONE)
@@ -184,7 +186,7 @@ class MoveGemTest {
 
         val tile9 = PathTile(c9, xCoordinate = -3, yCoordinate = 3)
 
-        for(i in 0..5){
+        repeat(6){
             placedTile2.gemPositions.add(GemType.NONE)
             tile8.gemPositions.add(GemType.NONE)
             tile9.gemPositions.add(GemType.NONE)
@@ -211,7 +213,7 @@ class MoveGemTest {
         }
         player2.gateList.add(gate2)
 
-        gameService.moveGems(turn2,)
+        gameService.moveGems(turn2)
 
         //Check for gems at correct positions
         assert(treasureTile2.gemPositions[5] == GemType.AMBER)
@@ -246,7 +248,7 @@ class MoveGemTest {
 
         val tile10 = PathTile(c10, xCoordinate = 1, yCoordinate = 2)
 
-        for (i in 0..5){
+        repeat(6){
             placedTile3.gemPositions.add(GemType.NONE)
             treasureTile3.gemPositions.add(GemType.NONE)
             tile10.gemPositions.add(GemType.NONE)
@@ -300,7 +302,7 @@ class MoveGemTest {
         placedTile5Connections[1] = 0
         val placedTile5 = PathTile(placedTile5Connections, xCoordinate = -1, yCoordinate = 0)
 
-        for(i in 0..5){
+        repeat(6){
             placedTile5.gemPositions.add(GemType.NONE)
             tile11.gemPositions.add(GemType.NONE)
         }
