@@ -890,7 +890,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playerAIIconList[index].isVisible = when (player.playerType) {
                 PlayerType.RANDOMAI -> true
                 PlayerType.SMARTAI -> true
+                PlayerType.NETWORKPLAYER -> true
                 else -> false
+            }
+            if(player.playerType == PlayerType.NETWORKPLAYER) {
+                playerAIIconList[index].visual = ImageVisual(Constants.networkIcon  )
+            } else {
+                playerAIIconList[index].visual = ImageVisual(Constants.aiIcon)
             }
             playerHandList[index].isVisible = true
             playerGemLayoutList[index].isVisible = true
@@ -1156,31 +1162,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
-
         if (newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
-
             rotateButton.isDisabled = true
             rotateButton.isVisible = false
-
-
-
         } else if (newState == ConnectionState.PLAYING_MY_TURN) {
-
             rotateButton.isDisabled = false
             rotateButton.isVisible = true
-
-            val client = rootService.networkService.client
-
-            if (client != null && client.playerType != PlayerType.NETWORKPLAYER && client.playerType != PlayerType.LOCALPLAYER) {
-
-
-            } else {
-
-
-
-            }
-
         }
-
     }
 }

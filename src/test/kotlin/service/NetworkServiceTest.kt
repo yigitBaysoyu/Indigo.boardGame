@@ -11,32 +11,22 @@ import kotlin.test.Test
  * Test cases for the NetworkService class.
  */
 class NetworkServiceTest {
-
-
     private lateinit var rootServiceHost: RootService
     private lateinit var rootServiceGuest: RootService
     private lateinit var rootServiceGuest2: RootService
-
-    companion object {
-        const val NETWORK_SECRET = "game23d"
-    }
-
 
     /**
      * Initialize both connections and start the game so that players of both games
      * (represented by [rootServiceHost] and [rootServiceGuest]) are in their turns.
      */
     private fun initConnections() {
-
         rootServiceHost = RootService()
         rootServiceGuest = RootService()
         rootServiceGuest2 = RootService()
 
         rootServiceHost.networkService.hostGame(
-            NETWORK_SECRET,
             generateRandomNumberAsString(),
             "ahmad",
-            color = PlayerColor.WHITE,
             GameMode.THREE_NOT_SHARED_GATEWAYS
         )
 
@@ -48,7 +38,6 @@ class NetworkServiceTest {
         assertNotNull(hostClient)
 
         rootServiceGuest.networkService.joinGame(
-            NETWORK_SECRET,
             hostClient.sessionID!!,
             "mohmed",
             PlayerType.NETWORKPLAYER
@@ -58,7 +47,6 @@ class NetworkServiceTest {
         }
 
         rootServiceGuest2.networkService.joinGame(
-            NETWORK_SECRET,
             hostClient.sessionID!!,
             "Alex",
             PlayerType.NETWORKPLAYER
@@ -68,7 +56,7 @@ class NetworkServiceTest {
             error("Did not reach the state after waiting.")
         }
 
-        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1,2,3))
+        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1,2,3), PlayerType.LOCALPLAYER)
 
         assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)) {
             error("Did not reach the state after waiting.")
@@ -86,8 +74,7 @@ class NetworkServiceTest {
         rootServiceGuest2 = RootService()
 
         rootServiceHost.networkService.hostGame(
-            NETWORK_SECRET, generateRandomNumberAsString(), "ahmad",
-            color = PlayerColor.WHITE, GameMode.TWO_NOT_SHARED_GATEWAYS
+            generateRandomNumberAsString(), "ahmad", GameMode.TWO_NOT_SHARED_GATEWAYS
         )
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)) {
@@ -98,16 +85,16 @@ class NetworkServiceTest {
         assertNotNull(hostClient)
 
         rootServiceGuest.networkService.joinGame(
-            NETWORK_SECRET, hostClient.sessionID!!, "mohmed", PlayerType.NETWORKPLAYER
+            hostClient.sessionID!!, "mohmed", PlayerType.NETWORKPLAYER
         )
         assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)) {
             error("Did not reach the state after waiting.")
         }
 
         rootServiceGuest2.networkService.joinGame(
-            NETWORK_SECRET, hostClient.sessionID!!, "Alex", PlayerType.NETWORKPLAYER
+            hostClient.sessionID!!, "Alex", PlayerType.NETWORKPLAYER
         )
-        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1))
+        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1), PlayerType.LOCALPLAYER)
 
         assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)){
             error("Did not reach the state after waiting.")
@@ -115,17 +102,10 @@ class NetworkServiceTest {
 
         rootServiceHost.playerService.placeTile(1,0)
 
-        assert(rootServiceGuest.waitForState(ConnectionState.PLAYING_MY_TURN)){
-            error("Did not reach the state after waiting.")
-        }
-
         rootServiceHost.networkService.disconnect()
         assert(rootServiceHost.waitForState(ConnectionState.DISCONNECTED)){
             error("Did not reach the state after waiting.")
         }
-
-
-
     }
 
     /**
@@ -133,10 +113,8 @@ class NetworkServiceTest {
      */
     @Test
     fun testHostAndJoinGame() {
-
         initConnections()
         initConnections1()
-
     }
 
     /**

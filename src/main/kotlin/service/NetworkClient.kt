@@ -1,7 +1,7 @@
 package service
 
-import entity.PlayerType
 import edu.udo.cs.sopra.ntf.*
+import entity.PlayerType
 import tools.aqua.bgw.core.BoardGameApplication
 import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
@@ -14,16 +14,16 @@ import tools.aqua.bgw.net.common.response.*
 /**
  * [BoardGameClient] implementation for network communication.
  * @param playerName name of the client
- * @param playerType type of the player
  * @param networkService the [NetworkService] to potentially forward received messages to.
  * @param secret A secret key for secure communication.
  */
 
-class NetworkClient (playerName: String, host: String, secret: String, val networkService: NetworkService, val playerType: PlayerType):
+class NetworkClient (playerName: String, host: String, secret: String, val networkService: NetworkService):
     BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE) {
 
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
+    var playerType: PlayerType = PlayerType.LOCALPLAYER
 
     /**
      * Handles a [CreateGameResponse] received from the server. It waits for the guest player when its
@@ -54,8 +54,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      * status is [JoinGameResponseStatus.SUCCESS]. As recovery from network problems is not
      * @throws IllegalStateException if status != success or currently not waiting for a join game response.
      */
-
-
     override fun onJoinGameResponse(response: JoinGameResponse) {
         BoardGameApplication.runOnGUIThread {
             check(networkService.connectionState == ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
@@ -101,9 +99,8 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-            val players = networkService.playerList.map { player -> player.name}.toMutableList()
-
-            val isNameNotUnique = players.contains(notification.sender)
+            val playerNames = networkService.ntfPlayerList.map { player -> player.name}.toMutableList()
+            val isNameNotUnique = playerNames.contains(notification.sender)
 
             if (isNameNotUnique) {
                 disconnectAndError("Player names are not unique!")
@@ -115,17 +112,17 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 GameMode.FOUR_SHARED_GATEWAYS -> 4
             }
 
-            if(players.size < maxPlayers ) {
-                players.add(notification.sender)
+            if(playerNames.size < maxPlayers ) {
+                playerNames.add(notification.sender)
                 val newGuest = Player(notification.sender, PlayerColor.WHITE)
-                networkService.playerList.add(newGuest)
+                networkService.ntfPlayerList.add(newGuest)
             } else {
                 error("maximum number of players has been reached.")
             }
 
             networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
 
-            if (players.size == maxPlayers){
+            if (playerNames.size == maxPlayers){
                 // when lobby is full enable startButton
                 networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
@@ -136,7 +133,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      * Handle a [GameInitMessage] sent by the server.
      * @throws IllegalStateException when the player is not waiting for [GameInitMessage]
      */
-
     @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onInitReceived(message: GameInitMessage, sender: String) {
@@ -144,23 +140,19 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         { "Not waiting for initMessage." }
 
         BoardGameApplication.runOnGUIThread {
-
-            networkService.startNewJoinedGame(
-                message = message,
-
-                )
-
+            networkService.startNewJoinedGame(message = message, playerType = playerType)
         }
 
     }
 
-    @Suppress("unused")
+    /**
+     * Is called when a networkPlayer placed a tile.
+     */
+    @Suppress("UNUSED_PARAMETER", "unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
-        check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
-
         BoardGameApplication.runOnGUIThread {
-            networkService.tilePlacedMessage(message, sender)
+            networkService.tilePlacedMessage(message)
         }
     }
 
@@ -169,7 +161,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      */
     override fun onPlayerLeft(notification: PlayerLeftNotification) {
         BoardGameApplication.runOnGUIThread {
-            networkService.playerList.removeIf { it.name == notification.sender }
+            networkService.ntfPlayerList.removeIf { it.name == notification.sender }
             networkService.onAllRefreshables { refreshAfterPlayerLeft(notification.sender) }
         }
     }

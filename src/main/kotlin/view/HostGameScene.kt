@@ -1,5 +1,6 @@
 package view
 
+import entity.PlayerType
 import service.RootService
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
@@ -251,8 +252,14 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         }
         if(lobbyFull) startButton.isDisabled = false
     }
+
     private fun handleStartClick() {
-        rootService.networkService.startNewHostedGame(selectedColors)
+        val selectedType = when(selectedModes[0]) {
+            0 -> PlayerType.LOCALPLAYER
+            1 -> PlayerType.RANDOMAI
+            else -> PlayerType.SMARTAI
+        }
+        rootService.networkService.startNewHostedGame(selectedColors, selectedType)
 
         resetAllComponents()
     }

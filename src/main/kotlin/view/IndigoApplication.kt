@@ -1,7 +1,6 @@
 package view
 
 import edu.udo.cs.sopra.ntf.GameMode
-import edu.udo.cs.sopra.ntf.PlayerColor
 import entity.PlayerType
 import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
@@ -22,7 +21,6 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
-     private val networkSecret = "game23d"
 
     init {
         // all scenes and the application itself need to
@@ -51,9 +49,15 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             showMenuScene(mainMenuScene)
         }
         gameEndedScene.quitButton.onMouseClicked = { exit() }
-        gameEndedScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
+        gameEndedScene.newGameButton.onMouseClicked = {
+            rootService.networkService.disconnect()
+            showMenuScene(mainMenuScene)
+        }
         gameScene.quitGameButton.onMouseClicked = { exit() }
-        gameScene.returnToMenuButton.onMouseClicked = { showMenuScene(mainMenuScene) }
+        gameScene.returnToMenuButton.onMouseClicked = {
+            rootService.networkService.disconnect()
+            showMenuScene(mainMenuScene)
+        }
         startGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene) }
 
         showGameScene(gameScene)
@@ -78,8 +82,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         val sessionID = mainMenuScene.sessionIDInput.text
         val hostname = mainMenuScene.nameInput.text
-        rootService.networkService.hostGame(networkSecret, sessionID,
-            hostname, PlayerColor.WHITE, gameMode)
+        rootService.networkService.hostGame(sessionID, hostname, gameMode)
         hostGameScene.hostName = hostname
         hostGameScene.resetAllComponents()
         showMenuScene(hostGameScene)
@@ -94,7 +97,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             2 -> PlayerType.SMARTAI
             else -> PlayerType.LOCALPLAYER
         }
-        rootService.networkService.joinGame(networkSecret, sessionID, name, playerType)
+        rootService.networkService.joinGame(sessionID, name, playerType)
         showMenuScene(joinGameScene)
     }
 }

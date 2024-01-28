@@ -2,7 +2,6 @@ package view
 
 import entity.*
 import service.RootService
-import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
@@ -181,7 +180,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     val newGameButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 375, posY = halfWidth - 50,
-        text = "New Game",
+        text = "Back",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {

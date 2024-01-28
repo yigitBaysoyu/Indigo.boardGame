@@ -30,14 +30,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
-        simulationSpeed: Double,
-        isNetworkGame: Boolean
+        simulationSpeed: Double = 50.0,
+        isNetworkGame: Boolean,
+        sendGameInitMessage: Boolean = false
     ) {
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
-        drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
@@ -45,10 +45,22 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        if (!isNetworkGame) {
+
+        drawPile.shuffle()
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage()
+
+        if(!isNetworkGame || sendGameInitMessage) {
             for(player in players) {
                 player.playHand.clear()
                 player.playHand.add(drawPile.removeFirst())
+            }
+        }
+
+        if(isNetworkGame) {
+            if(game.getActivePlayer().playerType != PlayerType.NETWORKPLAYER) {
+                rootService.networkService.updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+            } else {
+                rootService.networkService.updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
             }
         }
 
