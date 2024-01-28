@@ -32,9 +32,6 @@ class NetworkServiceTest {
         rootServiceGuest = RootService()
         rootServiceGuest2 = RootService()
 
-
-
-
         rootServiceHost.networkService.hostGame(
             NETWORK_SECRET,
             generateRandomNumberAsString(),
@@ -44,7 +41,7 @@ class NetworkServiceTest {
         )
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)) {
-            error("Nach dem Warten nicht im Zustand angekommen")
+            error("Did not reach the state after waiting.")
         }
 
         val hostClient = rootServiceHost.networkService.client
@@ -57,10 +54,8 @@ class NetworkServiceTest {
             PlayerType.NETWORKPLAYER
         )
         assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)) {
-            error("Nach dem Warten nicht im Zustand angekommen")
+            error("Did not reach the state after waiting.")
         }
-
-
 
         rootServiceGuest2.networkService.joinGame(
             NETWORK_SECRET,
@@ -70,14 +65,65 @@ class NetworkServiceTest {
         )
 
         assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_INIT)) {
-            error("Nach dem Warten nicht im Zustand angekommen")
+            error("Did not reach the state after waiting.")
         }
 
         rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1,2,3))
 
         assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)) {
-            error("connectionState of the host must be PLAYING_TURN")
+            error("Did not reach the state after waiting.")
         }
+    }
+
+    /**
+     * Initialize both connections and start the game so that players of both games
+     * (represented by [rootServiceHost] and [rootServiceGuest]) are in their turns.
+     */
+    private fun initConnections1() {
+
+        rootServiceHost = RootService()
+        rootServiceGuest = RootService()
+        rootServiceGuest2 = RootService()
+
+        rootServiceHost.networkService.hostGame(
+            NETWORK_SECRET, generateRandomNumberAsString(), "ahmad",
+            color = PlayerColor.WHITE, GameMode.TWO_NOT_SHARED_GATEWAYS
+        )
+
+        assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)) {
+            error("Did not reach the state after waiting.")
+        }
+
+        val hostClient = rootServiceHost.networkService.client
+        assertNotNull(hostClient)
+
+        rootServiceGuest.networkService.joinGame(
+            NETWORK_SECRET, hostClient.sessionID!!, "mohmed", PlayerType.NETWORKPLAYER
+        )
+        assert(rootServiceGuest.waitForState(ConnectionState.WAITING_FOR_INIT)) {
+            error("Did not reach the state after waiting.")
+        }
+
+        rootServiceGuest2.networkService.joinGame(
+            NETWORK_SECRET, hostClient.sessionID!!, "Alex", PlayerType.NETWORKPLAYER
+        )
+        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1))
+
+        assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)){
+            error("Did not reach the state after waiting.")
+        }
+
+        rootServiceHost.playerService.placeTile(1,0)
+
+        assert(rootServiceGuest.waitForState(ConnectionState.PLAYING_MY_TURN)){
+            error("Did not reach the state after waiting.")
+        }
+
+        rootServiceHost.networkService.disconnect()
+        assert(rootServiceHost.waitForState(ConnectionState.DISCONNECTED)){
+            error("Did not reach the state after waiting.")
+        }
+
 
 
     }
@@ -88,9 +134,8 @@ class NetworkServiceTest {
     @Test
     fun testHostAndJoinGame() {
 
-
         initConnections()
-
+        initConnections1()
 
     }
 
