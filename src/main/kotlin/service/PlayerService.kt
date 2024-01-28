@@ -109,8 +109,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         // Remove placed tile from board
         val newEmptyTile = EmptyTile(
-            connections = mapOf(),
-            rotationOffset = 0,
+            connections = mapOf(), rotationOffset = 0,
             xCoordinate = lastTurn.placedTile.xCoordinate,
             yCoordinate = lastTurn.placedTile.yCoordinate,
         )
@@ -126,7 +125,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),lastTurn.placedTile.rotationOffset))
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),
+            lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
 
@@ -187,7 +187,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         if(game.isNetworkGame && rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN)
         {
-            val tilePMessage = edu.udo.cs.sopra.ntf.TilePlacedMessage(rotation = tileFromPlayer.rotationOffset, qcoordinate = xCoordinate  , rcoordinate = yCoordinate )
+            val tilePMessage = edu.udo.cs.sopra.ntf.TilePlacedMessage(rotation = tileFromPlayer.rotationOffset,
+                qcoordinate = xCoordinate  , rcoordinate = yCoordinate )
             rootService.networkService.sendPlaceTile(tilePMessage)
         }
 
