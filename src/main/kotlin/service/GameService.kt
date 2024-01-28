@@ -589,8 +589,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
+        onAllRefreshables { refreshAfterLoadGame() }
     }
 
     /**

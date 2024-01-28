@@ -124,7 +124,7 @@ class AIService(private val rootService: RootService) {
             heuristicScore += (movement.gemType.toInt() * improvementFactor)
         }
 
-        if(!stepTwo) {
+        if(!stepTwo && !checkIfGameEnded(game)) {
             val nextTurnScore = calculateNextTurn(game)
             checkNotNull(nextTurnScore)
             heuristicScore -= (nextTurnScore * 0.9).toInt()
@@ -326,6 +326,45 @@ class AIService(private val rootService: RootService) {
         if (x < 0 && y < -5 - x) return false
         if (x > 0 && y > 5 - x) return false
         return true
+    }
+
+    /**
+     * Function that checks whether all stones have been removed from the game field
+     */
+    private fun checkIfGameEnded(game: IndigoGame): Boolean {
+        var allGemsRemoved = true
+        var allTilesPlaced = true
+
+        for (row in game.gameLayout){
+            for(tile in row){
+                when(tile){
+                    is PathTile -> {
+                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is TreasureTile -> {
+                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is CenterTile ->{
+                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
+                            allGemsRemoved = false
+                            break
+                        }
+                    }
+                    is EmptyTile -> {
+                        allTilesPlaced =false
+                    }
+                    else -> 1 + 1 // do nothing
+                }
+            }
+        }
+
+        return allGemsRemoved || allTilesPlaced
     }
 
     /**
