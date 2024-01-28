@@ -913,6 +913,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "game is null" }
 
         rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID * 250)
+
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
+            rotateButton.isVisible = false
+            rotateButton.isDisabled = true
+        } else {
+            rotateButton.isVisible = true
+            rotateButton.isDisabled = false
+        }
     }
 
     private fun updatePlayerScores() {
@@ -1166,12 +1174,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
-        if (newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
-            rotateButton.isDisabled = true
-            rotateButton.isVisible = false
-        } else if (newState == ConnectionState.PLAYING_MY_TURN) {
-            rotateButton.isDisabled = false
-            rotateButton.isVisible = true
-        }
+        setRotateButtonHeight()
     }
 }
