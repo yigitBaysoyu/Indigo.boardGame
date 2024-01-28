@@ -12,20 +12,22 @@ class AIService(private val rootService: RootService) {
     /**
      * Function to calculate and execute the best possible move for a SMART AI player.
      */
-    fun calculateNextTurn() {
-        if(isPaused) return
+    fun calculateNextTurn(game: IndigoGame? = null): Int? {
+        if(isPaused) return null
 
-        val currentGame = checkNotNull(rootService.currentGame) { "no active game" }
-        rootService.gameService.checkIfGameEnded()
+        val currentGame = when(game) {
+            null -> checkNotNull(rootService.currentGame) { "no active game" }
+            else -> game
+        }
 
-        val player = currentGame.getActivePlayer()
-        require(player.playerType == PlayerType.SMARTAI) { "current player is not smartAI" }
+        if(game == null) rootService.gameService.checkIfGameEnded()
 
         val possibleCoordinates = initializePossibleCoordinates(currentGame)
 
-        val moves = tryPossibleMoves(currentGame, possibleCoordinates)
+        val moves = tryPossibleMoves(currentGame, possibleCoordinates, game != null)
 
         val bestMove = moves.maxBy { it.first }
+        if(game != null) return bestMove.first
 
         val rotation = bestMove.second.first
         val x = bestMove.second.second.first
@@ -35,7 +37,9 @@ class AIService(private val rootService: RootService) {
         while(tileInHand.rotationOffset != rotation) {
             rootService.playerService.rotateTile(suppressRefresh = true)
         }
+
         rootService.playerService.placeTile(x, y)
+        return null
     }
 
     /**
@@ -46,7 +50,7 @@ class AIService(private val rootService: RootService) {
      *
      * @return a Mutable list consists pairs of rotations and coordinates (possible moves).
      */
-    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates : MutableList<Pair<Int,Int>>)
+    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates: MutableList<Pair<Int,Int>>, stepTwo: Boolean)
             : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
         val moves: MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
@@ -63,7 +67,7 @@ class AIService(private val rootService: RootService) {
                     val simGame = game.deepCopy()
                     placeTile(simGame, coordinate.first, coordinate.second)
 
-                    val score = evaluateGameState(simGame)
+                    val score = evaluateGameState(simGame, stepTwo)
                     moves.add(Pair(score, Pair(tile.rotationOffset, Pair(x, y))))
                 }
             }
@@ -78,7 +82,7 @@ class AIService(private val rootService: RootService) {
      *  @param [game] IndigoGame Object, the function will be applied to.
      *  @return Int, heuristic sore of the game state.
      */
-    private fun evaluateGameState(game: IndigoGame) : Int {
+    private fun evaluateGameState(game: IndigoGame, stepTwo: Boolean) : Int {
         if(game.undoStack.isEmpty()) return 0
 
         var heuristicScore = 0
@@ -90,7 +94,7 @@ class AIService(private val rootService: RootService) {
             if(index == previousTurn.playerID){
                 heuristicScore += scoreChange * 100
             } else {
-                heuristicScore -= scoreChange * 100 / (game.playerList.size - 1)
+                if(!stepTwo) heuristicScore -= scoreChange * 90 / (game.playerList.size - 1)
             }
         }
 
@@ -110,6 +114,12 @@ class AIService(private val rootService: RootService) {
             if (movement.didCollide) improvementFactor = -1
 
             heuristicScore += (movement.gemType.toInt() * improvementFactor)
+        }
+
+        if(!stepTwo) {
+            val nextTurnScore = calculateNextTurn(game)
+            checkNotNull(nextTurnScore)
+            heuristicScore -= (nextTurnScore * 0.9).toInt()
         }
 
         return heuristicScore
