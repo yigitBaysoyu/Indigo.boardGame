@@ -43,7 +43,7 @@ class SaveGameTest {
         )
         gameService.startNewGame(player, false, 1.0, false)
         gameService.saveGame()
-        val file = File("saveGame.ser")
+        val file = File("saveGame.json")
         assert(file.exists())
         assert(file.readText().isNotEmpty())
     }

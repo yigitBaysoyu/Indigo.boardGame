@@ -1,7 +1,6 @@
 package view
 
 import entity.*
-import kotlinx.coroutines.runBlocking
 import service.RootService
 import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
@@ -27,13 +26,11 @@ import kotlin.math.sqrt
 import service.ConnectionState
 import tools.aqua.bgw.animation.RotationAnimation
 import tools.aqua.bgw.event.KeyCode
-import kotlin.system.measureTimeMillis
 
 /**
  * Displays the actual gameplay.
  */
-class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
-    Refreshable {
+class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
     // Constants / Measurements
     private val sceneWidth = Constants.SCENE_WIDTH
@@ -222,12 +219,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = onMouseClicked@{
             if(simulationSpeedBinary == "") return@onMouseClicked
-            val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
-            rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
+            if(simulationSpeedBinary.length > 20) {
+                rootService.gameService.setSimulationSpeed(100.0)
+            } else {
+                val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
+                rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
+            }
             simulationSpeedBinary = ""
         }
     }
-
 
     private val undoButton = Button(
         width = 300, height = 50,
@@ -368,7 +368,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         isDisabled = true
         onMouseClicked = {
             rootService.aiService.isPaused = false
-            handleAIPlayers()
+            rootService.gameService.makeAIPlayerTurn()
             isDisabled = true
             isVisible = false
         }
@@ -465,28 +465,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         handleUndoRedoButton()
 
-        handleAIPlayers()
-    }
-
-    private fun handleAIPlayers() {
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame) { "game is null" }
-
-        when(currentGame.getActivePlayer().playerType){
-            PlayerType.RANDOMAI -> {
-                rootService.aiService.randomNextTurn()
-            }
-            PlayerType.SMARTAI -> {
-                val timeTaken = measureTimeMillis {
-                    //Blocking current Thread until coroutine in calculateNextTurn() is finished
-                    runBlocking {
-                        rootService.aiService.calculateNextTurn()
-                    }
-                }
-                println("Took : ${timeTaken/1000} sec")
-            }
-            else -> return
-        }
+        rootService.gameService.makeAIPlayerTurn()
     }
 
     private fun setButtonsIfNetworkGame() {
@@ -892,7 +871,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playerAIIconList[index].isVisible = when (player.playerType) {
                 PlayerType.RANDOMAI -> true
                 PlayerType.SMARTAI -> true
+                PlayerType.NETWORKPLAYER -> true
                 else -> false
+            }
+            if(player.playerType == PlayerType.NETWORKPLAYER) {
+                playerAIIconList[index].visual = ImageVisual(Constants.networkIcon  )
+            } else {
+                playerAIIconList[index].visual = ImageVisual(Constants.aiIcon)
             }
             playerHandList[index].isVisible = true
             playerGemLayoutList[index].isVisible = true
@@ -905,6 +890,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "game is null" }
 
         rotateButton.posY = 90 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2 + (game.activePlayerID * 250)
+
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
+            rotateButton.isVisible = false
+            rotateButton.isDisabled = true
+        } else {
+            rotateButton.isVisible = true
+            rotateButton.isDisabled = false
+        }
     }
 
     private fun updatePlayerScores() {
@@ -1018,8 +1011,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         // Delay the turn if next player is AI
         var duration = 0
-        if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
-        if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
+        val playerType = game.playerList[turn.playerID].playerType
+        if(playerType == PlayerType.RANDOMAI || playerType == PlayerType.SMARTAI) {
             duration = when {
                 game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
                 game.simulationSpeed < 50 -> (10000 - (10000 - 750) * (game.simulationSpeed * 2 / 100)).toInt()
@@ -1027,7 +1020,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
         }
         val delayAnimation = DelayAnimation(duration)
-        delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+        delayAnimation.onFinished = { rootService.gameService.makeAIPlayerTurn() }
         playAnimation(delayAnimation)
     }
 
@@ -1144,6 +1137,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshAfterLoadGame() {
+        resumeAiButton.isVisible = true
+        resumeAiButton.isDisabled = false
         gameLoadedMessage.isVisible = true
         val animation = DelayAnimation(2750)
         animation.onFinished = { gameLoadedMessage.isVisible = false }
@@ -1158,20 +1153,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
-
-        if (newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) {
-
-            rotateButton.isDisabled = true
-            rotateButton.isVisible = false
-
-
-
-        } else if (newState == ConnectionState.PLAYING_MY_TURN) {
-
-            rotateButton.isDisabled = false
-            rotateButton.isVisible = true
-
-        }
-
+        if(rootService.currentGame == null) return
+        if(newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) setRotateButtonHeight()
+        if(newState == ConnectionState.PLAYING_MY_TURN) setRotateButtonHeight()
     }
 }

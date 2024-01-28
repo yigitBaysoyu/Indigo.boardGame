@@ -30,14 +30,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     fun startNewGame(
         players: MutableList<Player>,
         threePlayerVariant: Boolean,
-        simulationSpeed: Double,
-        isNetworkGame: Boolean
+        simulationSpeed: Double = 50.0,
+        isNetworkGame: Boolean,
+        sendGameInitMessage: Boolean = false
     ) {
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
         val drawPile: MutableList<PathTile> = loadTiles()
-        drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
@@ -45,17 +45,30 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        if (!isNetworkGame) {
+
+        drawPile.shuffle()
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players)
+
+        if(!isNetworkGame || sendGameInitMessage) {
             for(player in players) {
                 player.playHand.clear()
                 player.playHand.add(drawPile.removeFirst())
             }
         }
 
+        if(isNetworkGame) {
+            if(game.getActivePlayer().playerType != PlayerType.NETWORKPLAYER) {
+                rootService.networkService.updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+            } else {
+                rootService.networkService.updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+            }
+        }
+
         rootService.aiService.isPaused = false
 
         setDefaultGameLayout()
-        setSimulationSpeed(simulationSpeed)
+        if(isNetworkGame) setSimulationSpeed(100.0)
+        else setSimulationSpeed(simulationSpeed)
         setGates(threePlayerVariant)
         onAllRefreshables { refreshAfterStartNewGame() }
     }
@@ -481,6 +494,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     fun endGameIfEnded() {
         if(checkIfGameEnded()) {
+            rootService.aiService.isPaused = true
+            rootService.networkService.disconnect()
             onAllRefreshables { refreshAfterEndGame() }
         }
     }
@@ -539,13 +554,15 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * where the text in the file will be decoded into a Game Object
      */
     fun loadGame() {
-        val file = File("saveGame.ser")
+        val file = File("saveGame.json")
         if(!file.exists()) {
             onAllRefreshables { refreshAfterFileNotFound() }
             return
         }
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
         val game = checkNotNull(rootService.currentGame) { "game is null" }
+
+        rootService.aiService.isPaused = true
 
         // Set gates in Player.gateList to the right object
         for(player in game.playerList) {
@@ -573,8 +590,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             }
         }
 
-        onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
+        onAllRefreshables { refreshAfterLoadGame() }
     }
 
     /**
@@ -583,7 +600,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * then saving that String in the .ser file
      */
     fun saveGame() {
-        val file = File("saveGame.ser")
+        val file = File("saveGame.json")
         file.writeText(Json.encodeToString(rootService.currentGame))
     }
 
@@ -1113,16 +1130,17 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
      */
-    fun switchPlayer(){
+    fun makeAIPlayerTurn(){
         val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+        checkNotNull(currentGame) { "game is null" }
 
-        when(currentGame.getActivePlayer().playerType){
+        when(currentGame.getActivePlayer().playerType) {
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
                 val timeTaken = measureTimeMillis {
+                    // Blocking current Thread until coroutine in calculateNextTurn() is finished
                     runBlocking {
                         rootService.aiService.calculateNextTurn()
                     }

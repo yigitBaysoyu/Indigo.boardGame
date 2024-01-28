@@ -329,7 +329,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
     private fun isPlayerNameLengthValid(index: Int): Boolean {
         if(!playerNameInputList[index].isVisible) return true
         val name = playerNameInputList[index].text
-        return (name.length in 3..16)
+        return (name.length in 1..16)
     }
 
     private fun setWarningIcons() {

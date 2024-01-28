@@ -9,8 +9,6 @@ import kotlin.collections.last as last
  * Test class for the undo method of the PlayerService class.
  */
 class UndoTest {
-
-
     private lateinit var gameService: GameService
     private lateinit var rootService: RootService
     private lateinit var playerService: PlayerService
@@ -150,7 +148,6 @@ class UndoTest {
             mapOf(0 to 3, 1 to 4, 2 to 5, 3 to 0, 4 to 1, 5 to 2), 0, 0, 0,
             mutableListOf()
         )
-        println("$tile,$tile1")
 
         game.playerList[game.activePlayerID].playHand[0] = tile
         playerService.placeTile(1, -1)

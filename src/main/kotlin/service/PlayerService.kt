@@ -109,7 +109,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         // Remove placed tile from board
         val newEmptyTile = EmptyTile(
-            connections = mapOf(), rotationOffset = 0,
+            connections = mapOf(),
+            rotationOffset = 0,
             xCoordinate = lastTurn.placedTile.xCoordinate,
             yCoordinate = lastTurn.placedTile.yCoordinate,
         )
@@ -125,7 +126,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // Set active player
         game.activePlayerID = lastTurn.playerID
 
-        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate,lastTurn.placedTile.yCoordinate),
+        game.redoStack.add(Pair(Pair(lastTurn.placedTile.xCoordinate, lastTurn.placedTile.yCoordinate),
             lastTurn.placedTile.rotationOffset))
         onAllRefreshables { refreshAfterUndo(lastTurn) }
     }
@@ -185,15 +186,20 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         game.undoStack.add(turn)
 
-        if(game.isNetworkGame && rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN)
-        {
-            val tilePMessage = edu.udo.cs.sopra.ntf.TilePlacedMessage(rotation = tileFromPlayer.rotationOffset,
-                qcoordinate = xCoordinate  , rcoordinate = yCoordinate )
+        if(game.isNetworkGame && rootService.networkService.connectionState == ConnectionState.PLAYING_MY_TURN) {
+            val tilePMessage = edu.udo.cs.sopra.ntf.TilePlacedMessage(rotation = tileFromPlayer.rotationOffset, qcoordinate = xCoordinate  , rcoordinate = yCoordinate )
             rootService.networkService.sendPlaceTile(tilePMessage)
         }
 
         // switch the active player
         game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+        if(game.isNetworkGame) {
+            if(game.getActivePlayer().playerType != PlayerType.NETWORKPLAYER) {
+                rootService.networkService.updateConnectionState(ConnectionState.PLAYING_MY_TURN)
+            } else {
+                rootService.networkService.updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
+            }
+        }
 
         onAllRefreshables { refreshAfterTilePlaced(turn) }
 

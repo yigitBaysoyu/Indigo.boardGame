@@ -190,8 +190,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
     var selectedPlayerType = 0
     private val playerTypeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
-        ImageVisual(Constants.modeIconAI),
         ImageVisual(Constants.modeIconRandom),
+        ImageVisual(Constants.modeIconAI),
     )
     private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(

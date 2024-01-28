@@ -181,7 +181,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     val newGameButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 375, posY = halfWidth - 50,
-        text = "New Game",
+        text = "Back",
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
@@ -243,11 +243,12 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
 
         val players = game.playerList
 
-        renderCollectedGemsLists()
-
         //sort players with score / amount of gems
         players.sortWith(compareByDescending<Player> { it.score }.thenByDescending { it.amountOfGems })
 
+        players.forEachIndexed {index, player ->
+            renderCollectedGemsForPlayer(player, index)
+        }
 
         players.forEachIndexed { i, player ->
             playerNameInputList[i].text = player.name
@@ -256,7 +257,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPosInputList[i].isVisible = true
             playerPointsInputList[i].text = "${player.score}"
             playerPointsInputList[i].isVisible = true
-            playerColorIconList[i].visual = colorImageList[player.color]
+            playerColorIconList[i].components[1].visual = colorImageList[player.color]
             playerColorIconList[i].isVisible = true
 
             val playerTypeAsInt = when(player.playerType) {
@@ -265,7 +266,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
                 PlayerType.SMARTAI -> 2
                 PlayerType.NETWORKPLAYER -> 3
             }
-            playerModeIconList[i].visual = modeImageList[playerTypeAsInt]
+            playerModeIconList[i].components[1].visual = modeImageList[playerTypeAsInt]
             playerModeIconList[i].isVisible = true
         }
     }
@@ -288,15 +289,6 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
         }
 
         playerWonIcon.visual = ImageVisual(Constants.wonIcon)
-    }
-
-    private fun renderCollectedGemsLists() {
-        val game = rootService.currentGame
-        checkNotNull(game) { "Game is null" }
-
-        game.playerList.forEachIndexed {index, player ->
-            renderCollectedGemsForPlayer(player, index)
-        }
     }
 
     private fun renderCollectedGemsForPlayer(player: Player, playerIndex: Int) {
