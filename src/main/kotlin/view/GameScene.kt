@@ -221,8 +221,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = onMouseClicked@{
             if(simulationSpeedBinary == "") return@onMouseClicked
-            val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
-            rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
+            if(simulationSpeedBinary.length > 20) {
+                rootService.gameService.setSimulationSpeed(100.0)
+            } else {
+                val newSpeed = Integer.parseInt(simulationSpeedBinary, 2)
+                rootService.gameService.setSimulationSpeed(newSpeed.toDouble())
+            }
             simulationSpeedBinary = ""
         }
     }
