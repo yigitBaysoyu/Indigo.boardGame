@@ -30,7 +30,7 @@ class MoveGemTest {
         val player = game.getActivePlayer()
         val gate = gameService.getTileFromAxialCoordinates(5, -2)
         if(gate !is GateTile){
-            throw Error("Error getting the gate assigned to the player")
+            throw IllegalStateException("Error getting the gate assigned to the player")
         }
         player.gateList.add(gate)
 
@@ -209,7 +209,7 @@ class MoveGemTest {
         //Get gate tile and add to player
         val gate2 = gameService.getTileFromAxialCoordinates(-3, 5)
         if(gate2 !is GateTile){
-            throw Error("Error getting the gate assigned to the player")
+            throw IllegalStateException("Error getting the gate assigned to the player")
         }
         player2.gateList.add(gate2)
 
@@ -277,7 +277,7 @@ class MoveGemTest {
         placedTile4Connections[2] = 0
 
         val placedTile4 = PathTile(placedTile4Connections, xCoordinate = -4, yCoordinate = 3)
-        for(i in 0..5){
+        repeat(6){
             placedTile4.gemPositions.add(GemType.NONE)
         }
 

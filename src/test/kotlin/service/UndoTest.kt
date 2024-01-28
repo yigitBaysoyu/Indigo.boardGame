@@ -273,6 +273,9 @@ class UndoTest {
 
     }
 
+    /**
+     * Tests Undo behavior for gem movement when a gem has not benn moved.
+     */
     @Test
     fun testUndoGemMovement(){
 
