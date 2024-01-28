@@ -19,11 +19,16 @@ import tools.aqua.bgw.net.common.response.*
  * @param secret A secret key for secure communication.
  */
 
-class NetworkClient (playerName: String, host: String, secret: String, val networkService: NetworkService, val playerType: PlayerType):
-    BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE) {
-
+class NetworkClient(
+    playerName: String,
+    host: String,
+    secret: String,
+    val networkService: NetworkService,
+    val playerType: PlayerType): BoardGameClient(playerName, host, secret, NetworkLogging.VERBOSE
+) {
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
+    private var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
      * Handles a [CreateGameResponse] received from the server. It waits for the guest player when its
@@ -95,7 +100,8 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     /**
      * Handle a [PlayerJoinedNotification] sent by the server. When number of players is
-     * greater than 2, the connectionState in the netWorkService will be updated to [ConnectionState.WAITING_FOR_OPPONENTS_TURN ]
+     * greater than 2, the connectionState in the netWorkService will be updated to
+     * [ConnectionState.WAITING_FOR_OPPONENTS_TURN ]
      * @throws IllegalStateException if not currently expecting any guests to join.
      */
 

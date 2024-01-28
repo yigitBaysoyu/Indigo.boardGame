@@ -657,6 +657,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
         }
 
+
         // Remove duplicates from the gateAssignments
         val filteredGateAssignments: List<MutableList<Int>> = gateAssignments.map { it.distinct().toMutableList() }
         for (list in filteredGateAssignments) {

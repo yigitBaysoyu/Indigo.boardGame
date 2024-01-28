@@ -485,7 +485,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
     }
 
-
     /**
      * Function to read the given csv File, which defines the different
      * types of tiles (connections and amount), and create the defined
@@ -519,6 +518,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         }
         return playingTiles
     }
+
+    /**
+     * reads the given CSV File at /tiles.csv and returns an MutableList which split the
+     * file into Strings
+     * */
     fun loadTilesCsv(): MutableList<String> {
         val file = GameService::class.java.getResource("/tiles.csv")
         checkNotNull(file) { "No file in defined position" }

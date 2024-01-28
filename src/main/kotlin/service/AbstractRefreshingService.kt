@@ -22,6 +22,9 @@ abstract class AbstractRefreshingService {
         refreshables += newRefreshable
     }
 
+    /**
+     * calls [method] function on object "it"
+     */
     fun onAllRefreshables(method: Refreshable.() -> Unit) =
         refreshables.forEach { it.method() }
 

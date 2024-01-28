@@ -10,6 +10,12 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 
+/**
+ *  Service that handles the logic of the Turns made by AI.
+ *  There are two types of AI moves, one made mit an AI and one that is random
+ *  @param rootService The root service that holds the current state of the game.
+ *
+ */
 class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
