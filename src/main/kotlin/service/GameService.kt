@@ -575,8 +575,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
-
-        println(game.undoStack.last().gemMovements.last())
     }
 
     /**
