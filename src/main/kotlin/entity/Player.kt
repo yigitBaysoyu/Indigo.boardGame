@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 data class Player(
     val name: String = "",
     var color: Int = 0,
-    val playerType: PlayerType = PlayerType.LOCALPLAYER,
+    var playerType: PlayerType = PlayerType.LOCALPLAYER,
     var score: Int = 0,
     var amountOfGems: Int = 0,
     val playHand: MutableList<PathTile> = mutableListOf(),
