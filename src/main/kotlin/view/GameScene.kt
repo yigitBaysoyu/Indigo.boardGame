@@ -1,7 +1,6 @@
 package view
 
 import entity.*
-import kotlinx.coroutines.runBlocking
 import service.RootService
 import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.animation.MovementAnimation
@@ -27,7 +26,6 @@ import kotlin.math.sqrt
 import service.ConnectionState
 import tools.aqua.bgw.animation.RotationAnimation
 import tools.aqua.bgw.event.KeyCode
-import kotlin.system.measureTimeMillis
 
 /**
  * Displays the actual gameplay.
@@ -370,7 +368,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         isDisabled = true
         onMouseClicked = {
             rootService.aiService.isPaused = false
-            handleAIPlayers()
+            rootService.gameService.makeAIPlayerTurn()
             isDisabled = true
             isVisible = false
         }
@@ -467,28 +465,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         handleUndoRedoButton()
 
-        handleAIPlayers()
-    }
-
-    private fun handleAIPlayers() {
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame) { "game is null" }
-
-        when(currentGame.getActivePlayer().playerType){
-            PlayerType.RANDOMAI -> {
-                rootService.aiService.randomNextTurn()
-            }
-            PlayerType.SMARTAI -> {
-                val timeTaken = measureTimeMillis {
-                    //Blocking current Thread until coroutine in calculateNextTurn() is finished
-                    runBlocking {
-                        rootService.aiService.calculateNextTurn()
-                    }
-                }
-                println("Took : ${timeTaken/1000} sec")
-            }
-            else -> return
-        }
+        rootService.gameService.makeAIPlayerTurn()
     }
 
     private fun setButtonsIfNetworkGame() {
@@ -1043,7 +1020,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
         }
         val delayAnimation = DelayAnimation(duration)
-        delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+        delayAnimation.onFinished = { rootService.gameService.makeAIPlayerTurn() }
         playAnimation(delayAnimation)
     }
 

@@ -37,7 +37,7 @@ class SwitchPlayerTest {
         //Make turn for normalPlayer
         playerService.placeTile(-1, 0)
         // call switchPlayer because it is only called in view after delay
-        gameService.switchPlayer()
+        gameService.makeAIPlayerTurn()
 
         assert(game.activePlayerID == 2)
         assert(game.undoStack.size == 2)
@@ -83,7 +83,7 @@ class SwitchPlayerTest {
         game.activePlayerID = 1
         playerService.placeTile(1, 1)
         // call switchPlayer because it is only called in view after delay
-        gameService.switchPlayer()
+        gameService.makeAIPlayerTurn()
 
         assert(game.activePlayerID == 0)
         assert(game.undoStack.size == 2)

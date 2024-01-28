@@ -1127,16 +1127,17 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
      */
-    fun switchPlayer(){
+    fun makeAIPlayerTurn(){
         val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
+        checkNotNull(currentGame) { "game is null" }
 
-        when(currentGame.getActivePlayer().playerType){
+        when(currentGame.getActivePlayer().playerType) {
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
                 val timeTaken = measureTimeMillis {
+                    // Blocking current Thread until coroutine in calculateNextTurn() is finished
                     runBlocking {
                         rootService.aiService.calculateNextTurn()
                     }
