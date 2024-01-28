@@ -7,27 +7,21 @@ import kotlin.math.min
 import kotlin.random.Random
 
 class AIService(private val rootService: RootService) {
-
-    private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
     var isPaused : Boolean = false
 
     /**
      * Function to calculate and execute the best possible move for a SMART AI player.
      */
     fun calculateNextTurn() {
-
         if(isPaused) return
 
-        val gameService = rootService.gameService
-        val playerService = rootService.playerService
-        val currentGame = rootService.currentGame
-        checkNotNull(currentGame)
-        gameService.checkIfGameEnded()
+        val currentGame = checkNotNull(rootService.currentGame) { "no active game" }
+        rootService.gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
-        require(player.playerType == PlayerType.SMARTAI)
+        require(player.playerType == PlayerType.SMARTAI) { "current player is not smartAI" }
 
-        initializePossibleCoordinates(currentGame)
+        val possibleCoordinates = initializePossibleCoordinates(currentGame)
 
         val moves = tryPossibleMoves(currentGame, possibleCoordinates)
 
@@ -37,12 +31,12 @@ class AIService(private val rootService: RootService) {
         val x = bestMove.second.second.first
         val y = bestMove.second.second.second
 
-
-        for(r in 1..rotation) playerService.rotateTile()
-        playerService.placeTile(x, y)
-
+        val tileInHand = currentGame.getActivePlayer().playHand.first()
+        while(tileInHand.rotationOffset != rotation) {
+            rootService.playerService.rotateTile(suppressRefresh = true)
+        }
+        rootService.playerService.placeTile(x, y)
     }
-
 
     /**
      * Function, which tries every possible move in the current game state to determine which move is the best.
@@ -52,28 +46,25 @@ class AIService(private val rootService: RootService) {
      *
      * @return a Mutable list consists pairs of rotations and coordinates (possible moves).
      */
-    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates : MutableList<Pair<Int,Int>> )
+    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates : MutableList<Pair<Int,Int>>)
             : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
-        val moves : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
+        val moves: MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
         for(rot in 1..6) {
-
             rotateTile(game)
-            val rotation = tile.rotationOffset
 
             for(coordinate in possibleCoordinates) {
-
                 val x = coordinate.first
                 val y = coordinate.second
 
-                if( isPlaceAble(game, coordinate.first, coordinate.second, tile) ) {
+                if(isPlaceAble(game, coordinate.first, coordinate.second, tile) ) {
                     val simGame = game.deepCopy()
                     placeTile(simGame, coordinate.first, coordinate.second)
 
                     val score = evaluateGameState(simGame)
-                    moves.add(Pair(score, Pair(rotation, Pair(x, y))))
+                    moves.add(Pair(score, Pair(tile.rotationOffset, Pair(x, y))))
                 }
             }
         }
@@ -88,47 +79,41 @@ class AIService(private val rootService: RootService) {
      *  @return Int, heuristic sore of the game state.
      */
     private fun evaluateGameState(game: IndigoGame) : Int {
+        if(game.undoStack.isEmpty()) return 0
 
         var heuristicScore = 0
 
-        if(game.undoStack.isNotEmpty()) {
+        val previousTurn = game.undoStack.last()
+        val player = game.playerList[previousTurn.playerID]
 
-            val previousTurn = game.undoStack.last()
-            val player = game.playerList[previousTurn.playerID]
-
-            for((index, scoreChange) in previousTurn.scoreChanges.withIndex()){
-                if(index == previousTurn.playerID){
-                    heuristicScore += scoreChange * 100
-                }
-                else {
-                    heuristicScore -= scoreChange * 200
-                }
+        for((index, scoreChange) in previousTurn.scoreChanges.withIndex()){
+            if(index == previousTurn.playerID){
+                heuristicScore += scoreChange * 100
+            } else {
+                heuristicScore -= scoreChange * 100 / (game.playerList.size - 1)
             }
-
-            val gemMovements = previousTurn.gemMovements
-            if(gemMovements.isNotEmpty()){
-
-                for(movement in gemMovements) {
-                    val (startTile, endTile) = movement.run { startTile to endTile }
-                    val nextTile = getAdjacentTileByConnection(game, endTile, movement.positionOnEndTile) ?: endTile
-
-                    val endTileDistance = minDistance(player, endTile)
-                    val startTileDistance = minDistance(player, startTile)
-                    val nextTileDistance = minDistance(player, nextTile)
-
-                    var improvementFactor = 0
-                    if (endTileDistance < startTileDistance) improvementFactor += 1
-                    if (nextTileDistance < endTileDistance) improvementFactor += 1
-                    if (movement.didCollide) improvementFactor = -1
-
-                    heuristicScore += (movement.gemType.toInt() * improvementFactor)
-                }
-            }
-
         }
+
+        val gemMovements = previousTurn.gemMovements
+
+        for(movement in gemMovements) {
+            val (startTile, endTile) = movement.run { startTile to endTile }
+            val nextTile = getAdjacentTileByConnection(game, endTile, movement.positionOnEndTile) ?: endTile
+
+            val endTileDistance = minDistance(player, endTile)
+            val startTileDistance = minDistance(player, startTile)
+            val nextTileDistance = minDistance(player, nextTile)
+
+            var improvementFactor = 0
+            if (endTileDistance < startTileDistance) improvementFactor += 1
+            if (nextTileDistance < endTileDistance) improvementFactor += 1
+            if (movement.didCollide) improvementFactor = -1
+
+            heuristicScore += (movement.gemType.toInt() * improvementFactor)
+        }
+
         return heuristicScore
     }
-
 
     /**
      *  Function to calculate the minimum distance between a given tile and the gates of given player.
@@ -137,40 +122,35 @@ class AIService(private val rootService: RootService) {
      *  @param [tile] Tile to check the distance of.
      */
     private fun minDistance(player : Player, tile: Tile) : Int {
-
-        val pointA: Pair<Int, Int> = Pair(tile.xCoordinate, tile.yCoordinate)
-        var minDistance: Int = Int.MAX_VALUE
+        val pointA = Pair(tile.xCoordinate, tile.yCoordinate)
+        var minDistance = Int.MAX_VALUE
 
         for(gate in player.gateList){
             val pointB = Pair(gate.xCoordinate, gate.yCoordinate)
             val distanceToGate = axialDistance(pointA, pointB)
             minDistance = min(minDistance, distanceToGate)
         }
+
         return minDistance
-
     }
-
 
     /**
      *  Function to calculate the distance between two pairs of coordinates.
      *  @param [a] Pair of x and y coordinates of point a .
      *  @param [b] Pair of x and y coordinates of point b .
      */
-    private fun axialDistance(a: Pair<Int,Int>, b: Pair<Int, Int>): Int{
+    private fun axialDistance(a: Pair<Int,Int>, b: Pair<Int, Int>): Int {
         return (abs(a.first - b.first)
                 + abs(a.first + a.second - b.first - b.second)
                 + abs(a.second - b.second)) / 2
     }
 
-
     /**
      *  Function that initializes all possible tile coordinates on the game layout where
      *  the Tile of SMART AI can be placed.
      */
-    private fun initializePossibleCoordinates( game: IndigoGame ){
-        if (possibleCoordinates.isNotEmpty()){
-            return
-        }
+    private fun initializePossibleCoordinates(game: IndigoGame): MutableList<Pair<Int,Int>> {
+        val possibleCoordinates = mutableListOf<Pair<Int,Int>>()
 
         for (list in game.gameLayout) {
             for (tile in list) {
@@ -180,6 +160,8 @@ class AIService(private val rootService: RootService) {
                 }
             }
         }
+
+        return possibleCoordinates
     }
 
     /**
@@ -191,8 +173,7 @@ class AIService(private val rootService: RootService) {
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
     private fun rotateTile(game : IndigoGame) {
-        rootService.gameService.checkIfGameEnded()
-        val tile = game.playerList[game.activePlayerID].playHand[0]
+        val tile = game.getActivePlayer().playHand[0]
 
         // map to store the new Connections
         val newConnections = mutableMapOf<Int, Int>()
@@ -206,11 +187,10 @@ class AIService(private val rootService: RootService) {
             val newValue = (value + 1) % 6
             //update the connection of each key to the new value
             newConnections[newKey] = newValue
-
         }
+
         // set the connections to the tile connections
         tile.connections = newConnections
-
     }
 
     /**
@@ -222,8 +202,7 @@ class AIService(private val rootService: RootService) {
      *
      *  @return the new IndigoGame variant after tile placement
      */
-    private fun placeTile(game: IndigoGame, xCoordinate: Int, yCoordinate: Int): IndigoGame {
-
+    private fun placeTile(game: IndigoGame, xCoordinate: Int, yCoordinate: Int) {
         val tileFromPlayer = game.playerList[game.activePlayerID].playHand.first()
         val gemsOnTile = mutableListOf<GemType>()
 
@@ -238,7 +217,7 @@ class AIService(private val rootService: RootService) {
             type = tileFromPlayer.type
         )
 
-        if (!isPlaceAble(game, xCoordinate, yCoordinate, tileToBePlaced)) return game
+        if (!isPlaceAble(game, xCoordinate, yCoordinate, tileToBePlaced)) return
 
         // placing the Tile in the GameLayout and moving the Gems
         setTileFromAxialCoordinates(game, xCoordinate, yCoordinate, tileToBePlaced)
@@ -268,8 +247,7 @@ class AIService(private val rootService: RootService) {
 
         game.undoStack.add(turn)
 
-        return game
-
+        return
     }
 
     /**
@@ -308,13 +286,11 @@ class AIService(private val rootService: RootService) {
         return false
     }
 
-
     /**
      * Sets the Tile passed as argument at the specified Axial Coordinates.
      * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
      */
     private fun setTileFromAxialCoordinates(game : IndigoGame, x: Int, y: Int, tile: Tile) {
-
         if (!checkIfValidAxialCoordinates(x, y)) {
             throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
         }
@@ -345,7 +321,6 @@ class AIService(private val rootService: RootService) {
      *
      */
     private fun findAdjacentTiles(game : IndigoGame, x: Int, y: Int): List<Tile> {
-
         val adjacentTile = mutableListOf<Tile>()
 
         // Define the relative positions that would be adjacent in a hexagonal grid
@@ -358,8 +333,8 @@ class AIService(private val rootService: RootService) {
         positions.forEach { (first, second) ->
             adjacentTile.add(getTileFromAxialCoordinates(game, first, second))
         }
-        return adjacentTile
 
+        return adjacentTile
     }
 
     /**
@@ -367,7 +342,6 @@ class AIService(private val rootService: RootService) {
      * Throws IndexOutOfBounds exception if Coordinates are out of bounds.
      */
     private fun getTileFromAxialCoordinates(game : IndigoGame, x: Int, y: Int): Tile {
-
         if (!checkIfValidAxialCoordinates(x, y)) {
             throw IndexOutOfBoundsException("Position ($x, $y) is out of Bounds for gameLayout.")
         }
@@ -420,8 +394,7 @@ class AIService(private val rootService: RootService) {
      * and collisions, if any happened, are represented by the [GemMovement]
      * objects in [Turn.gemMovements]
      */
-    private fun moveGems(game : IndigoGame, turn: Turn): Turn{
-
+    private fun moveGems(game : IndigoGame, turn: Turn) {
         val tile = turn.placedTile
 
         //Getting neighbours according to connection
@@ -487,9 +460,7 @@ class AIService(private val rootService: RootService) {
                 }
             }
         }
-        return turn
     }
-
 
     /**
      * Function to get the neighbour according to the [connection]
@@ -578,13 +549,14 @@ class AIService(private val rootService: RootService) {
      * perspective of [neighbourTile]
      * @param [turn] The currently active [Turn]
      */
-    private fun collisionCheck(game: IndigoGame
-                               , placedTile: PathTile
-                               , currentConnection: Int
-                               , neighbourTile: PathTile
-                               , neighbourConnection: Int
-                               , turn: Turn )
-    {
+    private fun collisionCheck(
+        game: IndigoGame,
+        placedTile: PathTile,
+        currentConnection: Int,
+        neighbourTile: PathTile,
+        neighbourConnection: Int,
+        turn: Turn
+    ) {
         val gemAtStart = placedTile.gemPositions[currentConnection]
         val gemAtEnd = neighbourTile.gemPositions[neighbourConnection]
 
@@ -619,8 +591,7 @@ class AIService(private val rootService: RootService) {
 
             placedTile.gemPositions[currentConnection] = GemType.NONE
             neighbourTile.gemPositions[neighbourConnection] = GemType.NONE
-        }
-        else if(gemAtEnd != GemType.NONE){
+        } else if(gemAtEnd != GemType.NONE){
             neighbourTile.gemPositions[neighbourConnection] = GemType.NONE
 
             val destination = placedTile.connections[currentConnection]
@@ -641,11 +612,13 @@ class AIService(private val rootService: RootService) {
      * @param [centerTile] The neighbouring tile which sits at [currentConnection]
      * @param [turn] The currently active [Turn]
      */
-    private fun collisionCheck(game: IndigoGame
-                               , placedTile: PathTile
-                               , currentConnection: Int
-                               , centerTile: CenterTile
-                               , turn: Turn ){
+    private fun collisionCheck(
+        game: IndigoGame,
+        placedTile: PathTile,
+        currentConnection: Int,
+        centerTile: CenterTile,
+        turn: Turn
+    ) {
         val gemOnPlacedTile = placedTile.gemPositions[currentConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
@@ -678,8 +651,7 @@ class AIService(private val rootService: RootService) {
 
             placedTile.gemPositions[currentConnection] = GemType.NONE
             centerTile.availableGems.removeLast()
-        }
-        else{
+        } else {
             val destination = placedTile.connections[currentConnection]
             checkNotNull(destination)
             placedTile.gemPositions[destination] = centerTile.availableGems.removeLast()
@@ -698,14 +670,14 @@ class AIService(private val rootService: RootService) {
      * @param [treasureTileConnection] The corresponding connection on the [treasureTile]
      * @param [turn] The currently active [Turn]
      */
-
-    private fun collisionCheck(game: IndigoGame
-                               , placedTile: PathTile
-                               , currentConnection: Int
-                               , treasureTile: TreasureTile
-                               , treasureTileConnection: Int
-                               , turn: Turn )
-    {
+    private fun collisionCheck(
+        game: IndigoGame,
+        placedTile: PathTile,
+        currentConnection: Int,
+        treasureTile: TreasureTile,
+        treasureTileConnection: Int,
+        turn: Turn
+    ) {
         val gemAtTreasureTile = treasureTile.gemPositions[treasureTileConnection]
         val gemAtPlacedTile = placedTile.gemPositions[currentConnection]
 
@@ -741,9 +713,7 @@ class AIService(private val rootService: RootService) {
 
             placedTile.gemPositions[currentConnection] = GemType.NONE
             treasureTile.gemPositions[treasureTileConnection] = GemType.NONE
-        }
-
-        else if(gemAtTreasureTile != GemType.NONE){
+        } else if(gemAtTreasureTile != GemType.NONE){
             treasureTile.gemPositions[treasureTileConnection] = GemType.NONE
 
             val destination = placedTile.connections[currentConnection]
@@ -762,12 +732,13 @@ class AIService(private val rootService: RootService) {
      * @param[gateTile] The Tile at the corresponding connection
      * @param[turn] The current [Turn]
      */
-    private fun collisionCheck(game: IndigoGame,
-                               placedTile: PathTile,
-                               currentConnection: Int,
-                               gateTile: GateTile,
-                               turn: Turn
-    ){
+    private fun collisionCheck(
+        game: IndigoGame,
+        placedTile: PathTile,
+        currentConnection: Int,
+        gateTile: GateTile,
+        turn: Turn
+    ) {
         val gemOnPlacedTile = placedTile.gemPositions[currentConnection]
 
         if(gemOnPlacedTile != GemType.NONE){
@@ -797,14 +768,15 @@ class AIService(private val rootService: RootService) {
      *
      * @param [game] The IndigoGame object in which the function will be implemented.
      */
-    private fun scoringAction(game : IndigoGame,
-                              startTile: Tile,
-                              startConnection: Int,
-                              endTile: Tile,
-                              endConnection: Int,
-                              gem: GemType,
-                              turn: Turn
-    ){
+    private fun scoringAction(
+        game: IndigoGame,
+        startTile: Tile,
+        startConnection: Int,
+        endTile: Tile,
+        endConnection: Int,
+        gem: GemType,
+        turn: Turn
+    ) {
         val scoringMovement = GemMovement(
             gem,
             startTile,
@@ -813,6 +785,7 @@ class AIService(private val rootService: RootService) {
             endConnection,
             false
         )
+
         turn.gemMovements.add(scoringMovement)
 
         for((index, player) in game.playerList.withIndex()){
@@ -827,101 +800,63 @@ class AIService(private val rootService: RootService) {
 
 
 
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
 
 
 
 
-    private val placeableTiles: MutableList<Pair<Int,Int>> = mutableListOf()
+
+
 
     /**
      * Function to decide on a random move for the [PlayerType.RANDOMAI]
-     * Also keeps track of the already placed tiles each time it is called,
-     * in [placeableTiles]
-     *
-     * @throws [IllegalArgumentException] if the active player is not of
-     * [PlayerType.RANDOMAI]
+     * @throws [IllegalArgumentException] if the active player is not of [PlayerType.RANDOMAI]
      */
     fun randomNextTurn() {
-        val gameService = rootService.gameService
-        val playerService = rootService.playerService
-        val currentGame = rootService.currentGame
-
-        checkNotNull(currentGame)
-        gameService.checkIfGameEnded()
+        val currentGame = checkNotNull(rootService.currentGame) { "no active game" }
+        rootService.gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
         if(player.playHand.size == 0) return
 
         require(player.playerType == PlayerType.RANDOMAI)
 
+        val placeableTiles = initializePlaceableTiles()
         placeableTiles.shuffle()
-
-        //Rotate the tile by a random amount
-        val randomRotation = Random.nextInt(0, 6)
-        for (i in 0 until randomRotation){
-            playerService.rotateTile()
-        }
-
-        var selectedPos: Pair<Int,Int> ?= null
-        var selectedTile: Tile ?
-        while (placeableTiles.isNotEmpty()){
-            selectedPos = placeableTiles.first()
-            selectedTile = gameService.getTileFromAxialCoordinates(selectedPos.first, selectedPos.second)
-
-            if(selectedTile is PathTile || selectedTile is TreasureTile || selectedTile is CenterTile){
-                placeableTiles.removeFirst()
-                continue
-            }
-            else if(gameService.isPlaceAble(selectedPos.first, selectedPos.second, player.playHand.first())){
-                break
-            }
-            //If isPlaceable returns false for an empty position it means that the tile blocks an exit
-            //Then a rotation will always solve it given the existing tile types
-            else if(selectedTile is EmptyTile){
-                playerService.rotateTile()
-                continue
-            }
-            //Remove any positions which doesn't pass the other checks
-            else{
-                placeableTiles.removeFirst()
-                continue
-            }
-        }
 
         if(placeableTiles.isEmpty()){
             return
         }
-        checkNotNull(selectedPos)
-        placeableTiles.removeFirst()
+
+        // Rotate the tile by a random amount
+        val randomRotation = Random.nextInt(0, 6)
+        for (i in 0 until randomRotation){
+            rootService.playerService.rotateTile(suppressRefresh = true)
+        }
+
+        val selectedPos: Pair<Int,Int> = placeableTiles.first()
+        if(!rootService.gameService.isPlaceAble(selectedPos.first, selectedPos.second, player.playHand.first())) {
+            rootService.playerService.rotateTile(suppressRefresh = true)
+        }
 
         //Turn object is created in placeTile
-        playerService.placeTile(selectedPos.first, selectedPos.second)
+        rootService.playerService.placeTile(selectedPos.first, selectedPos.second)
     }
 
     /**
      *  Initialises placeable Tile coordinates for random AI.
      */
-    private fun initializePlaceableTiles(){
-        if (placeableTiles.isNotEmpty()){
-            return
-        }
+    private fun initializePlaceableTiles(): MutableList<Pair<Int,Int>> {
+        val placeableTiles = mutableListOf<Pair<Int,Int>>()
 
         for (x in -4..4) {
             for (y in -4..4) {
                 // Check if the conditions are met
-                if ((x + y) in -4..4) {
+                if (checkIfValidAxialCoordinates(x, y) && rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
                     placeableTiles.add(Pair(x,y))
                 }
             }
         }
-    }
 
-    init {
-        initializePlaceableTiles()
+        return placeableTiles
     }
 }
