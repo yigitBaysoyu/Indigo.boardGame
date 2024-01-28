@@ -76,11 +76,9 @@ class AIService(private val rootService: RootService) {
         val y = bestMove.second.second
 
         playerService.placeTile(x, y)
-
     }
 
-    private fun calculateBestMove(possibleMoves: List<Pair<Int, Pair<Int, Int>>>):
-            Pair<Int,Pair<Int, Pair<Int, Int>>> {
+    private fun calculateBestMove(possibleMoves: List<Pair<Int, Pair<Int, Int>>>): Pair<Int,Pair<Int, Pair<Int, Int>>> {
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
 
@@ -249,12 +247,11 @@ class AIService(private val rootService: RootService) {
      *  @param [game] The IndigoGame object in which the function will be implemented
      */
     private fun evaluateGameState(game : IndigoGame, mainPlayerIndex: Int) : Int {
-
         val gemMovements = game.undoStack.last().gemMovements
         val playerIndex = game.undoStack.last().playerID
         for(movement in gemMovements){
-            val start = movement.startTile
-            val end = movement.endTile
+            val start =getTileFromAxialCoordinates(game, movement.startTile.xCoordinate, movement.startTile.yCoordinate)
+            val end = getTileFromAxialCoordinates(game, movement.endTile.xCoordinate, movement.endTile.yCoordinate)
             val next = getAdjacentTileByConnection(game, end, movement.positionOnEndTile) ?: end
 
             if( minDistance(game.playerList[playerIndex], next) < minDistance(game.playerList[playerIndex], start)){
