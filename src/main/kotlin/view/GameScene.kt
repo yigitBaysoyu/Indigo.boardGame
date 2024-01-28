@@ -1153,6 +1153,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {
-        setRotateButtonHeight()
+        if(rootService.currentGame == null) return
+        if(newState == ConnectionState.WAITING_FOR_OPPONENTS_TURN) setRotateButtonHeight()
+        if(newState == ConnectionState.PLAYING_MY_TURN) setRotateButtonHeight()
     }
 }
