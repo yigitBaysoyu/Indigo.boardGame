@@ -2,7 +2,6 @@ package view
 
 import entity.*
 import service.RootService
-import tools.aqua.bgw.components.gamecomponentviews.TokenView
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
@@ -15,7 +14,8 @@ import java.awt.Color
 /**
  * Is displayed after a game has ended. Shows scores and winner of the game.
  */
-class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
+class GameEndedScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
+    Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
     private val sceneHeight = Constants.SCENE_HEIGHT
