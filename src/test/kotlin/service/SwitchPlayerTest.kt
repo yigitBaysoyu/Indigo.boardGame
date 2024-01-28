@@ -5,6 +5,9 @@ import entity.Player
 import entity.PlayerType
 import org.junit.jupiter.api.Test
 
+/**
+ * Test class to ensure that the turns of the players switch correctly
+ */
 class SwitchPlayerTest {
     private val rootService = RootService()
 
@@ -53,6 +56,11 @@ class SwitchPlayerTest {
 
     }
 
+    /**
+     * Function to test the switchPlayer method by
+     * calling a sequence where a normal player, a random
+     * AI and a smart AI make a turn
+     */
     @Test
     fun testSwitchPlayer1() {
         val gameService = rootService.gameService
@@ -93,6 +101,11 @@ class SwitchPlayerTest {
 
     }
 
+    /**
+     * Function to test the switchPlayer method by
+     * calling a sequence where a normal player, a random
+     * AI and a smart AI make a turn
+     */
     @Test
     fun testSwitchPlayer2() {
         val gameService = rootService.gameService
