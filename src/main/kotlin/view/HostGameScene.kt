@@ -259,7 +259,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             1 -> PlayerType.RANDOMAI
             else -> PlayerType.SMARTAI
         }
-        rootService.networkService.startNewHostedGame(selectedColors, selectedType)
+        rootService.networkService.startNewHostedGame(selectedColors, selectedType, randomOrderCheckbox.isChecked)
 
         resetAllComponents()
     }

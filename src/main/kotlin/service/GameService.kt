@@ -47,7 +47,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         rootService.currentGame = game
 
         drawPile.shuffle()
-        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage()
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players)
 
         if(!isNetworkGame || sendGameInitMessage) {
             for(player in players) {
@@ -67,7 +67,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         rootService.aiService.isPaused = false
 
         setDefaultGameLayout()
-        setSimulationSpeed(simulationSpeed)
+        if(isNetworkGame) setSimulationSpeed(100.0)
+        else setSimulationSpeed(simulationSpeed)
         setGates(threePlayerVariant)
         onAllRefreshables { refreshAfterStartNewGame() }
     }
