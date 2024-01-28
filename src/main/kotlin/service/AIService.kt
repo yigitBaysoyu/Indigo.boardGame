@@ -15,6 +15,7 @@ class AIService(private val rootService: RootService) {
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
     private var positiveScore : Int = 0
     private var negativeScore : Int = 0
+    var isPaused: Boolean = false
 
 
     /**
@@ -23,12 +24,13 @@ class AIService(private val rootService: RootService) {
      *  maximizes the AI's position in the game.
      */
     suspend fun calculateNextTurn() {
+        if(isPaused) return
+        if(rootService.gameService.checkIfGameEnded()) return
+
         println("Starting calculation")
-        val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-        gameService.checkIfGameEnded()
 
         val player = currentGame.getActivePlayer()
         require(player.playerType == PlayerType.SMARTAI)
@@ -69,7 +71,7 @@ class AIService(private val rootService: RootService) {
 
         println("bestMove: $bestMove")
         // Execute the best move
-        for (i in 1..bestMove.first) playerService.rotateTile()
+        for (i in 1..bestMove.first) playerService.rotateTile(true)
         val x = bestMove.second.first
         val y = bestMove.second.second
 
@@ -110,7 +112,7 @@ class AIService(private val rootService: RootService) {
             // Evaluate the move
             val score = minimax(
                 newGame,
-                depth = 3,
+                depth = 2,
                 initialAlpha = Int.MIN_VALUE,
                 initialBeta = Int.MAX_VALUE,
                 playerIndex = currentGame.activePlayerID,
@@ -345,7 +347,6 @@ class AIService(private val rootService: RootService) {
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
     private fun rotateTile(game : IndigoGame) {
-        rootService.gameService.checkIfGameEnded()
         val tile = game.playerList[game.activePlayerID].playHand[0]
 
         // map to store the new Connections
@@ -1039,24 +1040,27 @@ class AIService(private val rootService: RootService) {
      * [PlayerType.RANDOMAI]
      */
     fun randomNextTurn() {
+        if(isPaused) return
+        if(rootService.gameService.checkIfGameEnded()) return
+
         val gameService = rootService.gameService
         val playerService = rootService.playerService
         val currentGame = rootService.currentGame
 
-        checkNotNull(currentGame)
-        gameService.checkIfGameEnded()
+        checkNotNull(currentGame) { "game is null" }
 
         val player = currentGame.getActivePlayer()
         if(player.playHand.size == 0) return
 
         require(player.playerType == PlayerType.RANDOMAI)
 
+        initializePlaceableTiles()
         placeableTiles.shuffle()
 
         //Rotate the tile by a random amount
         val randomRotation = Random.nextInt(0, 6)
         for (i in 0 until randomRotation){
-            playerService.rotateTile()
+            playerService.rotateTile(true)
         }
 
         var selectedPos: Pair<Int,Int> ?= null
@@ -1065,23 +1069,16 @@ class AIService(private val rootService: RootService) {
             selectedPos = placeableTiles.first()
             selectedTile = gameService.getTileFromAxialCoordinates(selectedPos.first, selectedPos.second)
 
-            if(selectedTile is PathTile || selectedTile is TreasureTile || selectedTile is CenterTile){
+            if(selectedTile !is EmptyTile) {
                 placeableTiles.removeFirst()
                 continue
-            }
-            else if(gameService.isPlaceAble(selectedPos.first, selectedPos.second, player.playHand.first())){
+            } else if(gameService.isPlaceAble(selectedPos.first, selectedPos.second, player.playHand.first())){
                 break
-            }
-            //If isPlaceable returns false for an empty position it means that the tile blocks an exit
-            //Then a rotation will always solve it given the existing tile types
-            else if(selectedTile is EmptyTile){
+            } else {
+                // If isPlaceable returns false for an empty position it means that the tile blocks an exit
+                // Then a rotation will always solve it given the existing tile types
                 playerService.rotateTile()
-                continue
-            }
-            //Remove any positions which doesn't pass the other checks
-            else{
-                placeableTiles.removeFirst()
-                continue
+                break
             }
         }
 
@@ -1095,22 +1092,16 @@ class AIService(private val rootService: RootService) {
         playerService.placeTile(selectedPos.first, selectedPos.second)
     }
 
-    private fun initializePlaceableTiles(){
-        if (placeableTiles.isNotEmpty()){
-            return
-        }
+    private fun initializePlaceableTiles() {
+        placeableTiles.clear()
 
         for (x in -4..4) {
             for (y in -4..4) {
                 // Check if the conditions are met
-                if ((x + y) in -4..4) {
+                if (checkIfValidAxialCoordinates(x, y) && rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
                     placeableTiles.add(Pair(x,y))
                 }
             }
         }
-    }
-
-    init {
-        initializePlaceableTiles()
     }
 }

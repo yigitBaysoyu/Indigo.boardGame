@@ -103,12 +103,14 @@ class AxialCoordinatesTest {
 
         for(i in 0 ..10) {
             testGameLayout.add(mutableListOf())
-            for(j in 0..10) testGameLayout[i].add(InvisibleTile())
+            repeat(11){
+                testGameLayout[i].add(InvisibleTile())
+            }
         }
 
         val testGame = IndigoGame(
             0, 1.0, false,
-            ArrayDeque<Turn>(), ArrayDeque<Pair<Pair<Int,Int>,Int>>(),
+            ArrayDeque(), ArrayDeque(),
             mutableListOf(), mutableListOf(), mutableListOf(),
             testGameLayout
         )
@@ -149,12 +151,14 @@ class AxialCoordinatesTest {
 
         for(i in 0 ..10) {
             testGameLayout.add(mutableListOf())
-            for(j in 0..10) testGameLayout[i].add(InvisibleTile())
+            repeat(11){
+                testGameLayout[i].add(InvisibleTile())
+            }
         }
 
         val testGame = IndigoGame(
             0, 1.0, false,
-            ArrayDeque<Turn>(), ArrayDeque<Pair<Pair<Int,Int>,Int>>(),
+            ArrayDeque(), ArrayDeque(),
             mutableListOf(), mutableListOf(), mutableListOf(),
             testGameLayout
         )

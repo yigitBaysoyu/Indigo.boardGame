@@ -76,6 +76,8 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
                 onMouseClicked = {
                     if(text == "Player ${i + 1}") {
                         text = ""
+                        setWarningIcons()
+                        setStartButtonState()
                     }
                 }
             }

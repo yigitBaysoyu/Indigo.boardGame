@@ -45,12 +45,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        if (isNetworkGame ==false){
+        if (!isNetworkGame) {
             for(player in players) {
                 player.playHand.clear()
                 player.playHand.add(drawPile.removeFirst())
-            } }
+            }
+        }
 
+        rootService.aiService.isPaused = false
 
         setDefaultGameLayout()
         setSimulationSpeed(simulationSpeed)
@@ -237,7 +239,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-        println("Ende kein empty tile")
         return false
     }
 
@@ -433,16 +434,13 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     }
 
     /**
-     * Function that checks whether all stones have been removed from the game field,
-     * and if they have been removed, the game ends.
+     * Function that checks whether all stones have been removed from the game field
      */
-    fun checkIfGameEnded() {
-
+    fun checkIfGameEnded(): Boolean {
         val game = rootService.currentGame
         checkNotNull(game)
 
         var allGemsRemoved = true
-
         var allTilesPlaced = true
 
         for (row in game.gameLayout){
@@ -471,14 +469,20 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                     }
                     else -> 1 + 1 // do nothing
                 }
-
             }
         }
 
-        if (allGemsRemoved || allTilesPlaced ) {
+        return allGemsRemoved || allTilesPlaced
+    }
+
+    /**
+     * Function that checks whether all stones have been removed from the game field,
+     * and if they have been removed, the game ends.
+     */
+    fun endGameIfEnded() {
+        if(checkIfGameEnded()) {
             onAllRefreshables { refreshAfterEndGame() }
         }
-
     }
 
 
@@ -532,8 +536,40 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     fun loadGame() {
         val file = File("saveGame.ser")
-        if(!file.exists()) return
+        if(!file.exists()) {
+            onAllRefreshables { refreshAfterFileNotFound() }
+            return
+        }
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
+        val game = checkNotNull(rootService.currentGame) { "game is null" }
+
+        // Set gates in Player.gateList to the right object
+        for(player in game.playerList) {
+            for(i in 0 until player.gateList.size) {
+                val x = player.gateList[i].xCoordinate
+                val y = player.gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                player.gateList[i] = gateTileFromBoard
+            }
+        }
+
+        // Set gates in IndigoGame.gateList to the right object
+        for(gateList in game.gateList) {
+            for(i in 0 until gateList.size) {
+                val x = gateList[i].xCoordinate
+                val y = gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                gateList[i] = gateTileFromBoard
+            }
+        }
+
+        onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
     }
 

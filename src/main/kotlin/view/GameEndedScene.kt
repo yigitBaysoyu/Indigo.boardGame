@@ -3,6 +3,7 @@ package view
 import entity.*
 import service.RootService
 import tools.aqua.bgw.components.gamecomponentviews.TokenView
+import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
@@ -23,6 +24,20 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
     private val offsetY = 250
     private val offsetX = 50
     private val gemSize = 25
+
+    private val colorImageList = mutableListOf(
+        ImageVisual(Constants.whiteGate),
+        ImageVisual(Constants.redGate),
+        ImageVisual(Constants.blueGate),
+        ImageVisual(Constants.purpleGate)
+    )
+
+    private val modeImageList = listOf(
+        ImageVisual(Constants.modeIconPlayer),
+        ImageVisual(Constants.modeIconRandom),
+        ImageVisual(Constants.modeIconAI),
+        ImageVisual(Constants.modeIconNetwork)
+    )
 
     private val cornersBackground = Button(
         posX = 0, posY = 0,
@@ -80,6 +95,65 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
                 componentStyle = "-fx-background-color: #fafaf0; -fx-background-radius: 25px;"
             }
             add(playerPosInput)
+        }
+    }
+
+    private val playerColorIconList = mutableListOf<Pane<Button>>().apply {
+
+        for (i in 0 until 4) {
+            val pane = Pane<Button>(
+                posX = listOffset - 500 / 2 - offsetX, posY = 150*i + offsetY,
+                width = 75, height = 75,
+                visual = Visual.EMPTY
+            )
+
+            val playerColorIconBackground = Button(
+                width = 75, height = 75,
+                posX = 0, posY = 0,
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
+            }
+
+            val playerColorIcon = Button(
+                width = 60, height = 60,
+                posX = 8, posY = 8,
+                visual = colorImageList[i]
+            ).apply {
+                isDisabled = true
+            }
+            pane.add(playerColorIconBackground)
+            pane.add(playerColorIcon)
+            add(pane)
+        }
+    }
+
+    private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
+        for (i in 0 until 4) {
+            val pane = Pane<Button>(
+                posX = listOffset - 500 / 2 - offsetX - 100, posY = 150*i + offsetY,
+                width = 75, height = 75,
+                visual = Visual.EMPTY
+            )
+
+            val playerModeIconBackground = Button(
+                width = 75, height = 75,
+                posX = 0, posY = 0,
+                visual = Visual.EMPTY
+            ).apply {
+                componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
+            }
+
+            val playerModeIcon = Button(
+                width = 60, height = 60,
+                posX = 7, posY = 7,
+                visual = ImageVisual(Constants.modeIconPlayer)
+            ).apply {
+                isDisabled = true
+            }
+            pane.add(playerModeIconBackground)
+            pane.add(playerModeIcon)
+            add(pane)
         }
     }
 
@@ -142,9 +216,17 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPointsInputList[1],
             playerPointsInputList[2],
             playerPointsInputList[3],
+            playerColorIconList[0],
+            playerColorIconList[1],
+            playerColorIconList[2],
+            playerColorIconList[3],
             playerWonIcon,
             quitButton,
             newGameButton,
+            playerModeIconList[0],
+            playerModeIconList[1],
+            playerModeIconList[2],
+            playerModeIconList[3],
         )
         playerGemLayoutListList.forEach {
             for(button in it) {
@@ -174,17 +256,31 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPosInputList[i].isVisible = true
             playerPointsInputList[i].text = "${player.score}"
             playerPointsInputList[i].isVisible = true
+            playerColorIconList[i].visual = colorImageList[player.color]
+            playerColorIconList[i].isVisible = true
+
+            val playerTypeAsInt = when(player.playerType) {
+                PlayerType.LOCALPLAYER -> 0
+                PlayerType.RANDOMAI -> 1
+                PlayerType.SMARTAI -> 2
+                PlayerType.NETWORKPLAYER -> 3
+            }
+            playerModeIconList[i].visual = modeImageList[playerTypeAsInt]
+            playerModeIconList[i].isVisible = true
         }
     }
 
     private fun resetAllComponents(){
         for(i in 0 until 4) {
+            playerColorIconList[i].isVisible = false
             playerNameInputList[i].isVisible = false
             playerNameInputList[i].text = ""
             playerPosInputList[i].isVisible = false
             playerPosInputList[i].text = "1"
             playerPointsInputList[i].isVisible = false
             playerPointsInputList[i].text = "0"
+            playerColorIconList[i].isVisible = false
+            playerModeIconList[i].isVisible = false
             for(j in 0 until 12) {
                 playerGemLayoutListList[i][j].visual = Visual.EMPTY
                 playerGemLayoutListList[i][j].isVisible = false

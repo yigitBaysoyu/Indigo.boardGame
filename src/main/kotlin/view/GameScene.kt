@@ -250,6 +250,16 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         onMouseClicked = { rootService.playerService.redo() }
     }
 
+    private val gameSavedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 800 + menuAreaOffsetY - 50 + 5,
+        text = "Game was saved.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     private val saveGameButton = Button(
         width = 300, height = 50,
         posX = menuAreaMargin, posY = 800 + menuAreaOffsetY,
@@ -258,7 +268,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
-        onMouseClicked = { rootService.gameService.saveGame() }
+        onMouseClicked = {
+            gameSavedMessage.isVisible = true
+            val animation = DelayAnimation(2750)
+            animation.onFinished = { gameSavedMessage.isVisible = false }
+            playAnimation(animation)
+            rootService.gameService.saveGame()
+        }
     }
 
     private val loadGameButton = Button(
@@ -270,6 +286,26 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
     ).apply {
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.gameService.loadGame() }
+    }
+
+    private val fileNotFoundMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "File was not found.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val gameLoadedMessage = Label(
+        width = 300, height = 50,
+        posX = menuAreaMargin, posY = 875 + menuAreaOffsetY + 60,
+        text = "Game was loaded.",
+        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(60, 255, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
     }
 
     private val returnToMenuWarning = Label(
@@ -319,6 +355,24 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         visual = ImageVisual(Constants.menuAreaArrow)
     )
 
+    private val resumeAiButton =  Button(
+        width = 300, height = 65,
+        posX = menuAreaMargin, posY = 450 + menuAreaOffsetY,
+        text = "Resume AI",
+        font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
+        visual = Visual.EMPTY
+    ).apply {
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        isVisible = false
+        isDisabled = true
+        onMouseClicked = {
+            rootService.aiService.isPaused = false
+            handleAIPlayers()
+            isDisabled = true
+            isVisible = false
+        }
+    }
+
     init {
         background = Constants.sceneBackgroundColorVisual
         addComponents(
@@ -358,10 +412,14 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             zeroButton,
             oneButton,
             setButton,
+            resumeAiButton,
             undoButton,
             redoButton,
+            gameSavedMessage,
             saveGameButton,
             loadGameButton,
+            gameLoadedMessage,
+            fileNotFoundMessage,
             returnToMenuWarning,
             returnToMenuButtonBackground,
             returnToMenuButton,
@@ -413,7 +471,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game is null" }
 
-        when(currentGame.playerList[0].playerType){
+        when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {
                 rootService.aiService.randomNextTurn()
             }
@@ -533,7 +591,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
         val gemList = mutableListOf<TokenView>()
 
-        for (i in 0 until tile.availableGems.size - 1) {
+        // Green emerald gems
+        for (i in 0 until 5) {
             var gemX = hexagonWidth / 2
             var gemY = hexagonHeight / 2
 
@@ -544,21 +603,22 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 gemSize, gemSize,
                 ImageVisual(Constants.emeraldImage)
             )
+            if(i >= tile.availableGems.size - 1) gemView.visual = Visual.EMPTY
             area.add(gemView)
             gemList.add(gemView)
         }
 
-        if (tile.availableGems.size >= 1) {
-            val gemX = hexagonWidth / 2
-            val gemY = hexagonHeight / 2
-            val gemView = TokenView(
-                gemX - gemSize / 2, gemY - gemSize / 2,
-                gemSize, gemSize,
-                ImageVisual(Constants.sapphireImage)
-            )
-            area.add(gemView)
-            gemList.add(0, gemView)
-        }
+        // Blue sapphire gem in center
+        val gemX = hexagonWidth / 2
+        val gemY = hexagonHeight / 2
+        val gemView = TokenView(
+            gemX - gemSize / 2, gemY - gemSize / 2,
+            gemSize, gemSize,
+            ImageVisual(Constants.sapphireImage)
+        )
+        if (tile.availableGems.size == 1) gemView.visual = Visual.EMPTY
+        area.add(gemView)
+        gemList.add(0, gemView)
 
         gemMap.add(area, gemList)
     }
@@ -705,7 +765,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     area.onMouseExited = { handleOnMouseExited(area, x, y) }
                 }
 
-                if(tile !is TreasureTile){
+                if(tile !is TreasureTile && tile !is CenterTile){
                     area.rotate(((tile.rotationOffset+5)%6) * 60)
                 }
                 else{
@@ -728,7 +788,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         checkNotNull(game) { "no active game" }
 
         // If Player cant place a tile because he is not a Local Player, don't show tile shadow
-        if(game.playerList[game.activePlayerID].playerType != PlayerType.LOCALPLAYER) {
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
             return
         }
 
@@ -751,6 +811,15 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun handleOnMouseExited(area: Area<TokenView>, x: Int, y: Int) {
         if (rootService.gameService.getTileFromAxialCoordinates(x, y) !is EmptyTile) return
+
+        val game = rootService.currentGame
+        checkNotNull(game) { "no active game" }
+
+        // If Player cant place a tile because he is not a Local Player, don't show tile shadow
+        if(game.getActivePlayer().playerType != PlayerType.LOCALPLAYER) {
+            return
+        }
+
         area.visual = ImageVisual(Constants.emptyTileImage)
         area.rotation = 0.0
     }
@@ -796,6 +865,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             return
         }
 
+        rootService.aiService.isPaused = false
+        resumeAiButton.isVisible = false
+        resumeAiButton.isDisabled = true
         rootService.playerService.placeTile(tileX, tileY)
     }
 
@@ -863,7 +935,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                     playerHandList[index].posX += 500
                     unlock()
                 }
-                lock()
+                // lock()
                 playAnimation(animation)
             }
             val tileType = player.playHand[0].type
@@ -874,7 +946,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun resetAllComponents() {
         outerArea.clear()
-
         for (label in playerLabelList) label.isVisible = false
         for (color in playerColorList) color.isVisible = false
         for (aiIcon in playerAIIconList) aiIcon.isVisible = false
@@ -882,8 +953,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         for (gemLayout in playerGemLayoutList) gemLayout.isVisible = false
         for (gemLayout in playerGemLayoutList) gemLayout.clear()
         for (playerScore in playerScoreList) playerScore.isVisible = false
+        resumeAiButton.isVisible = false
+        resumeAiButton.isDisabled = true
         tileMap.clear()
         gemMap.clear()
+        menuArea.posX = sceneWidth - 75.0
     }
 
     override fun refreshAfterSimulationSpeedChange(speed: Double) {
@@ -900,8 +974,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             duration = 50
         )
         animation.onFinished = {
-            val rotationOffset = (game.playerList[game.activePlayerID].playHand[0].rotationOffset + 5) % 6
-            playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            if(game.getActivePlayer().playHand.isNotEmpty()) {
+                val rotationOffset = (game.getActivePlayer().playHand[0].rotationOffset + 5) % 6
+                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+            }
             unlock()
         }
         lock()
@@ -912,7 +988,35 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
+        val tile = turn.placedTile
+        val x = tile.xCoordinate
+        val y = tile.yCoordinate
+        val view = tileMap.forward(Pair(x, y))
+
+        val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
+
+        view.visual = newVisual
+        view.rotation = (tile.rotationOffset+5) % 6 * 60.0
+
+        renderGemsForPathOrTreasureTile(tile, view)
+        renderPlayerHands(turn)
+        updatePlayerScores()
+        renderCollectedGemsLists()
+        setRotateButtonHeight()
+        handleUndoRedoButton()
+
+        for (gemMovement in turn.gemMovements) {
+            refreshAfterGemMoved(gemMovement)
+        }
+
+        rootService.gameService.endGameIfEnded()
+
+        // Don't call AI if it is paused anyway
+        if(rootService.aiService.isPaused) return
+
+        // Delay the turn if next player is AI
         var duration = 0
+        if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
         if(game.playerList[turn.playerID].playerType == PlayerType.RANDOMAI) {
             duration = when {
                 game.simulationSpeed > 50 -> (750 - (750 * ((game.simulationSpeed - 50) * 2 / 100))).toInt()
@@ -920,44 +1024,9 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 else -> 750
             }
         }
-        val animation = DelayAnimation(duration)
-
-        animation.onFinished = {
-            val tile = turn.placedTile
-            val x = tile.xCoordinate
-            val y = tile.yCoordinate
-            val view = tileMap.forward(Pair(x, y))
-
-            val newVisual = ImageVisual(Constants.pathTileImageList[tile.type])
-
-            view.visual = newVisual
-            view.rotation = (tile.rotationOffset+5) % 6 * 60.0
-
-            renderGemsForPathOrTreasureTile(tile, view)
-            renderPlayerHands(turn)
-            updatePlayerScores()
-            renderCollectedGemsLists()
-            setRotateButtonHeight()
-            handleUndoRedoButton()
-
-            for (gemMovement in turn.gemMovements) {
-                refreshAfterGemMoved(gemMovement)
-            }
-
-            unlock()
-
-            rootService.gameService.checkIfGameEnded()
-
-            // If next player is SmartAI, delay its turn
-            duration = 0
-            if(game.getActivePlayer().playerType == PlayerType.SMARTAI) duration = 210
-            val delayAnimation = DelayAnimation(duration)
-            delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
-            playAnimation(delayAnimation)
-        }
-
-        lock()
-        playAnimation(animation)
+        val delayAnimation = DelayAnimation(duration)
+        delayAnimation.onFinished = { rootService.gameService.switchPlayer() }
+        playAnimation(delayAnimation)
     }
 
     override fun refreshAfterGemMoved(movement: GemMovement) {
@@ -998,6 +1067,12 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         val game = rootService.currentGame
         checkNotNull(game) { "game is null" }
 
+        // Activate resumeAi Button
+        if(game.playerList.any { it.playerType == PlayerType.RANDOMAI || it.playerType == PlayerType.SMARTAI }) {
+            resumeAiButton.isVisible = true
+            resumeAiButton.isDisabled = false
+        }
+
         // render reverted scores
         updatePlayerScores()
 
@@ -1029,12 +1104,13 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             // put gem back on start tile
             val startX = movement.startTile.xCoordinate
             val startY = movement.startTile.yCoordinate
+            val startTile = rootService.gameService.getTileFromAxialCoordinates(startX, startY)
 
             val startView = tileMap.forward(Pair(startX, startY))
             val gemViews = gemMap.forward(startView)
 
-            val gemView = if (movement.startTile is CenterTile) {
-                gemViews[movement.startTile.availableGems.size - 1]
+            val gemView = if (startTile is CenterTile) {
+                gemViews[startTile.availableGems.size - 1]
             } else {
                 gemViews[movement.positionOnStartTile]
             }
@@ -1063,6 +1139,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         gemMap.removeForward(tileView)
 
         handleUndoRedoButton()
+    }
+
+    override fun refreshAfterLoadGame() {
+        gameLoadedMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { gameLoadedMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterFileNotFound() {
+        fileNotFoundMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
     }
 
     override fun refreshConnectionState(newState: ConnectionState) {

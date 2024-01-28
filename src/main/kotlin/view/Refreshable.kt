@@ -63,6 +63,11 @@ interface Refreshable {
     fun refreshAfterLoadGame() {}
 
     /**
+     * perform refreshes after load game was called and the save file was not found.
+     */
+    fun refreshAfterFileNotFound() {}
+
+    /**
      * perform refreshes that are necessary after a new game joined.
      */
     fun refreshAfterGameJoined() {}
@@ -96,4 +101,8 @@ interface Refreshable {
      */
     fun refreshAfterLastPlayerJoined() {}
 
+    /**
+     * performs refreshes after a sessionID is received in a createGame message
+     */
+    fun refreshAfterSessionIDReceived(sessionID: String) {}
 }
