@@ -105,6 +105,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             }
         }
 
+        indigoPlayers.shuffle()
+
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(
             players = indigoPlayers,
