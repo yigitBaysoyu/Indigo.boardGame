@@ -28,7 +28,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     private val selectedColors = mutableListOf(0, 1, 2, 3)
 
     var hostName = ""
-    var lobbyFull = false
+    private var lobbyFull = false
 
     private val modeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -241,7 +241,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             startButton.isDisabled = true
             return
         }
-        if(lobbyFull)startButton.isDisabled = false
+        if(lobbyFull) startButton.isDisabled = false
     }
     private fun handleStartClick() {
         rootService.networkService.startNewHostedGame(selectedColors)
@@ -288,9 +288,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     }
 
     override fun refreshAfterPlayerJoined(name: String) {
-        println("refreshAfterPlayerJoined called")
         for(i in 1 until 4) {
-            println("name input is: ${playerNameInputList[i].text}")
             if(playerNameInputList[i].text == "") {
                 playerNameInputList[i].text = name
                 playerNameInputList[i].isVisible = true
@@ -304,7 +302,6 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             }
         }
         // game is already full
-        println("game is already full")
 
     }
 
@@ -313,7 +310,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         val listIndex = playerNameInputList.indexOfFirst { label ->
             label.text == name
         }
-        println("refreshAfterPlayerLeft called with listIndex: $listIndex")
+
         for(i in 1 until 4) {
             if(selectedColors[i] == listIndex) {
                 playerNameInputList[i].isVisible = false
@@ -324,11 +321,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
                 if(i in 1..2) {
 
                     for(j in i ..2) {
-                        println("i is: $i")
-                        if(playerNameInputList[j+1].text == "") {
-                            return
-                        }
-                        println("move player")
+                        if(playerNameInputList[j+1].text == "") return
+
                         // move player at index i+1 to index i
                         playerNameInputList[j].text = playerNameInputList[j+1].text
 
@@ -340,15 +334,12 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
                         playerModeIconList[j+1].isVisible = false
                         playerColorIconList[j+1].isVisible = false
                         playerNameInputList[j+1].text = ""
-
                     }
                 }
-
                 return
             }
         }
         // game is already full
-        println("color could not be found")
     }
 
 }

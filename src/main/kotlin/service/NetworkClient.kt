@@ -100,9 +100,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-            println("onPlayerJoined called")
-
-
             val players = networkService.playerList.map { player -> player.name}.toMutableList()
 
             val isNameNotUnique = players.contains(notification.sender)
@@ -111,32 +108,26 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 disconnectAndError("Player names are not unique!")
             }
 
-            var maxPlayers = 0
-            if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
-                maxPlayers = 2
-            } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
-                maxPlayers = 3
-            }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
-                maxPlayers = 4
+            val maxPlayers = when (networkService.gameMode) {
+                GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
+                GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
+                GameMode.FOUR_SHARED_GATEWAYS -> 4
             }
 
             if(players.size < maxPlayers ) {
                 players.add(notification.sender)
-                var newGuest = Player(notification.sender, PlayerColor.WHITE)
+                val newGuest = Player(notification.sender, PlayerColor.WHITE)
                 networkService.playerList.add(newGuest)
-
-            }else {
+            } else {
                 error("maximum number of players has been reached.")
             }
 
             networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
 
-            println( players.size)
             if (players.size == maxPlayers){
                 // when lobby is full enable startButton
                 networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
-
         }
     }
 
@@ -162,7 +153,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     }
 
-    @Suppress("UNUSED_PARAMETER", "unused")
+    @Suppress("unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
         check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
@@ -173,14 +164,12 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
     }
 
     /**
-     * on player left
+     * Is called when a player leaves.
      */
-    override fun onPlayerLeft(message: PlayerLeftNotification) {
+    override fun onPlayerLeft(notification: PlayerLeftNotification) {
         BoardGameApplication.runOnGUIThread {
-            println(message.message)
-            println(message.sender + "joined")
-            networkService.playerList.removeIf { it.name == message.sender }
-            networkService.onAllRefreshables { refreshAfterPlayerLeft(message.sender) }
+            networkService.playerList.removeIf { it.name == notification.sender }
+            networkService.onAllRefreshables { refreshAfterPlayerLeft(notification.sender) }
         }
     }
 
@@ -189,7 +178,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
      * @param message error message
      * @throws IllegalStateException with message
      */
-    fun disconnectAndError(message: Any) {
+    private fun disconnectAndError(message: Any) {
         networkService.disconnect()
         error(message)
     }
