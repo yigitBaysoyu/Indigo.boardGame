@@ -7,6 +7,7 @@ import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
 import tools.aqua.bgw.net.common.annotations.GameActionReceiver
 import tools.aqua.bgw.net.common.notification.PlayerJoinedNotification
+import tools.aqua.bgw.net.common.notification.PlayerLeftNotification
 import tools.aqua.bgw.net.common.response.*
 
 
@@ -23,7 +24,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     /** the identifier of this game session; can be null if no session started yet. */
     var sessionID: String? = null
-    var colorList: MutableList<PlayerColor> = mutableListOf(PlayerColor.BLUE,PlayerColor.PURPLE,PlayerColor.RED)
 
     /**
      * Handles a [CreateGameResponse] received from the server. It waits for the guest player when its
@@ -101,10 +101,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-
-
-
-            val players = networkService.playersList
+            val players = networkService.playerList.map { player -> player.name}.toMutableList()
 
             val isNameNotUnique = players.contains(notification.sender)
 
@@ -112,34 +109,26 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 disconnectAndError("Player names are not unique!")
             }
 
-            var numPlayers = 0
-            if (networkService.gameMode == GameMode.TWO_NOT_SHARED_GATEWAYS) {
-                numPlayers = 2
-            } else if (networkService.gameMode == GameMode.THREE_SHARED_GATEWAYS || networkService.gameMode == GameMode.THREE_NOT_SHARED_GATEWAYS) {
-                numPlayers = 3
-            }else if (networkService.gameMode == GameMode.FOUR_SHARED_GATEWAYS) {
-                numPlayers = 4
+            val maxPlayers = when (networkService.gameMode) {
+                GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
+                GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
+                GameMode.FOUR_SHARED_GATEWAYS -> 4
             }
 
-            if(players.size < numPlayers ) {
+            if(players.size < maxPlayers ) {
                 players.add(notification.sender)
-                var lastColor = colorList.last()
-                var newGuest = Player(notification.sender, lastColor)
-                networkService.players_list.add(newGuest)
-                colorList.removeAt(colorList.lastIndex)
-
-            }else {
+                val newGuest = Player(notification.sender, PlayerColor.WHITE)
+                networkService.playerList.add(newGuest)
+            } else {
                 error("maximum number of players has been reached.")
             }
 
-            println( players.size)
-            if (players.size == numPlayers){
+            networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
 
-            networkService.startNewHostedGame()
+            if (players.size == maxPlayers){
+                // when lobby is full enable startButton
+                networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
-
-
-
         }
     }
 
@@ -165,7 +154,7 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     }
 
-    @Suppress("UNUSED_PARAMETER", "unused")
+    @Suppress("unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
         check(networkService.connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
@@ -175,13 +164,22 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         }
     }
 
+    /**
+     * Is called when a player leaves.
+     */
+    override fun onPlayerLeft(notification: PlayerLeftNotification) {
+        BoardGameApplication.runOnGUIThread {
+            networkService.playerList.removeIf { it.name == notification.sender }
+            networkService.onAllRefreshables { refreshAfterPlayerLeft(notification.sender) }
+        }
+    }
 
     /**
      * disconnects the client
      * @param message error message
      * @throws IllegalStateException with message
      */
-    fun disconnectAndError(message: Any) {
+    private fun disconnectAndError(message: Any) {
         networkService.disconnect()
         error(message)
     }

@@ -82,7 +82,7 @@ interface Refreshable {
      * perform refreshes that are necessary after a player lefts a game.
      * @param [color] from the player who has left
      */
-    fun refreshAfterPlayerLeft(color: Int) {}
+    fun refreshAfterPlayerLeft(name: String) {}
 
     /**
      * perform refreshes that are necessary after the simulation speed changed.
@@ -95,6 +95,11 @@ interface Refreshable {
      * @param newState the new state of the connection
      */
     fun refreshConnectionState(newState: ConnectionState){}
+
+    /**
+     * perform refreshes are necessary after the last player joined a hosted game
+     */
+    fun refreshAfterLastPlayerJoined() {}
 
     /**
      * performs refreshes after a sessionID is received in a createGame message
