@@ -1,6 +1,7 @@
 package view
 
 import service.RootService
+import tools.aqua.bgw.animation.DelayAnimation
 import tools.aqua.bgw.components.layoutviews.Pane
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
@@ -14,12 +15,20 @@ import java.awt.Color
 /**
  * Displays the Main Menu of the Indigo Game
  */
-class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080), Refreshable {
+class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
 
-    private val sceneWidth = 1920
+    private val sceneWidth = Constants.SCENE_WIDTH
+    private val sceneHeight = Constants.SCENE_HEIGHT
     private val halfWidth = sceneWidth / 2
     private val offsetY = -90 // Used to Position all Elements vertically
-    private val offsetX = 50
+
+    private val cornersBackground = Button(
+        posX = 0, posY = 0,
+        width = sceneWidth, height = sceneHeight,
+        visual = ImageVisual(Constants.cornersBackground)
+    ).apply {
+        isDisabled = true
+    }
 
     private val localLabel = Label(
         width = 350, height = 75,
@@ -38,7 +47,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
     }
 
-    val loadGameButton = Button(
+    private val loadGameButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 350 / 2, posY = offsetY + 400,
         text = "Load Game",
@@ -46,7 +55,20 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         visual = Visual.EMPTY
     ).apply {
         componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        onMouseClicked = { rootService.gameService.loadGame() }
     }
+
+    private val fileNotFoundMessage = Label(
+        width = 350, height = 50,
+        posX = halfWidth - 350 / 2, posY = offsetY + 400 + 85,
+        text = "File was not found.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+
 
     private val onlineLabel = Label(
         width = 350, height = 75,
@@ -58,15 +80,15 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     val sessionIDInput: TextField = TextField(
         width = 350, height = 50,
         posX = halfWidth - 350 / 2, posY = offsetY + 640,
-        /* BUG von BGW 0.9 prompt wird nicht angezeigt, Issue ist erstellt, wird vielleicht bald gefixed*/
         prompt = "Session ID ...",
         font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY
     ).apply {
         onKeyTyped = {
             val sessionID = text
+            val name = nameInput.text
 
-            if(sessionID == "") {
+            if(sessionID == "" || name.length !in 1..16) {
                 hostGameButton.isDisabled = true
                 joinGameButton.isDisabled = true
             } else {
@@ -83,12 +105,13 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         posX = halfWidth - 350 / 2, posY = offsetY + 725,
         font = Font(size = 35, Color(0, 0, 0)),
         visual = Visual.EMPTY,
-        text = "Name"
+        prompt = "Name ..."
     ).apply {
         onKeyTyped = {
             val name = text
+            val sessionID = sessionIDInput.text
 
-            if(name.length in 3..16) {
+            if(name.length in 1..16 && sessionID != "") {
                 hostGameButton.isDisabled = false
                 joinGameButton.isDisabled = false
             } else {
@@ -133,7 +156,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     )
     private val gameModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(
-            posX = halfWidth - 350/2 - 75, posY = offsetY + 815,
+            posX = halfWidth - 350/2 - 75, posY = offsetY + 815 + 2,
             width = 70, height = 70,
             visual = Visual.EMPTY
         )
@@ -164,7 +187,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     }
 
     // 0 = LOCAL_PLAYER, 1 = RANDOM_AI, 2 = SMART_AI
-
     var selectedPlayerType = 0
     private val playerTypeImageList = listOf(
         ImageVisual(Constants.modeIconPlayer),
@@ -173,7 +195,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
     )
     private val playerModeIconList = mutableListOf<Pane<Button>>().apply {
         val pane = Pane<Button>(
-            posX = halfWidth - 350/2 - 75, posY = offsetY + 675,
+            posX = halfWidth + 350/2 + 5, posY = offsetY + 815 + 2,
             width = 70, height = 70,
             visual = Visual.EMPTY
         )
@@ -239,9 +261,11 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
         background = Constants.sceneBackgroundColorVisual
 
         addComponents(
+            cornersBackground,
             localLabel,
             newGameButton,
             loadGameButton,
+            fileNotFoundMessage,
             onlineLabel,
             sessionIDInput,
             nameInput,
@@ -253,5 +277,12 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(1920, 1080
             playerModeIconList[0],
             gameModeIconList[0]
         )
+    }
+
+    override fun refreshAfterFileNotFound() {
+        fileNotFoundMessage.isVisible = true
+        val animation = DelayAnimation(2750)
+        animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
     }
 }

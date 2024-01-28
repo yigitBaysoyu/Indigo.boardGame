@@ -63,7 +63,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             val playerNameInput: TextField = TextField(
                 width = 500, height = 75,
                 posX = halfWidth - 500 / 2 + offsetX, posY = 150*i + offsetY,
-                prompt = "name ...",
+                prompt = "Name ...",
                 font = Font(size = 35, Color(0, 0, 0)),
                 visual = Visual.EMPTY
             ).apply {
@@ -73,6 +73,13 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
                     setStartButtonState()
                 }
                 text = "Player ${i + 1}"
+                onMouseClicked = {
+                    if(text == "Player ${i + 1}") {
+                        text = ""
+                        setWarningIcons()
+                        setStartButtonState()
+                    }
+                }
             }
             add(playerNameInput)
         }
@@ -391,17 +398,12 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
             playerList.add(player)
         }
 
-        //CHeck
-        for(player in playerList){
-            println("Name: ${player.name} and type: ${player.playerType}")
-        }
-
         if(randomOrderCheckbox.isChecked) playerList.shuffle()
 
         rootService.gameService.startNewGame(
             players = playerList,
             threePlayerVariant = threePlayerVariantCheckBox.isChecked && playerList.size == 3,
-            simulationSpeed = 10.0,
+            simulationSpeed = 50.0,
             isNetworkGame = false
         )
 

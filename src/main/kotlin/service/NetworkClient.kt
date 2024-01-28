@@ -7,6 +7,7 @@ import tools.aqua.bgw.net.client.BoardGameClient
 import tools.aqua.bgw.net.client.NetworkLogging
 import tools.aqua.bgw.net.common.annotations.GameActionReceiver
 import tools.aqua.bgw.net.common.notification.PlayerJoinedNotification
+import tools.aqua.bgw.net.common.notification.PlayerLeftNotification
 import tools.aqua.bgw.net.common.response.*
 
 
@@ -44,6 +45,7 @@ class NetworkClient(
                 CreateGameResponseStatus.SUCCESS -> {
                     networkService.updateConnectionState(ConnectionState.WAITING_FOR_GUESTS)
                     sessionID = response.sessionID
+                    networkService.onAllRefreshables { sessionID?.let { refreshAfterSessionIDReceived(it) } }
                 }
 
                 else -> disconnectAndError(response.status)
@@ -105,7 +107,7 @@ class NetworkClient(
 
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {
         BoardGameApplication.runOnGUIThread {
-            val players = networkService.playerList
+            val players = networkService.playerList.map { player -> player.name}.toMutableList()
 
             val isNameNotUnique = players.contains(notification.sender)
 
@@ -113,25 +115,25 @@ class NetworkClient(
                 disconnectAndError("Player names are not unique!")
             }
 
-            val numPlayers = when (networkService.gameMode) {
+            val maxPlayers = when (networkService.gameMode) {
                 GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
                 GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
                 GameMode.FOUR_SHARED_GATEWAYS -> 4
             }
 
-            if(players.size < numPlayers ) {
+            if(players.size < maxPlayers ) {
                 players.add(notification.sender)
-                val lastColor = colorList.last()
-                val newGuest = Player(notification.sender, lastColor)
-                networkService.ntfPlayerList.add(newGuest)
-                colorList.removeAt(colorList.lastIndex)
-
+                val newGuest = Player(notification.sender, PlayerColor.WHITE)
+                networkService.playerList.add(newGuest)
             } else {
                 error("maximum number of players has been reached.")
             }
 
-            if (players.size == numPlayers){
-                networkService.startNewHostedGame()
+            networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
+
+            if (players.size == maxPlayers){
+                // when lobby is full enable startButton
+                networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
             }
         }
     }
@@ -158,10 +160,6 @@ class NetworkClient(
 
     }
 
-    /**
-     * forwards the given [message] that holds the information about the Placed Tile
-     * and forwards the [sender] who is the player that placed this Tile
-     */
     @Suppress("unused")
     @GameActionReceiver
     fun onPlaceTileReceived(message: TilePlacedMessage, sender: String) {
@@ -172,13 +170,22 @@ class NetworkClient(
         }
     }
 
+    /**
+     * Is called when a player leaves.
+     */
+    override fun onPlayerLeft(notification: PlayerLeftNotification) {
+        BoardGameApplication.runOnGUIThread {
+            networkService.playerList.removeIf { it.name == notification.sender }
+            networkService.onAllRefreshables { refreshAfterPlayerLeft(notification.sender) }
+        }
+    }
 
     /**
      * disconnects the client
      * @param message error message
      * @throws IllegalStateException with message
      */
-    fun disconnectAndError(message: Any) {
+    private fun disconnectAndError(message: Any) {
         networkService.disconnect()
         error(message)
     }

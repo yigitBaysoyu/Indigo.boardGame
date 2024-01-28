@@ -45,12 +45,14 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             redoStack, players, gateList, drawPile, gameLayout
         )
         rootService.currentGame = game
-        if (isNetworkGame ==false){
+        if (!isNetworkGame) {
             for(player in players) {
                 player.playHand.clear()
-                player.playHand.add(drawPile.removeLast())
-            } }
+                player.playHand.add(drawPile.removeFirst())
+            }
+        }
 
+        rootService.aiService.isPaused = false
 
         setDefaultGameLayout()
         setSimulationSpeed(simulationSpeed)
@@ -237,7 +239,6 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 adjacentGate(xCoordinate, yCoordinate, tile)
             }
         }
-        println("Ende kein empty tile")
         return false
     }
 
@@ -494,8 +495,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
             //Create connections map going both ways
             for (i in 2 until splitLine.size step 2) {
-                map[splitLine[i].toInt()] = splitLine[i + 1].toInt()
-                map[splitLine[i + 1].toInt()] = splitLine[i].toInt()
+                map[(splitLine[i].toInt()+5)%6] = (splitLine[i + 1].toInt()+5)%6
+                map[(splitLine[i + 1].toInt()+5)%6] = (splitLine[i].toInt()+5)%6
             }
 
             for (i in 0 until splitLine[1].toInt()) {
@@ -527,7 +528,40 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
     fun loadGame() {
         val file = File("saveGame.ser")
+        if(!file.exists()) {
+            onAllRefreshables { refreshAfterFileNotFound() }
+            return
+        }
         rootService.currentGame = Json.decodeFromString<IndigoGame>(file.readText())
+        val game = checkNotNull(rootService.currentGame) { "game is null" }
+
+        // Set gates in Player.gateList to the right object
+        for(player in game.playerList) {
+            for(i in 0 until player.gateList.size) {
+                val x = player.gateList[i].xCoordinate
+                val y = player.gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                player.gateList[i] = gateTileFromBoard
+            }
+        }
+
+        // Set gates in IndigoGame.gateList to the right object
+        for(gateList in game.gateList) {
+            for(i in 0 until gateList.size) {
+                val x = gateList[i].xCoordinate
+                val y = gateList[i].yCoordinate
+                val gateTileFromBoard = getTileFromAxialCoordinates(x, y)
+
+                if(gateTileFromBoard !is GateTile) throw IllegalStateException("Gate Tile did not have right x and y!")
+
+                gateList[i] = gateTileFromBoard
+            }
+        }
+
+        onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
     }
 
@@ -597,6 +631,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      */
 
     fun moveGems(turn: Turn): Turn{
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame){"No active Game"}
         val tile = turn.placedTile
 
         //Getting neighbours according to connection
@@ -621,18 +657,12 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is CenterTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is GateTile -> collisionCheck(tile, i, currentNeighbour, turn)
                 is TreasureTile -> collisionCheck(tile, i, currentNeighbour, currentConnection, turn)
-                is EmptyTile -> Unit // do nothing
-                is InvisibleTile -> Unit // do nothing
+                is EmptyTile -> 1+1 // do nothing
+                is InvisibleTile -> 1+1 // do nothing
             }
         }
-        createGemMovements(turn, neighbours)
 
-        return turn
-    }
-
-    private fun createGemMovements(turn: Turn, neighbours: MutableMap<Int, Tile>) {
         var currentGem: GemType
-        val tile = turn.placedTile
         //Move all stones that are on my tile to the end of the respective path
         for(i in 0 until tile.gemPositions.size){
             if(tile.gemPositions[i] != GemType.NONE){
@@ -652,7 +682,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         currentGem,
                         turn
                     )
-                } else {
+                }
+                else {
                     val gemMovement = GemMovement(
                         currentGem,
                         originTile,
@@ -666,6 +697,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 }
             }
         }
+        return turn
     }
 
     /**
@@ -813,7 +845,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             turn.gemMovements.add(collisionCenterTile)
 
             placedTile.gemPositions[currentConnection] = GemType.NONE
-            centerTile.availableGems.removeLast()
+            centerTile.availableGems.removeFirst()
         }
         else{
             val destination = placedTile.connections[currentConnection]
@@ -1012,14 +1044,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
     /**
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
-     * Also checks if the game has ended
      */
     fun switchPlayer(){
         val currentGame = rootService.currentGame
         checkNotNull(currentGame)
-
-        checkIfGameEnded()
-        currentGame.activePlayerID = (currentGame.activePlayerID + 1)% currentGame.playerList.size
 
         when(currentGame.getActivePlayer().playerType){
             PlayerType.RANDOMAI -> {

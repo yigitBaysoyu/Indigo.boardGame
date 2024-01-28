@@ -9,7 +9,7 @@ import javax.imageio.ImageIO
  */
 object Constants {
     // COLORS
-    val sceneBackgroundColorVisual = ColorVisual(44, 70, 127)
+    val sceneBackgroundColorVisual = ColorVisual(42, 59, 142)
     const val buttonBackgroundColor = "#211c4f"
 
     // Measurements
@@ -34,10 +34,10 @@ object Constants {
     val emeraldImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Emerald.png"))
     val sapphireImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Sapphire.png"))
 
-    val redGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/tokenRed.png"))
-    val blueGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/tokenBlue.png"))
-    val whiteGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/tokenWhite.png"))
-    val purpleGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/tokenPurple.png"))
+    val redGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TokenRed.png"))
+    val blueGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TokenBlue.png"))
+    val whiteGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TokenWhite.png"))
+    val purpleGate: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TokenPurple.png"))
 
     val gates: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Gates.png"))
     val cornersBackground: BufferedImage = ImageIO.read(Constants::class.java.getResource("/CornersBackground.png"))

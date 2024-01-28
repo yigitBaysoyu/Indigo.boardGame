@@ -5,6 +5,9 @@ import entity.Player
 import entity.PlayerType
 import org.junit.jupiter.api.Test
 
+/**
+ * Test class to ensure that the turns of the players switch correctly
+ */
 class SwitchPlayerTest {
     private val rootService = RootService()
 
@@ -33,9 +36,11 @@ class SwitchPlayerTest {
         //SmartAi has currently no functionality, so it isn't tested
         //Make turn for normalPlayer
         playerService.placeTile(-1, 0)
+        // call switchPlayer because it is only called in view after delay
+        gameService.switchPlayer()
 
-        assert(game.activePlayerID == 0)
-        assert(game.undoStack.size == 3)
+        assert(game.activePlayerID == 2)
+        assert(game.undoStack.size == 2)
 
 
         var placedTileIndex = 0
@@ -47,10 +52,15 @@ class SwitchPlayerTest {
             }
         }
 
-        assert(placedTileIndex == 3)
+        assert(placedTileIndex == 2)
 
     }
 
+    /**
+     * Function to test the switchPlayer method by
+     * calling a sequence where a normal player, a random
+     * AI and a smart AI make a turn
+     */
     @Test
     fun testSwitchPlayer1() {
         val gameService = rootService.gameService
@@ -72,6 +82,8 @@ class SwitchPlayerTest {
         //Make turn for normalPlayer
         game.activePlayerID = 1
         playerService.placeTile(1, 1)
+        // call switchPlayer because it is only called in view after delay
+        gameService.switchPlayer()
 
         assert(game.activePlayerID == 0)
         assert(game.undoStack.size == 2)
@@ -89,6 +101,11 @@ class SwitchPlayerTest {
 
     }
 
+    /**
+     * Function to test the switchPlayer method by
+     * calling a sequence where a normal player, a random
+     * AI and a smart AI make a turn
+     */
     @Test
     fun testSwitchPlayer2() {
         val gameService = rootService.gameService

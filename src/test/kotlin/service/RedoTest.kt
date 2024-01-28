@@ -3,17 +3,20 @@ import entity.*
 import kotlin.test.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Assertions.*
+
+
 /**
- * Testklasse für die Redo Methode der PlayerService-Klasse.
+ * Test class for the Redo method of the PlayerService class.
  */
 class RedoTest {
 
 
     private lateinit var gameService: GameService
     private lateinit var rootService: RootService
+
     /**
-    * setUp stellt die benötigten Dienste bereit
-    */
+     * setUp prepares the required services.
+     */
     @BeforeEach
     fun setUp() {
         rootService = RootService()
@@ -22,7 +25,7 @@ class RedoTest {
     }
 
     /**
-     * Testet das Verhalten des Redo, wenn kein aktives Spiel vorhanden ist.
+     * Tests the behavior of Redo when there is no active game.
      */
     @Test
     fun testRedoWhenNoActiveGame() {
@@ -32,8 +35,9 @@ class RedoTest {
         }
         assertEquals("no active game", exception.message)
     }
+
     /**
-     * Testet das Verhalten des Redo, wenn der Redo-Stack leer ist.
+     * Tests the behavior of Redo when the Redo stack is empty.
      */
     @Test
     fun testRedoWithEmptyRedoStack() {
@@ -48,32 +52,31 @@ class RedoTest {
         rootService.playerService.redo()
         assertTrue(rootService.currentGame!!.redoStack.isEmpty())
     }
+
     /**
-     * Testet ob redoStack nach dem aufrufen der methode leer ist
+     * Tests if the redoStack is empty after calling the method.
      */
     @Test
     fun testRedo() {
         val players = mutableListOf(Player("A"), Player("B"))
         gameService.startNewGame(players, false, 1.0, false)
         val game = rootService.currentGame
+        checkNotNull(game)
 
         val initialCoords = Pair(1, 1)
         rootService.playerService.placeTile(initialCoords.first, initialCoords.second)
 
         val rotationOffset = 2
-        for (i in 0 until rotationOffset) {
+        repeat(2) {
             rootService.playerService.rotateTile()
         }
         rootService.playerService.undo() // Or game!!.redoStack.addAll(listOf(Pair(testCoordinates, testRotationOffset)
         rootService.playerService.redo()
 
 
-        val expectedRotationOffset = rotationOffset
-        val actualRotationOffset = game!!.playerList[game!!.activePlayerID].playHand.first().rotationOffset
+        val actualRotationOffset = game.playerList[game.activePlayerID].playHand.first().rotationOffset
         assertTrue(game.redoStack.isEmpty()) // hier ist redoStack wieder leer
-        assertEquals(expectedRotationOffset, actualRotationOffset)
+        assertEquals(rotationOffset, actualRotationOffset)
     }
-
-
 
 }

@@ -14,16 +14,15 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
 
     // Central service from which all others are created/accessed
     // also holds the currently active game
-    private val rootService = RootService()
+    val rootService = RootService()
 
      private val mainMenuScene = MainMenuScene(rootService)
      private val gameScene = GameScene(rootService)
      private val startGameScene = StartGameScene(rootService)
-     private val loadGameScene = LoadGameScene(rootService)
      private val hostGameScene = HostGameScene(rootService)
      private val joinGameScene = JoinGameScene(rootService)
      private val gameEndedScene = GameEndedScene(rootService)
-     private val NETWORK_SECRET = "game23d"
+     private val networkSecret = "game23d"
 
     init {
         // all scenes and the application itself need to
@@ -33,7 +32,6 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             mainMenuScene,
             gameScene,
             startGameScene,
-            loadGameScene,
             hostGameScene,
             joinGameScene,
             gameEndedScene
@@ -42,14 +40,20 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
-        mainMenuScene.loadGameButton.onMouseClicked = { showMenuScene(loadGameScene) }
         mainMenuScene.hostGameButton.onMouseClicked = { hostGameLogic() }
         mainMenuScene.joinGameButton.onMouseClicked = { joinGameLogic() }
-        hostGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}
-        joinGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene)}
+        hostGameScene.backButton.onMouseClicked = {
+            rootService.networkService.disconnect()
+            showMenuScene(mainMenuScene)
+        }
+        joinGameScene.backButton.onMouseClicked = {
+            rootService.networkService.disconnect()
+            showMenuScene(mainMenuScene)
+        }
         gameEndedScene.quitButton.onMouseClicked = { exit() }
         gameEndedScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
         gameScene.quitGameButton.onMouseClicked = { exit() }
+        gameScene.returnToMenuButton.onMouseClicked = { showMenuScene(mainMenuScene) }
         startGameScene.backButton.onMouseClicked = { showMenuScene(mainMenuScene) }
 
         showGameScene(gameScene)
@@ -74,7 +78,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         val sessionID = mainMenuScene.sessionIDInput.text
         val hostname = mainMenuScene.nameInput.text
-        rootService.networkService.hostGame(NETWORK_SECRET, sessionID,
+        rootService.networkService.hostGame(networkSecret, sessionID,
             hostname, PlayerColor.WHITE, gameMode)
         hostGameScene.hostName = hostname
         hostGameScene.resetAllComponents()
@@ -90,7 +94,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             2 -> PlayerType.SMARTAI
             else -> PlayerType.LOCALPLAYER
         }
-        rootService.networkService.joinGame(NETWORK_SECRET, sessionID, name, playerType)
+        rootService.networkService.joinGame(networkSecret, sessionID, name, playerType)
         showMenuScene(joinGameScene)
     }
 }

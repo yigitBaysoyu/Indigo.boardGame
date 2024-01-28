@@ -16,7 +16,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      * This function updates the rotationOffset and connections of the provided PathTile.
      * Each call to this method rotates the tile by 60 degrees clockwise.
      */
-    fun rotateTile() {
+    fun rotateTile(suppressRefresh: Boolean = false) {
         val game = rootService.currentGame
         checkNotNull(game) {"game is null"}
 
@@ -39,7 +39,9 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         // set the connections to the tile connections
         tile.connections = newConnections
 
-        onAllRefreshables { refreshAfterTileRotated() }
+        if(!suppressRefresh) {
+            onAllRefreshables { refreshAfterTileRotated() }
+        }
     }
 
     /**
@@ -55,6 +57,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val game = rootService.currentGame
         checkNotNull(game)
         if(game.undoStack.isEmpty()) return
+
+        rootService.aiService.isPaused = true
 
         val lastTurn = game.undoStack.removeLast()
 
@@ -100,7 +104,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val playerWhoPlacedTile = game.playerList[lastTurn.playerID]
         if (playerWhoPlacedTile.playHand.isNotEmpty()) {
             val tileToReturn = playerWhoPlacedTile.playHand.removeLast()
-            game.drawPile.add(tileToReturn)
+            game.drawPile.add(0, tileToReturn)
         }
 
         // Remove placed tile from board
@@ -133,7 +137,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
      *  @param yCoordinate the y Coordinate, in the Axial System
      */
     fun placeTile(xCoordinate: Int, yCoordinate: Int){
-        val gameService = rootService.gameService
         val game = rootService.currentGame
         checkNotNull(game)
 
@@ -152,7 +155,6 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         )
 
         if(!rootService.gameService.isPlaceAble(xCoordinate, yCoordinate, tileToBePlaced)){
-            println("Not Placable")
             return
         }
 
@@ -165,7 +167,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         // Updates the PlayHand for the current Player and then switches the Player
         if(game.drawPile.isNotEmpty()) {
-            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeLast()
+            game.playerList[game.activePlayerID].playHand[0] = game.drawPile.removeFirst()
         } else {
             game.playerList[game.activePlayerID].playHand.clear()
         }
@@ -189,11 +191,14 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
             rootService.networkService.sendPlaceTile(tilePMessage)
         }
 
-        gameService.switchPlayer()
+        // switch the active player
+        game.activePlayerID = (game.activePlayerID + 1) % game.playerList.size
+
         onAllRefreshables { refreshAfterTilePlaced(turn) }
-        rootService.gameService.checkIfGameEnded()
 
-
+        // Moved to GameScene.refreshAfterTilePlaced to make AI delay work properly
+        // rootService.gameService.checkIfGameEnded()
+        // rootService.gameService.switchPlayer()
     }
 
     /**
@@ -207,6 +212,8 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         checkNotNull(game) { "no active game" }
 
         if(game.redoStack.isEmpty()) return
+
+        rootService.aiService.isPaused = true
 
         val coordinatesAndRotation = game.redoStack.last()
         val coords = coordinatesAndRotation.first
