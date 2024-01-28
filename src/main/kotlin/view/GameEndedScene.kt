@@ -255,7 +255,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
             playerPosInputList[i].isVisible = true
             playerPointsInputList[i].text = "${player.score}"
             playerPointsInputList[i].isVisible = true
-            playerColorIconList[i].visual = colorImageList[player.color]
+            playerColorIconList[i].components[1].visual = colorImageList[player.color]
             playerColorIconList[i].isVisible = true
 
             val playerTypeAsInt = when(player.playerType) {
@@ -264,7 +264,7 @@ class GameEndedScene(private val rootService: RootService) : MenuScene(Constants
                 PlayerType.SMARTAI -> 2
                 PlayerType.NETWORKPLAYER -> 3
             }
-            playerModeIconList[i].visual = modeImageList[playerTypeAsInt]
+            playerModeIconList[i].components[1].visual = modeImageList[playerTypeAsInt]
             playerModeIconList[i].isVisible = true
         }
     }
