@@ -31,6 +31,7 @@ class AIService(private val rootService: RootService) {
         val possibleCoordinates = initializePossibleCoordinates(currentGame)
 
         val moves = tryPossibleMoves(currentGame, possibleCoordinates, game != null)
+        if(moves.isEmpty()) return Int.MIN_VALUE
 
         val bestMove = moves.maxBy { it.first }
         if(game != null) return bestMove.first
@@ -60,6 +61,7 @@ class AIService(private val rootService: RootService) {
             : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
         val moves: MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
+        if(game.getActivePlayer().playHand.isEmpty()) return mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
         for(rot in 1..6) {
