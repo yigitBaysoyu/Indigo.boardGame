@@ -5,7 +5,6 @@ import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
 import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
-import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 import tools.aqua.bgw.visual.Visual
 import java.awt.Color
@@ -13,7 +12,8 @@ import java.awt.Color
 /**
  * Is displayed when a user joins a game and the game has not started yet,
  */
-class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
+class JoinGameScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
+    Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
     private  val sceneHeight = Constants.SCENE_HEIGHT

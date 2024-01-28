@@ -15,7 +15,8 @@ import java.awt.Color
 /**
  * Displays configuration for an online game.
  */
-class HostGameScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
+class HostGameScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
+    Refreshable {
 
     private val sceneWidth = Constants.SCENE_WIDTH
     private  val sceneHeight = Constants.SCENE_HEIGHT
@@ -222,7 +223,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     }
     private fun checkForSamePlayerColors(): Boolean {
         for(i in 0 until 4) {
-            playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
+            val backGround = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+            playerColorIconList[i].components[0].componentStyle = backGround
         }
 
         val copiedSelectColors = mutableListOf<Int>()
@@ -235,7 +237,8 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         for(i in 0 until copiedSelectColors.size) {
             for(j in 0 until copiedSelectColors.size) {
                 if(copiedSelectColors[i] == copiedSelectColors[j] && i != j) {
-                    playerColorIconList[i].components[0].componentStyle = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+                    val backGround = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+                    playerColorIconList[i].components[0].componentStyle = backGround
                     returnValue = true
                 }
             }
