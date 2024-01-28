@@ -9,11 +9,14 @@ import kotlin.random.Random
 class AIService(private val rootService: RootService) {
 
     private val possibleCoordinates: MutableList<Pair<Int,Int>> = mutableListOf()
+    var isPaused : Boolean = false
 
     /**
-     * Function to calculate and execute the best possible move for a SMARTAI player.
+     * Function to calculate and execute the best possible move for a SMART AI player.
      */
     fun calculateNextTurn() {
+
+        if(isPaused) return
 
         val gameService = rootService.gameService
         val playerService = rootService.playerService
@@ -50,7 +53,7 @@ class AIService(private val rootService: RootService) {
      * @return a Mutable list consists pairs of rotations and coordinates (possible moves).
      */
     private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates : MutableList<Pair<Int,Int>> )
-    : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
+            : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
         val moves : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
@@ -900,6 +903,9 @@ class AIService(private val rootService: RootService) {
         playerService.placeTile(selectedPos.first, selectedPos.second)
     }
 
+    /**
+     *  Initialises placeable Tile coordinates for random AI.
+     */
     private fun initializePlaceableTiles(){
         if (placeableTiles.isNotEmpty()){
             return
