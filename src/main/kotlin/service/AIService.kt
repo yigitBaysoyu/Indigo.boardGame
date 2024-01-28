@@ -44,17 +44,21 @@ class AIService(private val rootService: RootService) {
         initializePossibleCoordinates(currentGame)
 
         val possibleMoves = possibleMovesInGameState(currentGame)
-        if(possibleMoves.isEmpty()) return
+        if(possibleMoves.isEmpty()){
+            println("no possibleMoves ? ")
+            randomNextTurn()
+        }
         println("Total moves: ${possibleMoves.size}")
 
         var bestMove: Pair<Int, Pair<Int, Int>>
         val availableProcessors = Runtime.getRuntime().availableProcessors()
 
         var chunkedBy = possibleMoves.size / availableProcessors
+        chunkedBy = 1
         if(chunkedBy == 0) chunkedBy = 1
         val dividedMoves = possibleMoves.chunked(chunkedBy)
 
-        coroutineScope{
+        /*coroutineScope{
             //Map each chunk of moves to a thread and use Default Dispatcher to assure time limit is held
             val moves = dividedMoves.map { moves ->
                 async(Dispatchers.Default){
@@ -73,7 +77,10 @@ class AIService(private val rootService: RootService) {
             }
             println("bestscore: ${bestResult.first}")
             bestMove = bestResult.second
-        }
+        }*/
+
+        val bestResult = calculateBestMove(possibleMoves)
+        bestMove = bestResult.second
 
         println("bestMove: $bestMove")
         // Execute the best move
@@ -100,9 +107,6 @@ class AIService(private val rootService: RootService) {
         val maxDuration: Duration = 10000.milliseconds
         val startTime = System.currentTimeMillis()
         for (move in possibleMoves) {
-            if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
-                break
-            }
             moveCounter++
             val simGame: IndigoGame = currentGame.deepCopy()
             val x = move.second.first
@@ -129,6 +133,10 @@ class AIService(private val rootService: RootService) {
             if (score > bestScore) {
                 bestScore = score
                 bestMove = Pair(rotation, Pair(x, y))
+                println("bestMove: ${Pair(rotation, Pair(x, y))}")
+            }
+            if((System.currentTimeMillis()-startTime).milliseconds > maxDuration){
+                break
             }
         }
 
@@ -136,7 +144,7 @@ class AIService(private val rootService: RootService) {
         negativeScore = negScore
 
         println("Did $moveCounter out of ${possibleMoves.size} possible moves")
-        checkNotNull(bestMove)
+        checkNotNull(bestMove){"Value of bestMove: $bestMove"}
         return Pair(bestScore, bestMove)
     }
 
@@ -613,89 +621,6 @@ class AIService(private val rootService: RootService) {
     }
 
     /**
-     * Function to initialize all gem Movements needed,
-     * after a new tile is placed. Checks for collisions and
-     * moves gems until the gem is at the end of its path.
-     *
-     * @param [game] The IndigoGame object in which the function will be implemented
-     * @param[turn] The turn in which the movement occurs
-     *
-     * @return A turn modified so that the movement of the gems
-     * and collisions, if any happened, are represented by the [GemMovement]
-     * objects in [Turn.gemMovements]
-     */
-    private fun moveGems(game : IndigoGame, turn: Turn): Turn{
-
-        val tile = turn.placedTile
-
-        //Getting neighbours according to connection
-        val neighbours = mutableMapOf<Int, Tile>()
-        for (i in 0 until 6) {
-            val neighbourTile = getAdjacentTileByConnection(game, tile, i)
-            if(neighbourTile != null){
-                neighbours[i] = neighbourTile
-            }
-        }
-
-        //Moving gems of neighbours and checking for collisions
-        for(i in 0 until 6){
-            val currentNeighbour = neighbours[i]
-            val currentConnection = (i+3)%6
-            if(currentNeighbour == null){
-                continue
-            }
-
-            when(currentNeighbour){
-                is PathTile ->  collisionCheck(game, tile, i, currentNeighbour, currentConnection, turn)
-                is CenterTile -> collisionCheck(game, tile, i, currentNeighbour, turn)
-                is GateTile -> collisionCheck(game,tile, i, currentNeighbour, turn)
-                is TreasureTile -> collisionCheck(game, tile, i, currentNeighbour, currentConnection, turn)
-                is EmptyTile -> 1+1 // do nothing
-                is InvisibleTile -> 1+1 // do nothing
-            }
-        }
-
-        var currentGem: GemType
-        //Move all stones that are on my tile to the end of the respective path
-        for(i in 0 until tile.gemPositions.size){
-            if(tile.gemPositions[i] != GemType.NONE){
-                currentGem = tile.gemPositions[i]
-                val originTile = neighbours[tile.connections[i]]
-                val originConnection = tile.connections[i]
-                checkNotNull(originConnection)
-                checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
-
-                val endPos = findEndPosition(game, tile, i)
-                if(endPos.first is GateTile){
-                    scoringAction(
-                        game,
-                        originTile,
-                        (originConnection+3)%6,
-                        endPos.first,
-                        endPos.second,
-                        currentGem,
-                        turn
-                    )
-                }
-                else {
-                    val gemMovement = GemMovement(
-                        currentGem,
-                        originTile,
-                        (originConnection + 3) % 6,
-                        endPos.first,
-                        endPos.second,
-                        false
-                    )
-
-                    turn.gemMovements.add(gemMovement)
-                }
-            }
-        }
-        return turn
-    }
-
-
-    /**
      * Function to get the neighbour according to the [connection]
      *
      * @param [tile] Represents current tile
@@ -736,12 +661,144 @@ class AIService(private val rootService: RootService) {
      * traverse, if there is no next neighbour it returns current [tile]
      *
      * @param[game] The IndigoGame object in which the function will be implemented.
+     *
+     * @return The tile where the gem ends up.
+     */
+    private fun moveGems(game: IndigoGame, turn: Turn): Turn{
+        val currentGame = rootService.currentGame
+        checkNotNull(currentGame){"No active Game"}
+        val tile = turn.placedTile
+
+        //Getting neighbours according to connection
+        val neighbours = mutableMapOf<Int, Tile>()
+        for (i in 0 until 6) {
+            val neighbourTile = getAdjacentTileByConnection(game, tile, i)
+            if(neighbourTile != null){
+                neighbours[i] = neighbourTile
+            }
+        }
+
+        checkCollisions(tile, neighbours, turn, game)
+        moveStonesToEndOfPath(tile, neighbours, turn, game)
+
+        return turn
+    }
+
+    private fun moveStonesToEndOfPath(tile: PathTile, neighbours: MutableMap<Int, Tile>, turn: Turn, game: IndigoGame){
+        var currentGem: GemType
+        //Move all stones that are on my tile to the end of the respective path
+        for(i in 0 until tile.gemPositions.size){
+            if(tile.gemPositions[i] != GemType.NONE){
+                currentGem = tile.gemPositions[i]
+                val originTile = neighbours[tile.connections[i]]
+                val originConnection = tile.connections[i]
+                checkNotNull(originConnection)
+                checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
+
+                val endPos = findEndPosition(tile, i, false, game)
+                if(endPos.third){
+                    println("originTile: $originTile x: ${originTile.xCoordinate} and y: ${originTile.yCoordinate}")
+                    val trueOrigin = originTile.connections[(originConnection +3)%6]
+                    checkNotNull(trueOrigin){"trueOrigin: $trueOrigin"}
+                    handleComplexCollision(turn, originTile, trueOrigin, endPos, currentGem, game)
+                }
+
+                else if(endPos.first is GateTile){
+                    val startCon = (originConnection+3) %6
+                    scoringAction(
+                        game, originTile, startCon, endPos.first, endPos.second, currentGem, turn)
+                }
+                else {
+                    val startCon = (originConnection + 3) % 6
+                    val gemMovement = GemMovement(
+                        currentGem, originTile, startCon,endPos.first, endPos.second, false
+                    )
+
+                    turn.gemMovements.add(gemMovement)
+                }
+            }
+        }
+    }
+
+    private fun handleComplexCollision(turn: Turn, originTile: Tile, originConnection: Int,
+                                       endPos: Triple<Tile, Int, Boolean>, gem: GemType, game: IndigoGame){
+        val collisionTile = endPos.first
+
+        val collisionMovement1 = GemMovement(
+            gem,
+            originTile,
+            originConnection,
+            collisionTile,
+            endPos.second,
+            true
+        )
+        if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+
+        val secondStartConnection = endPos.first.connections[endPos.second]
+        checkNotNull(secondStartConnection)
+
+        val secondOriginTile = getAdjacentTileByConnection(game, endPos.first, secondStartConnection)
+        checkNotNull(secondOriginTile)
+
+        val collisionMovement2 = GemMovement(
+            collisionTile.gemPositions[endPos.second],
+            secondOriginTile,
+            (secondStartConnection +3) % 6,
+            collisionTile,
+            endPos.second,
+            true
+        )
+
+        collisionTile.gemPositions[endPos.second] = GemType.NONE
+        if(originTile is TraverseAbleTile){
+            originTile.gemPositions[originConnection] = GemType.NONE
+        }
+
+        turn.gemMovements.add(collisionMovement1)
+        turn.gemMovements.add(collisionMovement2)
+    }
+
+    /**
+     * Function to check for Collisions and move the gems if there are none (in a movement of size 1)
+     */
+    private fun checkCollisions(tile: PathTile, neighbours: MutableMap<Int, Tile>, turn: Turn, game: IndigoGame ){
+        for(i in 0 until 6){
+            val currentNeighbour = neighbours[i]
+            val currentConnection = (i+3)%6
+            if(currentNeighbour == null){
+                continue
+            }
+
+            when(currentNeighbour){
+                is PathTile ->  collisionCheck(game, tile, i, currentNeighbour, currentConnection, turn)
+                is CenterTile -> collisionCheck(game, tile, i, currentNeighbour, turn)
+                is GateTile -> collisionCheck(game, tile, i, currentNeighbour, turn)
+                is TreasureTile -> collisionCheck(game, tile, i, currentNeighbour, currentConnection, turn)
+                is EmptyTile -> 1+1 // do nothing
+                is InvisibleTile -> 1+1 // do nothing
+            }
+        }
+    }
+
+    /**
+     * Function to recursively search for the end position
+     * of a gem.
+     *
+     * The Function recursively searches for the next neighbour to
+     * traverse, if there is no next neighbour it returns current [tile]
+     *
      * @param[tile] current position of gem
      * @param[currentConnection] current position of the gem on [tile]
      *
      * @return The tile where the gem ends up.
      */
-    private fun findEndPosition(game: IndigoGame, tile: Tile, currentConnection: Int): Pair<Tile, Int>{
+    private fun findEndPosition(tile: Tile, currentConnection: Int, collision: Boolean, game: IndigoGame)
+                                :Triple<Tile, Int, Boolean>
+    {
+        if(collision){
+            return Triple(tile, currentConnection, true)
+        }
+
         val nextTile = getAdjacentTileByConnection(game, tile, currentConnection)
 
         if(tile is TraverseAbleTile){
@@ -750,23 +807,30 @@ class AIService(private val rootService: RootService) {
                 is GateTile ->{
                     nextTile.gemsCollected.add(tile.gemPositions[currentConnection])
                     tile.gemPositions[currentConnection] = GemType.NONE
-                    return Pair(nextTile, (currentConnection+3)%6)
+                    return Triple(nextTile, (currentConnection+3)%6, false)
                 }
                 is TraverseAbleTile -> {
                     val gem: GemType = tile.gemPositions[currentConnection]
                     tile.gemPositions[currentConnection] = GemType.NONE
+
+                    //Connection where a collision could occur
+                    val collisionConnection = (currentConnection + 3)%6
+
+                    if(nextTile.gemPositions[collisionConnection] != GemType.NONE){
+                        return findEndPosition(nextTile, collisionConnection, true, game)
+                    }
 
                     val nextConnection = nextTile.connections[(currentConnection + 3) % 6]
                     checkNotNull(nextConnection)
 
                     nextTile.gemPositions[nextConnection] = gem
 
-                    return findEndPosition(game, nextTile, nextConnection)
+                    return findEndPosition(nextTile, nextConnection, false, game)
                 }
-                else -> return Pair(tile, currentConnection)
+                else -> return Triple(tile, currentConnection, false)
             }
         }
-        return Pair(tile, currentConnection)
+        return Triple(tile, currentConnection, false)
     }
 
     /**
@@ -1058,7 +1122,7 @@ class AIService(private val rootService: RootService) {
         val player = currentGame.getActivePlayer()
         if(player.playHand.size == 0) return
 
-        require(player.playerType == PlayerType.RANDOMAI)
+        require(player.playerType == PlayerType.RANDOMAI || player.playerType == PlayerType.SMARTAI)
 
         initializePlaceableTiles()
         placeableTiles.shuffle()
