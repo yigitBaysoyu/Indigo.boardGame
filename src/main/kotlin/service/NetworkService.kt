@@ -12,7 +12,6 @@ import edu.udo.cs.sopra.ntf.Player
  * Service layer class that realizes the necessary logic for sending and receiving messages
  * in multiplayer network games.
  */
-
 class NetworkService (private  val rootService: RootService) : AbstractRefreshingService() {
     companion object {
         /** URL of the BGW net server hosted for SoPra participants */
@@ -178,6 +177,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         return PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
     }
+
+    /**
+     * set up the game using [GameService.startNewGame] and send the game init message
+     * Called when  [ConnectionState.WAITING_FOR_GUESTS] and the players want to start the game.
+     * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
+     */
     fun startNewJoinedGame(message: GameInitMessage, playerType: PlayerType) {
         // check if we are waiting for gameInitMessage. if not then there is no game to start
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
@@ -255,7 +260,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         return success
     }
 
-
+    /**
+     * sends a message when a tile placed.
+     * @param tilePlacedMessage to place a tile.
+     * @throws IllegalStateException when ConnectionState is not [ConnectionState.PLAYING_MY_TURN]
+     * @throws IllegalArgumentException when the client is not connected.
+     */
     fun sendPlaceTile (tilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
         val networkClient = checkNotNull(client) { "No client connected." }
@@ -263,7 +273,10 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
     }
 
-
+    /**
+     * sends a message when a tile placed.
+     * @param message of the placed tile.
+     */
     fun tilePlacedMessage(message: TilePlacedMessage) {
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
