@@ -575,6 +575,8 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         onAllRefreshables { refreshAfterLoadGame() }
         onAllRefreshables { refreshAfterStartNewGame() }
+
+        println(game.undoStack.last().gemMovements.last())
     }
 
     /**
@@ -684,8 +686,46 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 checkNotNull(originConnection)
                 checkNotNull(originTile){"The Gem cannot come from a nonexistent tile"}
 
-                val endPos = findEndPosition(tile, i)
-                if(endPos.first is GateTile){
+                val endPos = findEndPosition(tile, i, false)
+                if(endPos.third){
+                    val collisionTile = endPos.first
+                    val trueOrigin = originTile.connections[(originConnection +3)%6]
+                    checkNotNull(trueOrigin)
+                    val collisionMovement1 = GemMovement(
+                        currentGem,
+                        originTile,
+                        trueOrigin,
+                        collisionTile,
+                        endPos.second,
+                        true
+                    )
+                    if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+
+                    val secondStartConnection = endPos.first.connections[endPos.second]
+                    checkNotNull(secondStartConnection)
+
+                    val secondOriginTile = getAdjacentTileByConnection(endPos.first, secondStartConnection)
+                    checkNotNull(secondOriginTile)
+
+                    val collisionMovement2 = GemMovement(
+                        collisionTile.gemPositions[endPos.second],
+                        secondOriginTile,
+                        (secondStartConnection +3) % 6,
+                        collisionTile,
+                        endPos.second,
+                        true
+                    )
+
+                    collisionTile.gemPositions[endPos.second] = GemType.NONE
+                    if(originTile is TraverseAbleTile){
+                        originTile.gemPositions[trueOrigin] = GemType.NONE
+                    }
+
+                    turn.gemMovements.add(collisionMovement1)
+                    turn.gemMovements.add(collisionMovement2)
+                }
+
+                else if(endPos.first is GateTile){
                     scoringAction(
                         originTile,
                         (originConnection+3)%6,
@@ -724,7 +764,11 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      *
      * @return The tile where the gem ends up.
      */
-    private fun findEndPosition(tile: Tile, currentConnection: Int): Pair<Tile, Int>{
+    private fun findEndPosition(tile: Tile, currentConnection: Int, collision: Boolean): Triple<Tile, Int, Boolean>{
+        if(collision){
+            return Triple(tile, currentConnection, true)
+        }
+
         val nextTile = getAdjacentTileByConnection(tile, currentConnection)
 
         if(tile is TraverseAbleTile){
@@ -733,23 +777,30 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 is GateTile ->{
                     nextTile.gemsCollected.add(tile.gemPositions[currentConnection])
                     tile.gemPositions[currentConnection] = GemType.NONE
-                    return Pair(nextTile, (currentConnection+3)%6)
+                    return Triple(nextTile, (currentConnection+3)%6, false)
                 }
                 is TraverseAbleTile -> {
                     val gem: GemType = tile.gemPositions[currentConnection]
                     tile.gemPositions[currentConnection] = GemType.NONE
+
+                    //Connection where a collision could occur
+                    val collisionConnection = (currentConnection + 3)%6
+
+                    if(nextTile.gemPositions[collisionConnection] != GemType.NONE){
+                        return findEndPosition(nextTile, collisionConnection, true)
+                    }
 
                     val nextConnection = nextTile.connections[(currentConnection + 3) % 6]
                     checkNotNull(nextConnection)
 
                     nextTile.gemPositions[nextConnection] = gem
 
-                    return findEndPosition(nextTile, nextConnection)
+                    return findEndPosition(nextTile, nextConnection, false)
                 }
-                else -> return Pair(tile, currentConnection)
+                else -> return Triple(tile, currentConnection, false)
             }
         }
-        return Pair(tile, currentConnection)
+        return Triple(tile, currentConnection, false)
     }
 
     /**
