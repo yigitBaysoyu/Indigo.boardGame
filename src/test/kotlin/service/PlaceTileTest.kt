@@ -2,40 +2,53 @@ package service
 import entity.*
 import kotlin.test.*
 import kotlin.test.assertEquals
+
 /**
- * Testet die Platzierung eines Tiles im Spiel.
+ * Tests the placement of a tile in the game.
  */
 class PlaceTileTest {
 
     /**
-     * Überprüft die korrekte Platzierung eines Tiles an gültigen Koordinaten.
+     * Checks the correct placement of a tile at valid coordinates.
      */
     @Test
     fun testPlaceTile() {
         val rootService = RootService()
         val gameService = rootService.gameService
+        val test = TestRefreshable()
+        test.reset()
+        rootService.addRefreshables(test)
+
+        assertFalse(test.refreshAfterTilePlacedCalled)
         val player1 = Player("A", score = 4)
         val player2 = Player("B", score = 6)
-        val players = mutableListOf( player1, player2)
+        val players = mutableListOf(player1, player2)
         gameService.startNewGame(players, false, 1.0, false)
 
         val game = rootService.currentGame
         assertNotNull(game)
+
         val originalActivePlayerID = game.activePlayerID
-        val DrawPileSize = game.drawPile.size
-        val PlayerHandSize = game.playerList[game.activePlayerID].playHand.size
+        val drawPileSize = game.drawPile.size
+        val playerHandSize = game.playerList[game.activePlayerID].playHand.size
+
+        rootService.playerService.placeTile(0, 1)
+        assertNotEquals(originalActivePlayerID, game.activePlayerID)
+        assertEquals(drawPileSize - 1, game.drawPile.size)
+        assertNotEquals(playerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
+        assertTrue(test.refreshAfterTilePlacedCalled)
 
         rootService.playerService.placeTile(0,1)
-        assertNotEquals(originalActivePlayerID, game.activePlayerID)
-        assertEquals(DrawPileSize - 1, game.drawPile.size)
-        assertNotEquals(PlayerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
-        }
+        assert(game.redoStack.size == 0)
 
-
-
+        game.drawPile.clear()
+        rootService.playerService.placeTile(2,2)
+        println(game.playerList[1].playHand.size)
+        assert(game.playerList[1].playHand.size == 0 || game.playerList[1].playHand.size == 1)
     }
+
     /**
-     * Überprüft das Verhalten bei ungültigen Koordinaten für die Platzierung eines Tiles.
+     * Checks the behavior when using invalid coordinates for tile placement.
      */
     @Test
     fun testPlaceTileInvalidCoordinates() {
@@ -43,19 +56,21 @@ class PlaceTileTest {
         val gameService = rootService.gameService
         val player1 = Player("A", score = 4)
         val player2 = Player("B", score = 6)
-        val players = mutableListOf( player1, player2)
+        val players = mutableListOf(player1, player2)
         gameService.startNewGame(players, false, 1.0, false)
 
 
         val game = rootService.currentGame
         assertNotNull(game)
         val originalActivePlayerID = game.activePlayerID
-        val DrawPileSize = game.drawPile.size
-        val PlayerHandSize = game.playerList[game.activePlayerID].playHand.size
+        val drawPileSize = game.drawPile.size
+        val playerHandSize = game.playerList[game.activePlayerID].playHand.size
 
-        rootService.playerService.placeTile(-4,-9)
+        rootService.playerService.placeTile(-4, -9)
         assertEquals(originalActivePlayerID, game.activePlayerID)
-        assertNotEquals(DrawPileSize - 1, game.drawPile.size)
-        assertNotEquals(PlayerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
+        assertNotEquals(drawPileSize - 1, game.drawPile.size)
+        assertNotEquals(playerHandSize - 1, game.playerList[originalActivePlayerID].playHand.size)
+
     }
+}
 
