@@ -269,6 +269,9 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
         setStartButtonState()
     }
 
+    /**
+     *  loads the Players Names, Colors and Player-modes
+     */
     fun resetAllComponents() {
         lobbyFull = false
 
