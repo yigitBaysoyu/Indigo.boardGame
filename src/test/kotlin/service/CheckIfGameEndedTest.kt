@@ -147,7 +147,6 @@ class CheckIfGameEndedTest {
         test.reset()
         game.addRefreshables(test)
 
-
         val tile = PathTile(
             mutableMapOf(1 to 2, 3 to 4, 5 to 0), 0, 0,
             0, mutableListOf()
@@ -220,8 +219,6 @@ class CheckIfGameEndedTest {
         game.gameService.endGameIfEnded()
         assertTrue(test.refreshAfterEndGameCalled)
 
-
-
     }
 
 
@@ -235,7 +232,6 @@ class CheckIfGameEndedTest {
         val test = TestRefreshable()
         test.reset()
         game.addRefreshables(test)
-
 
         val tile = PathTile(
             mutableMapOf(1 to 2, 3 to 4, 5 to 0), 0, 0,
@@ -285,8 +281,6 @@ class CheckIfGameEndedTest {
 
         game.gameService.endGameIfEnded()
         assertFalse(test.refreshAfterEndGameCalled)
-
-
     }
 
     /**
