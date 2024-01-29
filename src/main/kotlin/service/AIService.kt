@@ -64,7 +64,7 @@ class AIService(private val rootService: RootService) {
         if(game.getActivePlayer().playHand.isEmpty()) return mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
-        for(rot in 1..6) {
+        repeat(6) {
             rotateTile(game)
 
             for(coordinate in possibleCoordinates) {

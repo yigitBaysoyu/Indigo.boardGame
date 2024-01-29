@@ -19,7 +19,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val gameScene = GameScene(rootService)
      private val startGameScene = StartGameScene(rootService)
      private val hostGameScene = HostGameScene(rootService)
-     private val joinGameScene = JoinGameScene(rootService)
+     private val joinGameScene = JoinGameScene()
      private val gameEndedScene = GameEndedScene(rootService)
 
     init {

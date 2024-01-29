@@ -83,7 +83,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         // Set everything to invisible Tile
         for (i in 0..10) {
             game.gameLayout.add(mutableListOf())
-            for (j in 0..10) game.gameLayout[i].add(InvisibleTile())
+            repeat(11) { game.gameLayout[i].add(InvisibleTile()) }
         }
 
         for (x in -5..5) {
@@ -1139,13 +1139,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                val timeTaken = measureTimeMillis {
-                    // Blocking current Thread until coroutine in calculateNextTurn() is finished
-                    runBlocking {
-                        rootService.aiService.calculateNextTurn()
-                    }
+                // Blocking current Thread until coroutine in calculateNextTurn() is finished
+                runBlocking {
+                    rootService.aiService.calculateNextTurn()
                 }
-                println("Took : ${timeTaken/1000} sec")
             }
             else -> return
         }
