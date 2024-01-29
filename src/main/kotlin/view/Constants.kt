@@ -1,6 +1,7 @@
 package view
 
 import tools.aqua.bgw.visual.ColorVisual
+import java.awt.Color
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
@@ -9,7 +10,8 @@ import javax.imageio.ImageIO
  */
 object Constants {
     // COLORS
-    val sceneBackgroundColorVisual = ColorVisual(42, 59, 142)
+    private val backgroundColor: Color = Color.decode("#2a3b8e")
+    val sceneBackgroundColorVisual = ColorVisual(backgroundColor.red, backgroundColor.green, backgroundColor.blue)
     const val buttonBackgroundColor = "#211c4f"
 
     // Measurements
