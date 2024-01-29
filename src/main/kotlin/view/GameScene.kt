@@ -938,7 +938,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             val tileType = player.playHand[0].type
             playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
-            playerHandList[index].rotation = (player.playHand[0].rotationOffset+5)%6 * 60.0
+            playerHandList[index].rotation = (player.playHand[0].rotationOffset+5)%6 * 60.0 + 30.0
         }
     }
 
@@ -974,7 +974,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         animation.onFinished = {
             if(game.getActivePlayer().playHand.isNotEmpty()) {
                 val rotationOffset = (game.getActivePlayer().playHand[0].rotationOffset + 5) % 6
-                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
+                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0 + 30.0
             }
             unlock()
         }
