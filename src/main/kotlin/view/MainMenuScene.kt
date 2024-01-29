@@ -44,7 +44,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
     }
 
     private val loadGameButton = Button(
@@ -54,7 +54,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
@@ -130,7 +130,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY,
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         isDisabled = true
     }
 
@@ -142,7 +142,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240, 120)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f50; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}50; -fx-background-radius: 25px;"
     }
 
     // 0 = TWO_NOT_SHARED_GATEWAYS, 1 = THREE_SHARED_GATEWAYS, 2 = THREE_NOT_SHARED_GATEWAYS
@@ -232,7 +232,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
         isDisabled = true
     }
 
@@ -244,7 +244,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240, 120)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f50; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}50; -fx-background-radius: 25px;"
     }
 
     val quitButton = Button(
@@ -254,7 +254,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
     }
 
     init {
