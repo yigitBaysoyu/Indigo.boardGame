@@ -105,4 +105,14 @@ interface Refreshable {
      * performs refreshes after a sessionID is received in a createGame message
      */
     fun refreshAfterSessionIDReceived(sessionID: String) {}
+
+    /**
+     * performs refreshes after a game could not be created because sessionID already exists
+     */
+    fun refreshAfterSessionIDAlreadyExists() {}
+
+    /**
+     * performs refreshes after a game could not be joined because sessionID is not valid
+     */
+    fun refreshAfterSessionIDIsInvalid() {}
 }

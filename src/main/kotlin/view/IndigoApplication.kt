@@ -106,5 +106,13 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         rootService.networkService.joinGame(sessionID, name, playerType)
         showMenuScene(joinGameScene)
     }
+
+    override fun refreshAfterSessionIDAlreadyExists() {
+        showMenuScene(mainMenuScene)
+    }
+
+    override fun refreshAfterSessionIDIsInvalid() {
+        showMenuScene(mainMenuScene)
+    }
 }
 

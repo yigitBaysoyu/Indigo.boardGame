@@ -247,6 +247,26 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}50; -fx-background-radius: 25px;"
     }
 
+    private val sessionIDAlreadyExistsMessage = Label(
+        width = 350, height = 50,
+        posX = halfWidth - 350 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Session ID already exists.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val sessionIDIsInvalidMessage = Label(
+        width = 550, height = 50,
+        posX = halfWidth - 550 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Session ID could not be found.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     val quitButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 350 / 2, posY = offsetY + 975,
@@ -273,6 +293,8 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             hostGameButton,
             joinGameButtonBackground,
             joinGameButton,
+            sessionIDAlreadyExistsMessage,
+            sessionIDIsInvalidMessage,
             quitButton,
             playerModeIconList[0],
             gameModeIconList[0]
@@ -283,6 +305,20 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         fileNotFoundMessage.isVisible = true
         val animation = DelayAnimation(2750)
         animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterSessionIDAlreadyExists() {
+        sessionIDAlreadyExistsMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { sessionIDAlreadyExistsMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterSessionIDIsInvalid() {
+        sessionIDIsInvalidMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { sessionIDIsInvalidMessage.isVisible = false }
         playAnimation(animation)
     }
 }
