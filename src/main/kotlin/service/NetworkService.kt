@@ -5,9 +5,6 @@ import java.lang.IllegalStateException
 import edu.udo.cs.sopra.ntf.*
 import edu.udo.cs.sopra.ntf.Player
 
-//import kotlinx.coroutines.runBlocking
-//import kotlin.system.measureTimeMillis
-
 /**
  * Service layer class that realizes the necessary logic for sending and receiving messages
  * in multiplayer network games.
