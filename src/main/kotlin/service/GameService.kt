@@ -36,7 +36,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
-        var drawPile: MutableList<PathTile> = when(passedDrawPile) {
+        val drawPile: MutableList<PathTile> = when(passedDrawPile) {
             null -> loadTiles()
             else -> passedDrawPile
         }
