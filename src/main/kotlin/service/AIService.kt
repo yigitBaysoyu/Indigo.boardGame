@@ -64,7 +64,7 @@ class AIService(private val rootService: RootService) {
         if(game.getActivePlayer().playHand.isEmpty()) return mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
-        for(rot in 1..6) {
+        for(i in 1..6) {
             rotateTile(game)
 
             for(coordinate in possibleCoordinates) {
@@ -552,7 +552,7 @@ class AIService(private val rootService: RootService) {
             endPos.second,
             true
         )
-        if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+        if(collisionTile !is TraverseAbleTile) throw IllegalArgumentException("Wrong type of collisionTile")
 
         val secondStartConnection = endPos.first.connections[endPos.second]
         checkNotNull(secondStartConnection)
@@ -968,7 +968,9 @@ class AIService(private val rootService: RootService) {
         for (x in -4..4) {
             for (y in -4..4) {
                 // Check if the conditions are met
-                if (checkIfValidAxialCoordinates(x, y) && rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
+                if (checkIfValidAxialCoordinates(x, y) &&
+                    rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile)
+                {
                     placeableTiles.add(Pair(x,y))
                 }
             }

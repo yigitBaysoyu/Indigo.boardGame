@@ -15,7 +15,9 @@ import java.awt.Color
 /**
  * Displays the Main Menu of the Indigo Game
  */
-class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable {
+class MainMenuScene(private val rootService: RootService) :
+    MenuScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable
+{
 
     private val sceneWidth = Constants.SCENE_WIDTH
     private val sceneHeight = Constants.SCENE_HEIGHT
