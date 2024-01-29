@@ -8,8 +8,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
-import kotlin.system.measureTimeMillis
-
 
 /**
  * A service responsible for the game logic of an Indigo game. It manages the state
