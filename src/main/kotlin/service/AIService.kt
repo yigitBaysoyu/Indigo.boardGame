@@ -908,7 +908,8 @@ class AIService(private val rootService: RootService) {
         for (x in -4..4) {
             for (y in -4..4) {
                 // Check if the conditions are met
-                if (checkIfValidAxialCoordinates(x, y) && rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
+                if (checkIfValidAxialCoordinates(x, y) &&
+                    rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
                     placeableTiles.add(Pair(x,y))
                 }
             }
