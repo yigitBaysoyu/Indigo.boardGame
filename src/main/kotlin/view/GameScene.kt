@@ -376,6 +376,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     init {
         background = Constants.sceneBackgroundColorVisual
+        outerArea.rotation = 30.0
+        gateColorsBackground.rotation = 30.0
         addComponents(
             cornersBackground,
             gateColorsBackground,
@@ -605,8 +607,8 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private fun visualFromColorInt(number: Int): ImageVisual {
         return when (number) {
-            0 -> ImageVisual(Constants.redGate)
-            1 -> ImageVisual(Constants.whiteGate)
+            0 -> ImageVisual(Constants.whiteGate)
+            1 -> ImageVisual(Constants.redGate)
             2 -> ImageVisual(Constants.blueGate)
             else -> ImageVisual(Constants.purpleGate)
         }

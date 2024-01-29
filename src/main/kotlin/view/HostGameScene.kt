@@ -224,7 +224,7 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
     }
     private fun checkForSamePlayerColors(): Boolean {
         for(i in 0 until 4) {
-            val backGround = "-fx-background-color: #dd3344; -fx-background-radius: 25px;"
+            val backGround = "-fx-background-color: #ffffff; -fx-background-radius: 25px;"
             playerColorIconList[i].components[0].componentStyle = backGround
         }
 

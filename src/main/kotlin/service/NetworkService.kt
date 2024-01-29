@@ -90,12 +90,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         for (i in indigoPlayers.indices) {
             // Set colors
             indigoPlayers[i].color = selectedColors[i]
-            ntfPlayerList[i] = when(selectedColors[i]) {
-                0 -> Player(ntfPlayerList[i].name, PlayerColor.WHITE)
-                1 -> Player(ntfPlayerList[i].name, PlayerColor.RED)
-                2 -> Player(ntfPlayerList[i].name, PlayerColor.BLUE)
-                else -> Player(ntfPlayerList[i].name, PlayerColor.PURPLE)
-            }
 
             // Set playerTypes
             if(indigoPlayers[i].name == client.playerName) {
@@ -106,6 +100,18 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
 
         if(randomOrder) indigoPlayers.shuffle()
+
+        ntfPlayerList.clear()
+        for(i in indigoPlayers.indices) {
+            val ntfColor = when(indigoPlayers[i].color) {
+                0 -> PlayerColor.WHITE
+                1 -> PlayerColor.RED
+                2 -> PlayerColor.BLUE
+                else -> PlayerColor.PURPLE
+            }
+            val ntfName = indigoPlayers[i].name
+            ntfPlayerList.add(Player(ntfName, ntfColor))
+        }
 
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(
