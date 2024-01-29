@@ -30,9 +30,8 @@ import tools.aqua.bgw.event.KeyCode
 /**
  * Displays the actual gameplay.
  */
-class GameScene(private val rootService: RootService) :
-    BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT), Refreshable
-{
+class GameScene(private val rootService: RootService) : BoardGameScene(Constants.SCENE_WIDTH, Constants.SCENE_HEIGHT),
+    Refreshable {
 
     // Constants / Measurements
     private val sceneWidth = Constants.SCENE_WIDTH
@@ -378,6 +377,8 @@ class GameScene(private val rootService: RootService) :
 
     init {
         background = Constants.sceneBackgroundColorVisual
+        outerArea.rotation = 30.0
+        gateColorsBackground.rotation = 30.0
         addComponents(
             cornersBackground,
             gateColorsBackground,
@@ -607,8 +608,8 @@ class GameScene(private val rootService: RootService) :
 
     private fun visualFromColorInt(number: Int): ImageVisual {
         return when (number) {
-            0 -> ImageVisual(Constants.redGate)
-            1 -> ImageVisual(Constants.whiteGate)
+            0 -> ImageVisual(Constants.whiteGate)
+            1 -> ImageVisual(Constants.redGate)
             2 -> ImageVisual(Constants.blueGate)
             else -> ImageVisual(Constants.purpleGate)
         }

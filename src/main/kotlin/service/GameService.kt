@@ -375,7 +375,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             2 -> {
                 // for three players, gates are alternated between players
                 game.gateList.forEachIndexed { index, gateList ->
-                    val playerIndex = index % 2
+                    val playerIndex = (index+1) % 2
                     game.playerList[playerIndex].gateList.addAll(gateList)
                 }
             }
@@ -726,7 +726,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             endPos.second,
             true
         )
-        if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+        if(collisionTile !is TraverseAbleTile) throw IllegalStateException("Error in moveGems")
 
         val secondStartConnection = endPos.first.connections[endPos.second]
         checkNotNull(secondStartConnection)

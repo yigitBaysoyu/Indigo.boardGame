@@ -64,7 +64,7 @@ class AIService(private val rootService: RootService) {
         if(game.getActivePlayer().playHand.isEmpty()) return mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
-        for(i in 1..6) {
+        for(rot in 1..6) {
             rotateTile(game)
 
             for(coordinate in possibleCoordinates) {
@@ -935,7 +935,7 @@ class AIService(private val rootService: RootService) {
         val player = currentGame.getActivePlayer()
         if(player.playHand.size == 0) return
 
-        require(player.playerType == PlayerType.RANDOMAI || player.playerType == PlayerType.SMARTAI)
+        require(player.playerType == PlayerType.RANDOMAI)
 
         val placeableTiles = initializePlaceableTiles()
         placeableTiles.shuffle()
@@ -969,8 +969,7 @@ class AIService(private val rootService: RootService) {
             for (y in -4..4) {
                 // Check if the conditions are met
                 if (checkIfValidAxialCoordinates(x, y) &&
-                    rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile)
-                {
+                    rootService.gameService.getTileFromAxialCoordinates(x, y) is EmptyTile) {
                     placeableTiles.add(Pair(x,y))
                 }
             }

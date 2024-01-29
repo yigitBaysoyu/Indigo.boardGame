@@ -12,7 +12,6 @@ import edu.udo.cs.sopra.ntf.Player
  * Service layer class that realizes the necessary logic for sending and receiving messages
  * in multiplayer network games.
  */
-
 class NetworkService (private  val rootService: RootService) : AbstractRefreshingService() {
     companion object {
         /** URL of the BGW net server hosted for SoPra participants */
@@ -90,12 +89,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         for (i in indigoPlayers.indices) {
             // Set colors
             indigoPlayers[i].color = selectedColors[i]
-            ntfPlayerList[i] = when(selectedColors[i]) {
-                0 -> Player(ntfPlayerList[i].name, PlayerColor.WHITE)
-                1 -> Player(ntfPlayerList[i].name, PlayerColor.RED)
-                2 -> Player(ntfPlayerList[i].name, PlayerColor.BLUE)
-                else -> Player(ntfPlayerList[i].name, PlayerColor.PURPLE)
-            }
 
             // Set playerTypes
             if(indigoPlayers[i].name == client.playerName) {
@@ -106,6 +99,18 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         }
 
         if(randomOrder) indigoPlayers.shuffle()
+
+        ntfPlayerList.clear()
+        for(i in indigoPlayers.indices) {
+            val ntfColor = when(indigoPlayers[i].color) {
+                0 -> PlayerColor.WHITE
+                1 -> PlayerColor.RED
+                2 -> PlayerColor.BLUE
+                else -> PlayerColor.PURPLE
+            }
+            val ntfName = indigoPlayers[i].name
+            ntfPlayerList.add(Player(ntfName, ntfColor))
+        }
 
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(
@@ -180,10 +185,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
     /**
-     * Function to start a game, which was joined rather than created
-     *
-     * @param [message] Contains the Initialization message of the game
-     * @param[playerType] contains the player's type
+     * set up the game using [GameService.startNewGame] and send the game init message
+     * Called when  [ConnectionState.WAITING_FOR_GUESTS] and the players want to start the game.
+     * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
      */
     fun startNewJoinedGame(message: GameInitMessage, playerType: PlayerType) {
         // check if we are waiting for gameInitMessage. if not then there is no game to start
@@ -262,11 +266,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         return success
     }
 
-
     /**
-     * Functions to send the PlaceTile message
-     *
-     * @param[tilePlacedMessage] Message containing the tile placed GameActionMessage
+     * sends a message when a tile placed.
+     * @param tilePlacedMessage to place a tile.
+     * @throws IllegalStateException when ConnectionState is not [ConnectionState.PLAYING_MY_TURN]
+     * @throws IllegalArgumentException when the client is not connected.
      */
     fun sendPlaceTile (tilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
@@ -276,7 +280,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
     /**
-     * Function to create the tilePlacedMessage
+     * sends a message when a tile placed.
+     * @param message of the placed tile.
      */
     fun tilePlacedMessage(message: TilePlacedMessage) {
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
