@@ -35,6 +35,12 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             gameEndedScene
         )
 
+        mainMenuScene.opacity = 1.0
+        startGameScene.opacity = 1.0
+        hostGameScene.opacity = 1.0
+        joinGameScene.opacity = 1.0
+        gameScene.opacity = 1.0
+
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
         mainMenuScene.newGameButton.onMouseClicked = { showMenuScene(startGameScene) }
