@@ -267,6 +267,16 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         isVisible = false
     }
 
+    private val nameAlreadyTakenMessage = Label(
+        width = 550, height = 50,
+        posX = halfWidth - 550 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Name is already taken.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
     val quitButton = Button(
         width = 350, height = 75,
         posX = halfWidth - 350 / 2, posY = offsetY + 975,
@@ -295,6 +305,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             joinGameButton,
             sessionIDAlreadyExistsMessage,
             sessionIDIsInvalidMessage,
+            nameAlreadyTakenMessage,
             quitButton,
             playerModeIconList[0],
             gameModeIconList[0]
@@ -319,6 +330,13 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         sessionIDIsInvalidMessage.isVisible = true
         val animation = DelayAnimation(3750)
         animation.onFinished = { sessionIDIsInvalidMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterNameAlreadyTaken() {
+        nameAlreadyTakenMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { nameAlreadyTakenMessage.isVisible = false }
         playAnimation(animation)
     }
 }

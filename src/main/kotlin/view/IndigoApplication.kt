@@ -114,5 +114,9 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
     override fun refreshAfterSessionIDIsInvalid() {
         showMenuScene(mainMenuScene)
     }
+
+    override fun refreshAfterNameAlreadyTaken() {
+        showMenuScene(mainMenuScene)
+    }
 }
 

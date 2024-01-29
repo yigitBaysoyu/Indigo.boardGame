@@ -113,4 +113,9 @@ interface Refreshable {
      * performs refreshes after a game could not be joined because sessionID is not valid
      */
     fun refreshAfterSessionIDIsInvalid() {}
+
+    /**
+     * performs refreshes after a game could not be joined because name is already taken
+     */
+    fun refreshAfterNameAlreadyTaken() {}
 }

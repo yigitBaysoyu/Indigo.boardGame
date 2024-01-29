@@ -69,6 +69,9 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 if(response.status.toString() == "INVALID_SESSION_ID") {
                     networkService.disconnect()
                     networkService.onAllRefreshables { refreshAfterSessionIDIsInvalid() }
+                } else if(response.status.toString() == "PLAYER_NAME_ALREADY_TAKEN") {
+                    networkService.disconnect()
+                    networkService.onAllRefreshables { refreshAfterNameAlreadyTaken() }
                 } else {
                     disconnectAndError(response.status)
                 }
