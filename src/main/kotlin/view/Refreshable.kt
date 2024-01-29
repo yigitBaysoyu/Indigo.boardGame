@@ -1,7 +1,6 @@
 package view
 
 import entity.GemMovement
-import entity.PathTile
 import entity.Turn
 import service.ConnectionState
 
@@ -80,7 +79,6 @@ interface Refreshable {
 
     /**
      * perform refreshes that are necessary after a player lefts a game.
-     * @param [color] from the player who has left
      */
     fun refreshAfterPlayerLeft(name: String) {}
 
