@@ -81,7 +81,8 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
 
     /**
      * Handle a [PlayerJoinedNotification] sent by the server. When number of players is
-     * greater than 2, the connectionState in the netWorkService will be updated to [ConnectionState.WAITING_FOR_OPPONENTS_TURN ]
+     * greater than 2, the connectionState in the netWorkService will
+     * be updated to [ConnectionState.WAITING_FOR_OPPONENTS_TURN ]
      * @throws IllegalStateException if not currently expecting any guests to join.
      */
     override fun onPlayerJoined(notification: PlayerJoinedNotification) {

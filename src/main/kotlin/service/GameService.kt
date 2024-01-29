@@ -727,7 +727,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
             endPos.second,
             true
         )
-        if(collisionTile !is TraverseAbleTile) throw Error("Error in moveGems")
+        if(collisionTile !is TraverseAbleTile) throw IllegalStateException("Error in moveGems")
 
         val secondStartConnection = endPos.first.connections[endPos.second]
         checkNotNull(secondStartConnection)
