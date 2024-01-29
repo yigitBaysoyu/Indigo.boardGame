@@ -876,10 +876,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 PlayerType.NETWORKPLAYER -> true
                 else -> false
             }
-            if(player.playerType == PlayerType.NETWORKPLAYER) {
-                playerAIIconList[index].visual = ImageVisual(Constants.networkIcon  )
-            } else {
-                playerAIIconList[index].visual = ImageVisual(Constants.aiIcon)
+            when (player.playerType) {
+                PlayerType.NETWORKPLAYER -> playerAIIconList[index].visual = ImageVisual(Constants.networkIcon)
+                PlayerType.SMARTAI -> playerAIIconList[index].visual = ImageVisual(Constants.aiIcon)
+                PlayerType.RANDOMAI -> playerAIIconList[index].visual = ImageVisual(Constants.randomIcon)
+                else -> Unit
             }
             playerHandList[index].isVisible = true
             playerGemLayoutList[index].isVisible = true
