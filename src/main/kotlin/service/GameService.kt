@@ -1145,7 +1145,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                         rootService.aiService.calculateNextTurn()
                     }
                 }
-                println("Took : ${timeTaken/1000} sec")
+                //println("Took : ${timeTaken/1000} sec")
             }
             else -> return
         }

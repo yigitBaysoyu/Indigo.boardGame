@@ -517,7 +517,6 @@ class AIService(private val rootService: RootService) {
 
                 val endPos = findEndPosition(tile, i, false, game)
                 if(endPos.third){
-                    println("originTile: $originTile x: ${originTile.xCoordinate} and y: ${originTile.yCoordinate}")
                     val trueOrigin = originTile.connections[(originConnection +3)%6]
                     checkNotNull(trueOrigin){"trueOrigin: $trueOrigin"}
                     handleComplexCollision(turn, originTile, trueOrigin, endPos, currentGem, game)
