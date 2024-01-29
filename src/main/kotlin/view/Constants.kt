@@ -12,7 +12,7 @@ object Constants {
     // COLORS
     private val backgroundColor: Color = Color.decode("#2a3b8e")
     val sceneBackgroundColorVisual = ColorVisual(backgroundColor.red, backgroundColor.green, backgroundColor.blue)
-    const val buttonBackgroundColor = "#211c4f"
+    const val BUTTON_BACKGROUND_COLOR = "#211c4f"
 
     // Measurements
     const val SCENE_WIDTH = 1920

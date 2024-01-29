@@ -194,7 +194,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { simulationSpeedBinary = "0$simulationSpeedBinary" }
     }
 
@@ -205,7 +205,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { simulationSpeedBinary = "1$simulationSpeedBinary" }
     }
 
@@ -216,7 +216,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = onMouseClicked@{
             if(simulationSpeedBinary == "") return@onMouseClicked
             if(simulationSpeedBinary.length > 20) {
@@ -236,7 +236,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.playerService.undo() }
     }
 
@@ -247,7 +247,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.playerService.redo() }
     }
 
@@ -268,7 +268,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = {
             gameSavedMessage.isVisible = true
             val animation = DelayAnimation(2750)
@@ -285,7 +285,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
@@ -335,7 +335,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseEntered = { returnToMenuWarning.isVisible = true }
         onMouseExited = { returnToMenuWarning.isVisible = false }
     }
@@ -347,7 +347,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 35, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
     }
 
     private val menuAreaArrow = TokenView(
@@ -363,7 +363,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         font = Font(size = 30, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         isVisible = false
         isDisabled = true
         onMouseClicked = {

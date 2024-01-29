@@ -213,7 +213,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { handleStartClick() }
     }
 
@@ -224,7 +224,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: ${Constants.buttonBackgroundColor}; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
     }
 
     private val randomOrderCheckbox = CheckBox(
@@ -381,8 +381,7 @@ class StartGameScene(private val rootService: RootService) : MenuScene(Constants
 
         playerNameInputList[indexToBeDeleted].text = "Player ${indexToBeDeleted + 1}"
 
-        if(indexToBeDeleted == 2) threePlayerVariantCheckBox.isVisible = false
-        else threePlayerVariantCheckBox.isVisible = true
+        threePlayerVariantCheckBox.isVisible = indexToBeDeleted != 2
 
         setWarningIcons()
         setStartButtonState()
