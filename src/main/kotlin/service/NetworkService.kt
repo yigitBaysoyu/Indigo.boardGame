@@ -123,9 +123,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * This methode sends [GameInitMessage] to server
      * @throws IllegalStateException when players is not yet initialized
      */
-    fun sendGameInitMessage(playerList: MutableList<entity.Player>) {
-        val game = checkNotNull(rootService.currentGame) { "Game not found" }
-        val drawPile = game.drawPile
+    fun sendGameInitMessage(playerList: MutableList<entity.Player>, drawPile: MutableList<PathTile>) {
 
         val formattedDrawPile = drawPile.map{
             when (it.type) {
@@ -181,6 +179,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         return PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
     }
+
     fun startNewJoinedGame(message: GameInitMessage, playerType: PlayerType) {
         // check if we are waiting for gameInitMessage. if not then there is no game to start
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
@@ -208,24 +207,8 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             players = indigoPlayers,
             threePlayerVariant = message.gameMode == GameMode.THREE_SHARED_GATEWAYS,
             isNetworkGame = true,
+            passedDrawPile = extractDrawPile(message)
         )
-
-        val game = checkNotNull(rootService.currentGame) { "no active game" }
-        val playerNames = indigoPlayers.map { it.name }
-        val index = playerNames.indexOf(networkClient.playerName)
-
-        game.drawPile = extractDrawPile(message)
-
-        for(player in game.playerList) {
-            player.playHand.clear()
-            player.playHand.add(game.drawPile.removeFirst())
-        }
-
-        if(index == 0) {
-            updateConnectionState(ConnectionState.PLAYING_MY_TURN)
-        } else {
-            updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
-        }
     }
 
     /**

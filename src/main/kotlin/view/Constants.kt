@@ -31,6 +31,7 @@ object Constants {
     val centerTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileCenter.png"))
     val emptyTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileEmpty.png"))
     val hoverTintImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/HoverTintImage.png"))
+    val turnIndicator: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlayerTurnIndicator.png"))
 
     val amberImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Amber.png"))
     val emeraldImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Emerald.png"))

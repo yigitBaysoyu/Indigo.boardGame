@@ -30,28 +30,31 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         threePlayerVariant: Boolean,
         simulationSpeed: Double = 50.0,
         isNetworkGame: Boolean,
-        sendGameInitMessage: Boolean = false
+        sendGameInitMessage: Boolean = false,
+        passedDrawPile: MutableList<PathTile>? = null
     ) {
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
-        val drawPile: MutableList<PathTile> = loadTiles()
+        var drawPile: MutableList<PathTile> = when(passedDrawPile) {
+            null -> loadTiles()
+            else -> passedDrawPile
+        }
+        if(passedDrawPile == null) drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
             0, simulationSpeed, isNetworkGame, undoStack,
             redoStack, players, gateList, drawPile, gameLayout
         )
+
         rootService.currentGame = game
 
-        drawPile.shuffle()
-        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players)
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile)
 
-        if(!isNetworkGame || sendGameInitMessage) {
-            for(player in players) {
-                player.playHand.clear()
-                player.playHand.add(drawPile.removeFirst())
-            }
+        for(player in players) {
+            player.playHand.clear()
+            player.playHand.add(drawPile.removeFirst())
         }
 
         if(isNetworkGame) {

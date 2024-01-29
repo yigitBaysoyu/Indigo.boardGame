@@ -129,7 +129,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         BoardGameApplication.runOnGUIThread {
             networkService.startNewJoinedGame(message = message, playerType = playerType)
         }
-
     }
 
     /**

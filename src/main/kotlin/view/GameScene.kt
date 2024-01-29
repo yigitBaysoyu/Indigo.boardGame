@@ -129,6 +129,19 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         }
     }
 
+    private val playerTurnIndicatorList = mutableListOf<TokenView>().apply {
+        for (i in 0 until 4) {
+            val playerTurnIndicator = TokenView(
+                width = hexagonWidth * 1.2, height = hexagonHeight * 1.2,
+                posX = 90 + playerListOffsetX - hexagonWidth * 0.1,
+                posY = 90 + playerListOffsetY + i * 250 - hexagonHeight * 0.1,
+                visual = ImageVisual(Constants.turnIndicator)
+            )
+            playerTurnIndicator.rotation = 30.0
+            add(playerTurnIndicator)
+        }
+    }
+
     private val playerGemLayoutList = mutableListOf<LinearLayout<TokenView>>().apply {
         for (i in 0 until 4) {
             val playerGemLayout = LinearLayout<TokenView>(
@@ -143,7 +156,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     private val rotateButton = Button(
         width = 35 * 1.5, height = 32 * 1.5,
-        posX = 227 + playerListOffsetX, posY = 840 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2,
+        posX = 236 + playerListOffsetX, posY = 840 + playerListOffsetY + hexagonHeight / 2 - 35 * 1.5 / 2,
         visual = ImageVisual(Constants.rotateIcon)
     ).apply {
         componentStyle = "-fx-background-radius: 25px;"
@@ -398,6 +411,10 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             playerAIIconList[1],
             playerAIIconList[2],
             playerAIIconList[3],
+            playerTurnIndicatorList[0],
+            playerTurnIndicatorList[1],
+            playerTurnIndicatorList[2],
+            playerTurnIndicatorList[3],
             playerHandList[0],
             playerHandList[1],
             playerHandList[2],
@@ -901,6 +918,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             rotateButton.isVisible = true
             rotateButton.isDisabled = false
         }
+
+        for(i in 0 until 4) {
+            playerTurnIndicatorList[i].isVisible = false
+        }
+        playerTurnIndicatorList[game.activePlayerID].isVisible = true
     }
 
     private fun updatePlayerScores() {
