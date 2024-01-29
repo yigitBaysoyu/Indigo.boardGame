@@ -178,6 +178,13 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
         return PathTile(map, 0, 0, 0, mutableListOf(), typeAsInt)
     }
+
+    /**
+     * Function to start a game, which was joined rather than created
+     *
+     * @param [message] Contains the Initialization message of the game
+     * @param[playerType] contains the player's type
+     */
     fun startNewJoinedGame(message: GameInitMessage, playerType: PlayerType) {
         // check if we are waiting for gameInitMessage. if not then there is no game to start
         check(connectionState == ConnectionState.WAITING_FOR_INIT)
@@ -256,6 +263,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
     }
 
 
+    /**
+     * Functions to send the PlaceTile message
+     *
+     * @param[tilePlacedMessage] Message containing the tile placed GameActionMessage
+     */
     fun sendPlaceTile (tilePlacedMessage : TilePlacedMessage) {
         require(connectionState == ConnectionState.PLAYING_MY_TURN) { "not my turn" }
         val networkClient = checkNotNull(client) { "No client connected." }
@@ -263,7 +275,9 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         updateConnectionState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)
     }
 
-
+    /**
+     * Function to create the tilePlacedMessage
+     */
     fun tilePlacedMessage(message: TilePlacedMessage) {
         check(connectionState == ConnectionState.WAITING_FOR_OPPONENTS_TURN)
 
