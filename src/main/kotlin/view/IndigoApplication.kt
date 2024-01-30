@@ -25,6 +25,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // all scenes and the application itself need to
         // react to changes done in the service layer
         rootService.addRefreshables(
+            rootService.aiService,
             this,
             mainMenuScene,
             gameScene,

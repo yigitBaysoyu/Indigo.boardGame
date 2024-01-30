@@ -18,14 +18,14 @@ class AIService(private val rootService: RootService): Refreshable {
     var isPaused : Boolean = false
 
     private var actionCounter = 0
-    override fun refreshAfterEndGame() { actionCounter++ }
-    override fun refreshAfterStartNewGame() { actionCounter++ }
-    override fun refreshAfterLoadGame() { actionCounter++ }
-    override fun refreshAfterUndo(turn: Turn) { actionCounter++ }
-    override fun refreshAfterRedo(turn: Turn) { actionCounter++ }
-    override fun refreshAfterTilePlaced(turn: Turn) { actionCounter++ }
-    override fun refreshAfterTileRotated() { actionCounter++ }
     fun increaseActionCounter() { actionCounter++ }
+    override fun refreshAfterEndGame() { increaseActionCounter() }
+    override fun refreshAfterStartNewGame() { increaseActionCounter() }
+    override fun refreshAfterLoadGame() { increaseActionCounter() }
+    override fun refreshAfterUndo(turn: Turn) { increaseActionCounter() }
+    override fun refreshAfterRedo(turn: Turn) { increaseActionCounter() }
+    override fun refreshAfterTilePlaced(turn: Turn) { increaseActionCounter() }
+    override fun refreshAfterTileRotated() { increaseActionCounter() }
 
     /**
      * Function to calculate and execute the best possible move for a SMART AI player.
