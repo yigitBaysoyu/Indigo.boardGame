@@ -50,7 +50,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         rootService.currentGame = game
 
-        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile)
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile, threePlayerVariant)
 
         for(player in players) {
             player.playHand.clear()

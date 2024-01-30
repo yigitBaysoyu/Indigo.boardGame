@@ -253,7 +253,12 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             startButton.isDisabled = true
             return
         }
-        if(lobbyFull) startButton.isDisabled = false
+
+        if(rootService.networkService.ntfPlayerList.size in 2 .. 4) {
+            startButton.isDisabled = false
+        } else {
+            startButton.isDisabled = true
+        }
     }
 
     private fun handleStartClick() {
@@ -262,14 +267,14 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
             1 -> PlayerType.RANDOMAI
             else -> PlayerType.SMARTAI
         }
-        rootService.networkService.startNewHostedGame(selectedColors, selectedType, randomOrderCheckbox.isChecked)
+        rootService.networkService.startNewHostedGame(
+            selectedColors,
+            selectedType,
+            randomOrderCheckbox.isChecked,
+            threePlayerVariantCheckBox.isChecked
+        )
 
         resetAllComponents()
-    }
-
-    override fun refreshAfterLastPlayerJoined(){
-        lobbyFull = true
-        setStartButtonState()
     }
 
     /**
@@ -321,11 +326,12 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
 
                 playerModeIconList[i].components[1].visual = ImageVisual(Constants.modeIconNetwork)
                 playerColorIconList[i].components[1].visual = colorImageList[selectedColors[i]]
-                return
+                break
             }
         }
-        // game is already full
+        if(rootService.networkService.ntfPlayerList.size == 3) threePlayerVariantCheckBox.isVisible = true
 
+        setStartButtonState()
     }
 
     override fun refreshAfterPlayerLeft(name: String){
@@ -359,10 +365,14 @@ class HostGameScene(private val rootService: RootService) : MenuScene(Constants.
                         playerNameInputList[j+1].text = ""
                     }
                 }
-                return
+                break
             }
+
         }
-        // game is already full
+
+        setStartButtonState()
+
+        if(rootService.networkService.ntfPlayerList.size == 3) threePlayerVariantCheckBox.isVisible = true
     }
 
     override fun refreshAfterSessionIDReceived(sessionID: String) {

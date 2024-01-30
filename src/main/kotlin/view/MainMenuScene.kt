@@ -146,47 +146,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}50; -fx-background-radius: 25px;"
     }
 
-    // 0 = TWO_NOT_SHARED_GATEWAYS, 1 = THREE_SHARED_GATEWAYS, 2 = THREE_NOT_SHARED_GATEWAYS
-    // 3 = FOUR_SHARED_GATEWAYS
-    var selectedGameMode = 0
-    private val gameModeImageList = listOf(
-        ImageVisual(Constants.gameModeIcon2),
-        ImageVisual(Constants.gameModeIcon3NotShared),
-        ImageVisual(Constants.gameModeIcon3Shared),
-        ImageVisual(Constants.gameModeIcon4),
-    )
-    private val gameModeIconList = mutableListOf<Pane<Button>>().apply {
-        val pane = Pane<Button>(
-            posX = halfWidth - 350/2 - 75, posY = offsetY + 815 + 2,
-            width = 70, height = 70,
-            visual = Visual.EMPTY
-        )
-
-        val gameModeIconBackground = Button(
-            width = 70, height = 70,
-            posX = 0, posY = 0,
-            visual = Visual.EMPTY
-        ).apply {
-            componentStyle = "-fx-background-color: #ffffffff; -fx-background-radius: 25px;"
-        }
-
-        val gameModeIcon = Button(
-            width = 55, height = 55,
-            posX = 7, posY = 7,
-            visual = ImageVisual(Constants.gameModeIcon2)
-        ).apply {
-            isDisabled = true
-        }
-        pane.add(gameModeIconBackground)
-        pane.add(gameModeIcon)
-        add(pane)
-
-        gameModeIconBackground.onMouseClicked = {
-            selectedGameMode = (selectedGameMode + 1) % 4
-            gameModeIcon.visual = gameModeImageList[selectedGameMode]
-        }
-    }
-
     // 0 = LOCAL_PLAYER, 1 = RANDOM_AI, 2 = SMART_AI
     var selectedPlayerType = 0
     private val playerTypeImageList = listOf(
@@ -309,7 +268,6 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             nameAlreadyTakenMessage,
             quitButton,
             playerModeIconList[0],
-            gameModeIconList[0]
         )
     }
 
