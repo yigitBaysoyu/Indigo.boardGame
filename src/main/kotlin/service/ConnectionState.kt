@@ -38,7 +38,7 @@ enum class ConnectionState {
     GUEST_WAITING_FOR_CONFIRMATION,
 
     /**
-     * joined game as a guest and waiting for host to send init message (i.e. [IndigoGameInitMessage])
+     * joined game as a guest and waiting for host to send init message
      */
     WAITING_FOR_INIT,
 

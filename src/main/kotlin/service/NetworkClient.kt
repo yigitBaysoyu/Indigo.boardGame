@@ -36,14 +36,17 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             check(networkService.connectionState == ConnectionState.HOST_WAITING_FOR_CONFIRMATION)
             { "unexpected CreateGameResponse" }
 
-            when (response.status) {
-                CreateGameResponseStatus.SUCCESS -> {
-                    networkService.updateConnectionState(ConnectionState.WAITING_FOR_GUESTS)
-                    sessionID = response.sessionID
-                    networkService.onAllRefreshables { sessionID?.let { refreshAfterSessionIDReceived(it) } }
+            if (response.status == CreateGameResponseStatus.SUCCESS) {
+                networkService.updateConnectionState(ConnectionState.WAITING_FOR_GUESTS)
+                sessionID = response.sessionID
+                networkService.onAllRefreshables { sessionID?.let { refreshAfterSessionIDReceived(it) } }
+            } else {
+                if(response.status.toString() == "SESSION_WITH_ID_ALREADY_EXISTS") {
+                    networkService.disconnect()
+                    networkService.onAllRefreshables { refreshAfterSessionIDAlreadyExists() }
+                } else {
+                    disconnectAndError(response.status)
                 }
-
-                else -> disconnectAndError(response.status)
             }
         }
     }
@@ -59,13 +62,19 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
             check(networkService.connectionState == ConnectionState.GUEST_WAITING_FOR_CONFIRMATION)
             { "unexpected JoinGameResponse" }
 
-            when (response.status) {
-                JoinGameResponseStatus.SUCCESS -> {
-                    sessionID = response.sessionID
-                    networkService.updateConnectionState(ConnectionState.WAITING_FOR_INIT)
+            if (response.status == JoinGameResponseStatus.SUCCESS) {
+                sessionID = response.sessionID
+                networkService.updateConnectionState(ConnectionState.WAITING_FOR_INIT)
+            } else {
+                if(response.status.toString() == "INVALID_SESSION_ID") {
+                    networkService.disconnect()
+                    networkService.onAllRefreshables { refreshAfterSessionIDIsInvalid() }
+                } else if(response.status.toString() == "PLAYER_NAME_ALREADY_TAKEN") {
+                    networkService.disconnect()
+                    networkService.onAllRefreshables { refreshAfterNameAlreadyTaken() }
+                } else {
+                    disconnectAndError(response.status)
                 }
-
-                else -> disconnectAndError(response.status)
             }
         }
     }
@@ -121,7 +130,6 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
         BoardGameApplication.runOnGUIThread {
             networkService.startNewJoinedGame(message = message, playerType = playerType)
         }
-
     }
 
     /**

@@ -45,7 +45,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
     }
 
     private val loadGameButton = Button(
@@ -55,7 +55,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         onMouseClicked = { rootService.gameService.loadGame() }
     }
 
@@ -131,7 +131,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY,
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         isDisabled = true
     }
 
@@ -143,7 +143,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240, 120)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f50; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}50; -fx-background-radius: 25px;"
     }
 
     // 0 = TWO_NOT_SHARED_GATEWAYS, 1 = THREE_SHARED_GATEWAYS, 2 = THREE_NOT_SHARED_GATEWAYS
@@ -233,7 +233,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
         isDisabled = true
     }
 
@@ -245,7 +245,37 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 40, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240, 120)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f50; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}50; -fx-background-radius: 25px;"
+    }
+
+    private val sessionIDAlreadyExistsMessage = Label(
+        width = 350, height = 50,
+        posX = halfWidth - 350 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Session ID already exists.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val sessionIDIsInvalidMessage = Label(
+        width = 550, height = 50,
+        posX = halfWidth - 550 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Session ID could not be found.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
+    }
+
+    private val nameAlreadyTakenMessage = Label(
+        width = 550, height = 50,
+        posX = halfWidth - 550 / 2, posY = offsetY + 815 + 50 + 30,
+        text = "Name is already taken.",
+        font = Font(size = 25, fontWeight = Font.FontWeight.BOLD, color = Color(255, 60, 79)),
+        visual = Visual.EMPTY
+    ).apply {
+        isVisible = false
     }
 
     val quitButton = Button(
@@ -255,7 +285,7 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         font = Font(size = 45, fontWeight = Font.FontWeight.BOLD, color = Color(250, 250, 240)),
         visual = Visual.EMPTY
     ).apply {
-        componentStyle = "-fx-background-color: #211c4f; -fx-background-radius: 25px;"
+        componentStyle = "-fx-background-color: ${Constants.BUTTON_BACKGROUND_COLOR}; -fx-background-radius: 25px;"
     }
 
     init {
@@ -274,6 +304,9 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
             hostGameButton,
             joinGameButtonBackground,
             joinGameButton,
+            sessionIDAlreadyExistsMessage,
+            sessionIDIsInvalidMessage,
+            nameAlreadyTakenMessage,
             quitButton,
             playerModeIconList[0],
             gameModeIconList[0]
@@ -284,6 +317,27 @@ class MainMenuScene(private val rootService: RootService) : MenuScene(Constants.
         fileNotFoundMessage.isVisible = true
         val animation = DelayAnimation(2750)
         animation.onFinished = { fileNotFoundMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterSessionIDAlreadyExists() {
+        sessionIDAlreadyExistsMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { sessionIDAlreadyExistsMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterSessionIDIsInvalid() {
+        sessionIDIsInvalidMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { sessionIDIsInvalidMessage.isVisible = false }
+        playAnimation(animation)
+    }
+
+    override fun refreshAfterNameAlreadyTaken() {
+        nameAlreadyTakenMessage.isVisible = true
+        val animation = DelayAnimation(3750)
+        animation.onFinished = { nameAlreadyTakenMessage.isVisible = false }
         playAnimation(animation)
     }
 }

@@ -1,8 +1,6 @@
 package entity
 
-import PairDequeSerializer
 import kotlinx.serialization.Serializable
-
 
 /**
  * Main Entity. Holds all the data used during a Game.

@@ -64,7 +64,7 @@ class AIService(private val rootService: RootService) {
         if(game.getActivePlayer().playHand.isEmpty()) return mutableListOf()
         val tile = game.getActivePlayer().playHand.first()
 
-        for(rot in 1..6) {
+        repeat(6) {
             rotateTile(game)
 
             for(coordinate in possibleCoordinates) {
@@ -335,30 +335,22 @@ class AIService(private val rootService: RootService) {
         var allGemsRemoved = true
         var allTilesPlaced = true
 
-        for (row in game.gameLayout){
-            for(tile in row){
-                when(tile){
-                    is PathTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
+        for (row in game.gameLayout) {
+            for(tile in row) {
+                when(tile) {
+                    is PathTile -> if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                        allGemsRemoved = false
+                        break
                     }
-                    is TreasureTile -> {
-                        if (!tile.gemPositions.all{ it == GemType.NONE}) {
-                            allGemsRemoved = false
-                            break
-                        }
+                    is TreasureTile -> if (!tile.gemPositions.all{ it == GemType.NONE}) {
+                        allGemsRemoved = false
+                        break
                     }
-                    is CenterTile ->{
-                        if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
-                            allGemsRemoved = false
-                            break
-                        }
+                    is CenterTile -> if (!tile.availableGems.all{ it == GemType.NONE} || tile.availableGems.isNotEmpty()) {
+                        allGemsRemoved = false
+                        break
                     }
-                    is EmptyTile -> {
-                        allTilesPlaced =false
-                    }
+                    is EmptyTile -> allTilesPlaced =false
                     else -> 1 + 1 // do nothing
                 }
             }

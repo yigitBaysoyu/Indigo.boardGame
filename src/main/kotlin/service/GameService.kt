@@ -8,8 +8,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
-import kotlin.system.measureTimeMillis
-
 
 /**
  * A service responsible for the game logic of an Indigo game. It manages the state
@@ -32,28 +30,31 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         threePlayerVariant: Boolean,
         simulationSpeed: Double = 50.0,
         isNetworkGame: Boolean,
-        sendGameInitMessage: Boolean = false
+        sendGameInitMessage: Boolean = false,
+        passedDrawPile: MutableList<PathTile>? = null
     ) {
         val undoStack = ArrayDeque<Turn>()
         val redoStack = ArrayDeque<Pair<Pair<Int,Int>,Int>>()
         val gateList: MutableList<MutableList<GateTile>> = MutableList(6){ mutableListOf()}
-        val drawPile: MutableList<PathTile> = loadTiles()
+        val drawPile: MutableList<PathTile> = when(passedDrawPile) {
+            null -> loadTiles()
+            else -> passedDrawPile
+        }
+        if(passedDrawPile == null) drawPile.shuffle()
         val gameLayout: MutableList<MutableList<Tile>> = mutableListOf()
 
         val game = IndigoGame(
             0, simulationSpeed, isNetworkGame, undoStack,
             redoStack, players, gateList, drawPile, gameLayout
         )
+
         rootService.currentGame = game
 
-        drawPile.shuffle()
-        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players)
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile)
 
-        if(!isNetworkGame || sendGameInitMessage) {
-            for(player in players) {
-                player.playHand.clear()
-                player.playHand.add(drawPile.removeFirst())
-            }
+        for(player in players) {
+            player.playHand.clear()
+            player.playHand.add(drawPile.removeFirst())
         }
 
         if(isNetworkGame) {
@@ -83,7 +84,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
         // Set everything to invisible Tile
         for (i in 0..10) {
             game.gameLayout.add(mutableListOf())
-            for (j in 0..10) game.gameLayout[i].add(InvisibleTile())
+            repeat(11) { game.gameLayout[i].add(InvisibleTile()) }
         }
 
         for (x in -5..5) {
@@ -1130,7 +1131,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
      */
-    fun makeAIPlayerTurn(){
+    fun makeAIPlayerTurn() {
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game is null" }
 
@@ -1139,13 +1140,10 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                val timeTaken = measureTimeMillis {
-                    // Blocking current Thread until coroutine in calculateNextTurn() is finished
-                    runBlocking {
-                        rootService.aiService.calculateNextTurn()
-                    }
+                // Blocking current Thread until coroutine in calculateNextTurn() is finished
+                runBlocking {
+                    rootService.aiService.calculateNextTurn()
                 }
-                //println("Took : ${timeTaken/1000} sec")
             }
             else -> return
         }

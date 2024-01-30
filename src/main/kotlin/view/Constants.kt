@@ -1,6 +1,7 @@
 package view
 
 import tools.aqua.bgw.visual.ColorVisual
+import java.awt.Color
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
@@ -9,8 +10,9 @@ import javax.imageio.ImageIO
  */
 object Constants {
     // COLORS
-    val sceneBackgroundColorVisual = ColorVisual(42, 59, 142)
-    const val buttonBackgroundColor = "#211c4f"
+    private val backgroundColor: Color = Color.decode("#2a3b8e")
+    val sceneBackgroundColorVisual = ColorVisual(backgroundColor.red, backgroundColor.green, backgroundColor.blue)
+    const val BUTTON_BACKGROUND_COLOR = "#211c4f"
 
     // Measurements
     const val SCENE_WIDTH = 1920
@@ -29,6 +31,7 @@ object Constants {
     val centerTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileCenter.png"))
     val emptyTileImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/TileEmpty.png"))
     val hoverTintImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/HoverTintImage.png"))
+    val turnIndicator: BufferedImage = ImageIO.read(Constants::class.java.getResource("/PlayerTurnIndicator.png"))
 
     val amberImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Amber.png"))
     val emeraldImage: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Emerald.png"))
@@ -42,11 +45,10 @@ object Constants {
     val gates: BufferedImage = ImageIO.read(Constants::class.java.getResource("/Gates.png"))
     val cornersBackground: BufferedImage = ImageIO.read(Constants::class.java.getResource("/CornersBackground.png"))
 
-    val undoIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/UndoIcon.png"))
-    val redoIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RedoIcon.png"))
     val rotateIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RotateIcon.png"))
     val aiIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/AIIcon.png"))
     val networkIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/NetworkIcon.png"))
+    val randomIcon: BufferedImage = ImageIO.read(Constants::class.java.getResource("/RandomIcon.png"))
     val menuAreaArrow: BufferedImage = ImageIO.read(Constants::class.java.getResource("/MenuAreaArrow.png"))
 
     val modeIconPlayer: BufferedImage = ImageIO.read(Constants::class.java.getResource("/ModeIconPlayer.png"))

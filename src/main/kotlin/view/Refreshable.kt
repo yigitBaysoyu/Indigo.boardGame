@@ -1,7 +1,6 @@
 package view
 
 import entity.GemMovement
-import entity.PathTile
 import entity.Turn
 import service.ConnectionState
 
@@ -80,7 +79,6 @@ interface Refreshable {
 
     /**
      * perform refreshes that are necessary after a player lefts a game.
-     * @param [color] from the player who has left
      */
     fun refreshAfterPlayerLeft(name: String) {}
 
@@ -105,4 +103,19 @@ interface Refreshable {
      * performs refreshes after a sessionID is received in a createGame message
      */
     fun refreshAfterSessionIDReceived(sessionID: String) {}
+
+    /**
+     * performs refreshes after a game could not be created because sessionID already exists
+     */
+    fun refreshAfterSessionIDAlreadyExists() {}
+
+    /**
+     * performs refreshes after a game could not be joined because sessionID is not valid
+     */
+    fun refreshAfterSessionIDIsInvalid() {}
+
+    /**
+     * performs refreshes after a game could not be joined because name is already taken
+     */
+    fun refreshAfterNameAlreadyTaken() {}
 }

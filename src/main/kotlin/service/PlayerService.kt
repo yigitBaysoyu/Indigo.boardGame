@@ -144,7 +144,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
         val tileFromPlayer = game.playerList[game.activePlayerID].playHand.first()
         val gemsOnTile = mutableListOf<GemType>()
 
-        for (i in 0 .. 5) gemsOnTile.add(GemType.NONE)
+        repeat(6) { gemsOnTile.add(GemType.NONE) }
 
         // new Tile because Coordinates are values
         val tileToBePlaced = PathTile(
@@ -229,7 +229,7 @@ class PlayerService (private  val rootService: RootService) : AbstractRefreshing
 
         // rotates the Tile to the rotationOffset which is needed
         val tileInHand = game.playerList[game.activePlayerID].playHand.first()
-        for(i in 0 until (rotationOffset + 6 - tileInHand.rotationOffset) % 6) rotateTile()
+        repeat ((rotationOffset + 6 - tileInHand.rotationOffset) % 6) { rotateTile() }
 
         placeTile(coords.first, coords.second)
     }

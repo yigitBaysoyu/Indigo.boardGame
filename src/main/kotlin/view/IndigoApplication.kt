@@ -19,7 +19,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
      private val gameScene = GameScene(rootService)
      private val startGameScene = StartGameScene(rootService)
      private val hostGameScene = HostGameScene(rootService)
-     private val joinGameScene = JoinGameScene(rootService)
+     private val joinGameScene = JoinGameScene()
      private val gameEndedScene = GameEndedScene(rootService)
 
     init {
@@ -34,6 +34,12 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
             joinGameScene,
             gameEndedScene
         )
+
+        mainMenuScene.opacity = 1.0
+        startGameScene.opacity = 1.0
+        hostGameScene.opacity = 1.0
+        joinGameScene.opacity = 1.0
+        gameEndedScene.opacity = 1.0
 
         // Bind buttons from Scenes
         mainMenuScene.quitButton.onMouseClicked = { exit() }
@@ -99,6 +105,18 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         rootService.networkService.joinGame(sessionID, name, playerType)
         showMenuScene(joinGameScene)
+    }
+
+    override fun refreshAfterSessionIDAlreadyExists() {
+        showMenuScene(mainMenuScene)
+    }
+
+    override fun refreshAfterSessionIDIsInvalid() {
+        showMenuScene(mainMenuScene)
+    }
+
+    override fun refreshAfterNameAlreadyTaken() {
+        showMenuScene(mainMenuScene)
     }
 }
 
