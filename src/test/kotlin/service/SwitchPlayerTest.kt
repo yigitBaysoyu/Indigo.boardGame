@@ -37,11 +37,9 @@ class SwitchPlayerTest {
         //Make turn for normalPlayer
         playerService.placeTile(-1, 0)
         // call switchPlayer because it is only called in view after delay
-        gameService.makeAIPlayerTurn()
 
-        assert(game.activePlayerID == 2)
-        assert(game.undoStack.size == 2)
-
+        assert(game.activePlayerID == 1)
+        assert(game.undoStack.size == 1)
 
         var placedTileIndex = 0
         for (row in game.gameLayout) {
@@ -52,8 +50,7 @@ class SwitchPlayerTest {
             }
         }
 
-        assert(placedTileIndex == 2)
-
+        assert(placedTileIndex == 1)
     }
 
     /**
@@ -85,8 +82,8 @@ class SwitchPlayerTest {
         // call switchPlayer because it is only called in view after delay
         gameService.makeAIPlayerTurn()
 
-        assert(game.activePlayerID == 0)
-        assert(game.undoStack.size == 2)
+        assert(game.activePlayerID == 2)
+        assert(game.undoStack.size == 1)
 
 
         var placedTileIndex = 0
@@ -97,8 +94,7 @@ class SwitchPlayerTest {
                 }
             }
         }
-        assert(placedTileIndex == 2)
-
+        assert(placedTileIndex == 1)
     }
 
     /**

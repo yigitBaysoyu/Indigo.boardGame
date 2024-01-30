@@ -3,7 +3,6 @@ package service
 
 import entity.PlayerType
 import kotlin.test.assertNotNull
-import edu.udo.cs.sopra.ntf.*
 import kotlin.random.Random
 import kotlin.test.Test
 
@@ -26,8 +25,7 @@ class NetworkServiceTest {
 
         rootServiceHost.networkService.hostGame(
             generateRandomNumberAsString(),
-            "ahmad",
-            GameMode.THREE_NOT_SHARED_GATEWAYS
+            "ahmad"
         )
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)) {
@@ -56,7 +54,11 @@ class NetworkServiceTest {
             error("Did not reach the state after waiting.")
         }
 
-        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1,2,3), PlayerType.LOCALPLAYER)
+        rootServiceHost.networkService.startNewHostedGame(
+            selectedColors = mutableListOf(0,1,2,3),
+            hostType = PlayerType.LOCALPLAYER,
+            threePlayerVariant = false
+        )
 
         assert(rootServiceGuest2.waitForState(ConnectionState.WAITING_FOR_OPPONENTS_TURN)) {
             error("Did not reach the state after waiting.")
@@ -73,9 +75,7 @@ class NetworkServiceTest {
         rootServiceGuest = RootService()
         rootServiceGuest2 = RootService()
 
-        rootServiceHost.networkService.hostGame(
-            generateRandomNumberAsString(), "ahmad", GameMode.TWO_NOT_SHARED_GATEWAYS
-        )
+        rootServiceHost.networkService.hostGame(generateRandomNumberAsString(), "ahmad")
 
         assert(rootServiceHost.waitForState(ConnectionState.WAITING_FOR_GUESTS)) {
             error("Did not reach the state after waiting.")
@@ -94,7 +94,11 @@ class NetworkServiceTest {
         rootServiceGuest2.networkService.joinGame(
             hostClient.sessionID!!, "Alex", PlayerType.NETWORKPLAYER
         )
-        rootServiceHost.networkService.startNewHostedGame(mutableListOf(0,1), PlayerType.LOCALPLAYER)
+        rootServiceHost.networkService.startNewHostedGame(
+            selectedColors = mutableListOf(0,1),
+            hostType = PlayerType.LOCALPLAYER,
+            threePlayerVariant = false
+        )
 
         assert(rootServiceHost.waitForState(ConnectionState.PLAYING_MY_TURN)){
             error("Did not reach the state after waiting.")
