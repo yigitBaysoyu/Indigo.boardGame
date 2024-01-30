@@ -60,6 +60,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         gameScene.quitGameButton.onMouseClicked = { exit() }
         gameScene.returnToMenuButton.onMouseClicked = {
+            rootService.aiService.increaseActionCounter()
             rootService.networkService.disconnect()
             showMenuScene(mainMenuScene)
         }

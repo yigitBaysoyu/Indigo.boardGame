@@ -1108,7 +1108,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
         if (player.playHand.isNotEmpty()) {
             val tileType = player.playHand[0].type
             playerHandList[turn.playerID].visual = ImageVisual(Constants.pathTileImageList[tileType])
-            playerHandList[turn.playerID].rotation = ((player.playHand[0].rotationOffset+5)%6) * 60.0
+            playerHandList[turn.playerID].rotation = ((player.playHand[0].rotationOffset+5)%6) * 60.0 + 30.0
         } else {
             playerHandList[turn.playerID].visual = Visual.EMPTY
         }

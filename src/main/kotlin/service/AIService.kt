@@ -1,6 +1,8 @@
 package service
 
 import entity.*
+import tools.aqua.bgw.core.BoardGameApplication
+import view.Refreshable
 import java.lang.IndexOutOfBoundsException
 import kotlin.math.abs
 import kotlin.math.min
@@ -12,14 +14,26 @@ import kotlin.random.Random
  *  @param rootService The root service that holds the current state of the game.
  *
  */
-class AIService(private val rootService: RootService) {
+class AIService(private val rootService: RootService): Refreshable {
     var isPaused : Boolean = false
+
+    private var actionCounter = 0
+    override fun refreshAfterEndGame() { actionCounter++ }
+    override fun refreshAfterStartNewGame() { actionCounter++ }
+    override fun refreshAfterLoadGame() { actionCounter++ }
+    override fun refreshAfterUndo(turn: Turn) { actionCounter++ }
+    override fun refreshAfterRedo(turn: Turn) { actionCounter++ }
+    override fun refreshAfterTilePlaced(turn: Turn) { actionCounter++ }
+    override fun refreshAfterTileRotated() { actionCounter++ }
+    fun increaseActionCounter() { actionCounter++ }
 
     /**
      * Function to calculate and execute the best possible move for a SMART AI player.
      */
-    fun calculateNextTurn(game: IndigoGame? = null): Int? {
-        if(isPaused) return null
+    suspend fun calculateNextTurn(game: IndigoGame? = null): Int? {
+        if(isPaused && game == null) return null
+
+        val actionCounterAtStart = actionCounter
 
         val currentGame = when(game) {
             null -> checkNotNull(rootService.currentGame) { "no active game" }
@@ -41,11 +55,20 @@ class AIService(private val rootService: RootService) {
         val y = bestMove.second.second.second
 
         val tileInHand = currentGame.getActivePlayer().playHand.first()
-        while(tileInHand.rotationOffset != rotation) {
-            rootService.playerService.rotateTile(suppressRefresh = true)
+
+
+        // RETURN BACK ONTO MAIN THREAD
+        BoardGameApplication.runOnGUIThread guiThread@{
+            if(isPaused) return@guiThread
+            if(actionCounterAtStart != actionCounter) return@guiThread
+
+            while(tileInHand.rotationOffset != rotation) {
+                rootService.playerService.rotateTile(suppressRefresh = true)
+            }
+
+            rootService.playerService.placeTile(x, y)
         }
 
-        rootService.playerService.placeTile(x, y)
         return null
     }
 
@@ -57,7 +80,7 @@ class AIService(private val rootService: RootService) {
      *
      * @return a Mutable list consists pairs of rotations and coordinates (possible moves).
      */
-    private fun tryPossibleMoves(game : IndigoGame, possibleCoordinates: MutableList<Pair<Int,Int>>, stepTwo: Boolean)
+    private suspend fun tryPossibleMoves(game : IndigoGame, possibleCoordinates: MutableList<Pair<Int,Int>>, stepTwo: Boolean)
             : MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> {
 
         val moves: MutableList<Pair<Int,Pair<Int, Pair<Int, Int>>>> = mutableListOf()
@@ -90,7 +113,7 @@ class AIService(private val rootService: RootService) {
      *  @param [game] IndigoGame Object, the function will be applied to.
      *  @return Int, heuristic sore of the game state.
      */
-    private fun evaluateGameState(game: IndigoGame, stepTwo: Boolean) : Int {
+    private suspend fun evaluateGameState(game: IndigoGame, stepTwo: Boolean) : Int {
         if(game.undoStack.isEmpty()) return 0
 
         var heuristicScore = 0
@@ -470,7 +493,7 @@ class AIService(private val rootService: RootService) {
      * of a gem.
      *
      * The Function recursively searches for the next neighbour to
-     * traverse, if there is no next neighbour it returns current [tile]
+     * traverse, if there is no next neighbour it returns current tile
      *
      * @param[game] The IndigoGame object in which the function will be implemented.
      *
