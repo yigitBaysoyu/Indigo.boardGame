@@ -994,6 +994,11 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             byAngle = 60.0,
             duration = 50
         )
+        val animation2 = RotationAnimation(
+            componentView = playerTurnIndicatorList[game.activePlayerID],
+            byAngle = 60.0,
+            duration = 50
+        )
         animation.onFinished = {
             if(game.getActivePlayer().playHand.isNotEmpty()) {
                 val rotationOffset = (game.getActivePlayer().playHand[0].rotationOffset + 5) % 6
@@ -1002,6 +1007,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             unlock()
         }
         lock()
+        playAnimation(animation2)
         playAnimation(animation)
     }
 
