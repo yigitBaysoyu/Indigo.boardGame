@@ -95,11 +95,6 @@ interface Refreshable {
     fun refreshConnectionState(newState: ConnectionState){}
 
     /**
-     * perform refreshes are necessary after the last player joined a hosted game
-     */
-    fun refreshAfterLastPlayerJoined() {}
-
-    /**
      * performs refreshes after a sessionID is received in a createGame message
      */
     fun refreshAfterSessionIDReceived(sessionID: String) {}

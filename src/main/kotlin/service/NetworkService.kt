@@ -26,7 +26,6 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
 
     /** Network client. Nullable for offline games. */
     var client: NetworkClient? = null
-    var gameMode: GameMode = GameMode.TWO_NOT_SHARED_GATEWAYS
 
 
 
@@ -36,12 +35,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * @param sessionID identifier of the hosted session (to be used by guest on join)
      * @throws IllegalStateException if already connected to another game or connection attempt fails
      */
-    fun hostGame(sessionID: String?, hostPlayerName: String, gameMode: GameMode) {
+    fun hostGame(sessionID: String?, hostPlayerName: String) {
         if (!connect(hostPlayerName)) {
             error("Connection failed")
         }
-        this.ntfPlayerList.add(Player(hostPlayerName, PlayerColor.WHITE))
-        this.gameMode = gameMode
+        ntfPlayerList.clear()
+        ntfPlayerList.add(Player(hostPlayerName, PlayerColor.WHITE))
 
         val networkClient = checkNotNull(client) { "No client connected." }
 
@@ -77,7 +76,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * Called when  [ConnectionState.WAITING_FOR_GUESTS] and the host wants to start the game.
      * when called: a new game will be created and a [GameInitMessage] will be sent to the server.
      */
-    fun startNewHostedGame(selectedColors: MutableList<Int>, hostType: PlayerType, randomOrder: Boolean = false) {
+    fun startNewHostedGame(
+        selectedColors: MutableList<Int>,
+        hostType: PlayerType,
+        randomOrder: Boolean = false,
+        threePlayerVariant: Boolean
+    ) {
         if(connectionState != ConnectionState.WAITING_FOR_GUESTS) return
         val client = checkNotNull(client) { "no active client" }
 
@@ -112,7 +116,7 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
         // start new game and give the supply as a parameter.
         rootService.gameService.startNewGame(
             players = indigoPlayers,
-            threePlayerVariant = gameMode == GameMode.THREE_SHARED_GATEWAYS,
+            threePlayerVariant = threePlayerVariant && indigoPlayers.size == 3,
             isNetworkGame = true,
             sendGameInitMessage = true
         )
@@ -122,7 +126,11 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
      * This methode sends [GameInitMessage] to server
      * @throws IllegalStateException when players is not yet initialized
      */
-    fun sendGameInitMessage(playerList: MutableList<entity.Player>, drawPile: MutableList<PathTile>) {
+    fun sendGameInitMessage(
+        playerList: MutableList<entity.Player>,
+        drawPile: MutableList<PathTile>,
+        threePlayerVariant: Boolean
+    ) {
 
         val formattedDrawPile = drawPile.map{
             when (it.type) {
@@ -140,6 +148,12 @@ class NetworkService (private  val rootService: RootService) : AbstractRefreshin
             2 -> PlayerColor.BLUE
             else -> PlayerColor.PURPLE
         }) }
+
+        val gameMode = when(playerList.size) {
+            2 -> GameMode.TWO_NOT_SHARED_GATEWAYS
+            3 -> if(threePlayerVariant) GameMode.THREE_SHARED_GATEWAYS else GameMode.THREE_NOT_SHARED_GATEWAYS
+            else -> GameMode.FOUR_SHARED_GATEWAYS
+        }
 
         // create game GameInitMessage
         val initMessage = GameInitMessage(playerListForMessage, gameMode , formattedDrawPile)

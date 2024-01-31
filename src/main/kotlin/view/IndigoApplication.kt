@@ -1,6 +1,5 @@
 package view
 
-import edu.udo.cs.sopra.ntf.GameMode
 import entity.PlayerType
 import service.RootService
 import tools.aqua.bgw.core.BoardGameApplication
@@ -26,6 +25,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         // all scenes and the application itself need to
         // react to changes done in the service layer
         rootService.addRefreshables(
+            rootService.aiService,
             this,
             mainMenuScene,
             gameScene,
@@ -61,6 +61,7 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
         }
         gameScene.quitGameButton.onMouseClicked = { exit() }
         gameScene.returnToMenuButton.onMouseClicked = {
+            rootService.aiService.increaseActionCounter()
             rootService.networkService.disconnect()
             showMenuScene(mainMenuScene)
         }
@@ -79,16 +80,9 @@ class IndigoApplication: BoardGameApplication(windowTitle = "Indigo", windowMode
     }
 
     private fun hostGameLogic() {
-        val gameMode = when (mainMenuScene.selectedGameMode) {
-            0 -> GameMode.TWO_NOT_SHARED_GATEWAYS
-            1 -> GameMode.THREE_NOT_SHARED_GATEWAYS
-            2 -> GameMode.THREE_SHARED_GATEWAYS
-            3 -> GameMode.FOUR_SHARED_GATEWAYS
-            else -> { GameMode.TWO_NOT_SHARED_GATEWAYS }
-        }
         val sessionID = mainMenuScene.sessionIDInput.text
         val hostname = mainMenuScene.nameInput.text
-        rootService.networkService.hostGame(sessionID, hostname, gameMode)
+        rootService.networkService.hostGame(sessionID, hostname)
         hostGameScene.hostName = hostname
         hostGameScene.resetAllComponents()
         showMenuScene(hostGameScene)

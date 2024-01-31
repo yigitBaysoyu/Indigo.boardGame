@@ -1,6 +1,9 @@
 package service
+
 import entity.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -8,6 +11,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
+
+
 
 /**
  * A service responsible for the game logic of an Indigo game. It manages the state
@@ -50,7 +55,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
 
         rootService.currentGame = game
 
-        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile)
+        if(sendGameInitMessage) rootService.networkService.sendGameInitMessage(players, drawPile, threePlayerVariant)
 
         for(player in players) {
             player.playHand.clear()
@@ -1131,6 +1136,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
      * Function which simply switches the player and allows
      * for additional features to be added in between turns
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun makeAIPlayerTurn() {
         val currentGame = rootService.currentGame
         checkNotNull(currentGame) { "game is null" }
@@ -1140,10 +1146,7 @@ class GameService (private  val rootService: RootService) : AbstractRefreshingSe
                 rootService.aiService.randomNextTurn()
             }
             PlayerType.SMARTAI -> {
-                // Blocking current Thread until coroutine in calculateNextTurn() is finished
-                runBlocking {
-                    rootService.aiService.calculateNextTurn()
-                }
+                GlobalScope.launch { rootService.aiService.calculateNextTurn() }
             }
             else -> return
         }

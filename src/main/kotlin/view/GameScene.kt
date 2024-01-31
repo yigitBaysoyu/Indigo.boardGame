@@ -138,7 +138,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
                 posY = 90 + playerListOffsetY + i * 250 - hexagonHeight * 0.1,
                 visual = ImageVisual(Constants.turnIndicator)
             )
-            playerTurnIndicator.rotation = 30.0
             add(playerTurnIndicator)
         }
     }
@@ -390,8 +389,6 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
 
     init {
         background = Constants.sceneBackgroundColorVisual
-        outerArea.rotation = 30.0
-        gateColorsBackground.rotation = 30.0
         addComponents(
             cornersBackground,
             gateColorsBackground,
@@ -961,7 +958,7 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             }
             val tileType = player.playHand[0].type
             playerHandList[index].visual = ImageVisual(Constants.pathTileImageList[tileType])
-            playerHandList[index].rotation = (player.playHand[0].rotationOffset+5)%6 * 60.0 + 30.0
+            playerHandList[index].rotation = (player.playHand[0].rotationOffset+5)%6 * 60.0
         }
     }
 
@@ -994,14 +991,20 @@ class GameScene(private val rootService: RootService) : BoardGameScene(Constants
             byAngle = 60.0,
             duration = 50
         )
+        val animation2 = RotationAnimation(
+            componentView = playerTurnIndicatorList[game.activePlayerID],
+            byAngle = 60.0,
+            duration = 50
+        )
         animation.onFinished = {
             if(game.getActivePlayer().playHand.isNotEmpty()) {
                 val rotationOffset = (game.getActivePlayer().playHand[0].rotationOffset + 5) % 6
-                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0 + 30.0
+                playerHandList[game.activePlayerID].rotation = rotationOffset * 60.0
             }
             unlock()
         }
         lock()
+        playAnimation(animation2)
         playAnimation(animation)
     }
 

@@ -94,25 +94,11 @@ class NetworkClient (playerName: String, host: String, secret: String, val netwo
                 disconnectAndError("Player names are not unique!")
             }
 
-            val maxPlayers = when (networkService.gameMode) {
-                GameMode.TWO_NOT_SHARED_GATEWAYS -> 2
-                GameMode.THREE_SHARED_GATEWAYS, GameMode.THREE_NOT_SHARED_GATEWAYS -> 3
-                GameMode.FOUR_SHARED_GATEWAYS -> 4
-            }
-
-            if(playerNames.size < maxPlayers ) {
+            if(playerNames.size < 4) {
                 playerNames.add(notification.sender)
                 val newGuest = Player(notification.sender, PlayerColor.WHITE)
                 networkService.ntfPlayerList.add(newGuest)
-            } else {
-                error("maximum number of players has been reached.")
-            }
-
-            networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
-
-            if (playerNames.size == maxPlayers){
-                // when lobby is full enable startButton
-                networkService.onAllRefreshables { refreshAfterLastPlayerJoined() }
+                networkService.onAllRefreshables { refreshAfterPlayerJoined(notification.sender) }
             }
         }
     }
